@@ -4,5 +4,5 @@
 // Leave them blank and the site still works, saving recipes in each browser only.
 window.MC_CONFIG = {
   supabaseUrl: "https://ijvkfdglspzlpstwirvl.supabase.co",
-  supabaseAnonKey: ""   // the "publishable" or "anon public" key
+  supabaseAnonKey: "sb_publishable_IFqfLPq81jywqgoVmBZN-Q_Y1GBYOon"
 };
