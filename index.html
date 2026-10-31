@@ -274,7 +274,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
       </div>
       <input class="search" id="search" type="search" placeholder="Search drinks, ingredients, brands" aria-label="Search drinks">
-      <details class="filters" id="filters">
+      <details class="filters" id="filters" open>
         <summary><span>Filters<span class="fcount" id="fcount" hidden></span></span></summary>
         <div class="fgrid">
           <label id="flt-owner-wrap">Locker<select id="flt-owner"></select></label>
@@ -634,7 +634,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const vis = filtered();
     if (S.view === "detail" && vis.length && !vis.some(d => d.id === S.selected)) { S.selected = vis[0].id; renderList(); renderMain(); }
   }
-  try { if (window.matchMedia("(min-width: 781px)").matches) $("filters").open = true; } catch (e) {}
 
   function renderList() {
     const items = filtered();
@@ -853,7 +852,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     S.view = "detail"; S.editing = null; S.confirmDelete = false; S.confirmPhoto = false;
     S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = "";
     S.servings = 1; S._fillL = null; S.prebatch = false;
-    $("signin").hidden = true; closeShare();
+    $("signin").hidden = true; closeShare(); $("filters").open = true;
     const first = sorted()[0]; S.selected = first ? first.id : null;
     setHash(null); renderFilters(); renderList(); renderMain();
     $("list").scrollTop = 0; window.scrollTo({ top: 0, behavior: "smooth" });
