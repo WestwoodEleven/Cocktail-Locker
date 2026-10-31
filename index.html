@@ -71,7 +71,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .signin input { padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); min-width: 0; flex: 1 1 220px; }
 .locker-btn { border: 0; background: var(--green-soft); color: var(--green); border-radius: 999px; padding: 5px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
 .locker-btn:hover { filter: brightness(.97); }
-.filters { border-top: 1px solid var(--rule); padding-top: 10px; }
+.filters { }
 .filters summary { cursor: pointer; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; list-style: none; }
 .filters summary::-webkit-details-marker { display: none; }
 .filters summary::after { content: "▾"; color: var(--muted); font-size: 12px; }
@@ -93,8 +93,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 780px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* Index */
-.index { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
-@media (max-width: 780px) { .index { position: static; } }
+.index { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel-title { font-family: var(--f-display); font-size: 20px; font-weight: 700; margin: 0; line-height: 1.2; }
+.panel-title .count { font-family: var(--f-body); font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 4px; }
 .index-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .label { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .search { width: 100%; padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); }
@@ -269,10 +271,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
   <div class="grid">
     <aside class="index" aria-label="Drink index">
-      <div class="index-head">
-        <span class="label" id="count-label">Drinks</span>
-        <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
-      </div>
+      <section class="panel" aria-labelledby="find-title">
+      <h2 class="panel-title" id="find-title">Find a drink</h2>
       <input class="search" id="search" type="search" placeholder="Search drinks, ingredients, brands" aria-label="Search drinks">
       <details class="filters" id="filters" open>
         <summary><span>Filters<span class="fcount" id="fcount" hidden></span></span></summary>
@@ -285,7 +285,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
         </div>
         <button class="fclear" id="fclear" type="button" hidden>Clear filters</button>
       </details>
+      </section>
+      <section class="panel" aria-labelledby="drinks-title">
+      <div class="index-head">
+        <h2 class="panel-title" id="drinks-title">Drinks <span class="count" id="count-label"></span></h2>
+        <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
+      </div>
       <ul class="list" id="list"></ul>
+      </section>
     </aside>
 
     <main class="card" id="main" aria-live="polite"></main>
@@ -638,7 +645,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function renderList() {
     const items = filtered();
     const total = S.drinks.length, shown = items.length;
-    $("count-label").textContent = !S.loaded ? "Drinks" : shown === total ? total + (total === 1 ? " drink" : " drinks") : `${shown} of ${total} drinks`;
+    $("count-label").textContent = !S.loaded ? "" : shown === total ? String(total) : `${shown} of ${total}`;
     const ul = $("list");
     if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling the recipes…</li>'; return; }
     if (!items.length) {
