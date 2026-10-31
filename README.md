@@ -1,30 +1,37 @@
-# Mitch's Cocktails
+# Cocktail Locker
 
-House cocktail specs, scaled for one glass or the whole party. Add drinks with their ingredients, recommended brands, floats and a photo, then batch any recipe by number of drinks or container size.
+Everyone's house cocktail specs, scaled for one glass or the whole party.
 
-It's a single static page (`index.html`) hosted on GitHub Pages. Recipes and photos live in a free Supabase project. Anyone with the link can browse and scale drinks; only you can sign in and edit.
+Anyone can browse every drink, filter by locker, cocktail type, base spirit, method or ingredient type, and batch any recipe by number of drinks or container size. Sign in with your email to get your own locker: add drinks with ingredients, recommended brands, floats and a photo, and copy other people's drinks into your locker to tweak them. You can only change drinks in your own locker.
 
-## One-time setup
+It's a single static page (`index.html`) on GitHub Pages, with recipes, lockers and photos in a free Supabase project.
 
-### 1. Supabase (database and photos)
+Live site: https://westwoodeleven.github.io/Cocktail-Locker/
 
-1. Create a free account at [supabase.com](https://supabase.com) and a new project.
-2. Open **SQL Editor**, paste the whole of [`supabase/setup.sql`](supabase/setup.sql), and click **Run**. This creates the recipe table and the photo bucket, sets who can read and edit, and loads your existing recipes.
-3. Go to **Authentication > Sign In / Providers** and turn off **Allow new users to sign up**. This keeps anyone else from making an account that could edit.
-4. Go to **Authentication > Users > Add user** and add your own email address.
-5. Go to **Authentication > URL Configuration** and set **Site URL** to your GitHub Pages address (for example `https://westwoodeleven.github.io/Cocktail-Locker/`). Add the same address under **Redirect URLs**.
-6. Copy your **Project URL** and **publishable (anon) key** into [`config.js`](config.js).
+## Setup
 
-### 2. GitHub Pages
+### Supabase
 
-In the repo, go to **Settings > Pages**, choose **Deploy from a branch**, pick `main` and `/ (root)`, and save. The site appears at `https://westwoodeleven.github.io/Cocktail-Locker/` within a minute or two.
+1. Open **SQL Editor**, paste the whole of [`supabase/setup.sql`](supabase/setup.sql), and click **Run**. It creates the lockers, recipes and photo storage with the access rules. Running it again is safe and keeps existing recipes.
+2. Under **Authentication**, make sure new sign-ups are **allowed**, since anyone can create a locker.
+3. Under **Authentication > URL Configuration**, set **Site URL** to `https://westwoodeleven.github.io/Cocktail-Locker/` and add the same address to **Redirect URLs**.
+4. Put the Project URL and publishable key in [`config.js`](config.js) (already done for this site).
 
-## Editing recipes
+### Claiming the first recipes
 
-Click **Sign in to edit**, enter your email, and open the link Supabase sends you. You stay signed in on that device. **Sign out** returns the page to browse-only.
+Recipes from before lockers existed don't belong to anyone. Sign in on the site once, then edit the email in [`supabase/claim-recipes.sql`](supabase/claim-recipes.sql) to yours and run it. Those recipes move into your locker.
+
+### GitHub Pages
+
+**Settings > Pages**, deploy from branch `main`, folder `/ (root)`.
+
+## Sign-in emails
+
+Supabase's built-in email service only sends a few sign-in emails per hour, which is fine for a handful of people. For more traffic, connect your own email provider under **Authentication > Emails > SMTP Settings**.
 
 ## Files
 
 - `index.html`: the whole site
-- `config.js`: your Supabase project URL and key
-- `supabase/setup.sql`: database, photo storage and access rules
+- `config.js`: Supabase project URL and publishable key
+- `supabase/setup.sql`: tables, photo storage and access rules
+- `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker

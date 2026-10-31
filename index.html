@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mitch's Cocktails</title>
-<meta name="description" content="House cocktail specs, scaled for one glass or the whole party.">
+<title>Cocktail Locker</title>
+<meta name="description" content="Everyone's house cocktail specs, scaled for one glass or the whole party.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500;1,6..96,600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -67,6 +67,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .signin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 12px 14px; }
 .signin label { font-size: 13px; font-weight: 600; }
 .signin input { padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); min-width: 0; flex: 1 1 220px; }
+.locker-btn { border: 0; background: var(--green-soft); color: var(--green); border-radius: 999px; padding: 5px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.locker-btn:hover { filter: brightness(.97); }
+.filters { border-top: 1px solid var(--rule); padding-top: 10px; }
+.filters summary { cursor: pointer; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; list-style: none; }
+.filters summary::-webkit-details-marker { display: none; }
+.filters summary::after { content: "▾"; color: var(--muted); font-size: 12px; }
+.filters[open] summary::after { content: "▴"; }
+.fcount { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 0 7px; font-size: 11px; margin-left: 6px; }
+.fgrid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+@media (max-width: 780px) { .fgrid { grid-template-columns: 1fr 1fr; } }
+.fgrid label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); min-width: 0; }
+.fgrid select { padding: 6px 8px; border: 1px solid var(--rule); border-radius: 7px; background: var(--raised); font-size: 13px; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--ink); width: 100%; min-width: 0; }
+.fclear { background: none; border: 0; color: var(--accent); font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 0 0; }
+.from { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.from button { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--green); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
 .status.ok .dot { background: var(--green); }
 .status.warn .dot { background: var(--accent); }
@@ -165,7 +180,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .field label { font-size: 12px; font-weight: 600; color: var(--muted); }
 .field input, .field select, .field textarea, .ing-row input, .ing-row select { padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); width: 100%; min-width: 0; }
 .field textarea { min-height: 80px; resize: vertical; }
-.ing-head, .ing-row { display: grid; grid-template-columns: 82px 116px minmax(0, 1.2fr) minmax(0, 1fr) 64px 36px; gap: 8px; align-items: center; }
+.ing-head, .ing-row { display: grid; grid-template-columns: 76px 104px minmax(0, 1.2fr) minmax(0, 1fr) 128px 60px 32px; gap: 8px; align-items: center; }
 .ing-row .flt { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .ing-row .flt input { width: auto; accent-color: var(--accent); margin: 0; }
 .float-tag { font-size: 11px; padding: 1px 7px; margin-left: 4px; vertical-align: 2px; }
@@ -178,11 +193,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .ing-head { display: none; }
   .ing-row { grid-template-columns: 72px 1fr 64px 36px; }
   .ing-row .amt { grid-column: 1; grid-row: 1; }
-  .ing-row select { grid-column: 2; grid-row: 1; }
+  .ing-row select.ing-unit { grid-column: 2; grid-row: 1; }
   .ing-row .flt { grid-column: 3; grid-row: 1; }
   .ing-row .x { grid-column: 4; grid-row: 1; }
   .ing-row .ing-name { grid-column: 1 / 5; grid-row: 2; }
   .ing-row .ing-brand { grid-column: 1 / 5; grid-row: 3; }
+  .ing-row .ing-kind { grid-column: 1 / 5; grid-row: 4; }
   .ing-row { padding-bottom: 10px; border-bottom: 1px dashed var(--rule); }
 }
 .ings { display: flex; flex-direction: column; gap: 8px; }
@@ -202,12 +218,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 <div class="wrap">
   <header class="mast">
     <div>
-      <h1 class="brand">Mitch's <em>Cocktails</em></h1>
-      <div class="tag">House specs, scaled for one glass or the whole party.</div>
+      <h1 class="brand">Cocktail <em>Locker</em></h1>
+      <div class="tag">Everyone's house specs, scaled for one glass or the whole party.</div>
     </div>
     <div class="auth">
       <div class="status" id="status"><span class="dot"></span><span id="status-text">Opening the bar…</span></div>
-      <button class="btn small" id="auth-btn" type="button" hidden>Sign in to edit</button>
+      <button class="locker-btn" id="locker-btn" type="button" hidden></button>
+      <button class="btn small" id="auth-btn" type="button" hidden>Sign in or join</button>
     </div>
   </header>
   <form class="signin" id="signin" hidden>
@@ -217,6 +234,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
     <button class="btn small ghost" type="button" id="signin-cancel">Cancel</button>
     <span class="hint" id="signin-msg" role="status"></span>
   </form>
+  <form class="signin" id="name-form" hidden>
+    <label for="locker-name">Name your locker</label>
+    <input id="locker-name" type="text" maxlength="40" autocomplete="off" placeholder="Mitch's Bar">
+    <button class="btn primary small" type="submit">Save</button>
+    <button class="btn small ghost" type="button" id="name-cancel">Cancel</button>
+    <span class="hint" id="name-msg" role="status">Everyone sees this name on your drinks.</span>
+  </form>
 
   <div class="grid">
     <aside class="index" aria-label="Drink index">
@@ -224,7 +248,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
         <span class="label" id="count-label">Drinks</span>
         <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
       </div>
-      <input class="search" id="search" type="search" placeholder="Search by name or ingredient" aria-label="Search drinks">
+      <input class="search" id="search" type="search" placeholder="Search drinks, ingredients, brands" aria-label="Search drinks">
+      <details class="filters" id="filters">
+        <summary><span>Filters<span class="fcount" id="fcount" hidden></span></span></summary>
+        <div class="fgrid">
+          <label id="flt-owner-wrap">Locker<select id="flt-owner"></select></label>
+          <label>Cocktail type<select id="flt-type"></select></label>
+          <label>Base spirit<select id="flt-base"></select></label>
+          <label>Method<select id="flt-method"></select></label>
+          <label>Has ingredient<select id="flt-kind"></select></label>
+        </div>
+        <button class="fclear" id="fclear" type="button" hidden>Clear filters</button>
+      </details>
       <ul class="list" id="list"></ul>
     </aside>
 
@@ -304,11 +339,57 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const ingMl = i => i.unit === "each" ? 0 : (Number(i.amount) || 0) * (ML[i.unit] || 0);
   const liquidMl = (d, floats = false) => (d.ingredients || []).filter(i => !!i.float === floats).reduce((s, i) => s + ingMl(i), 0);
 
+  // ---------- types ----------
+  const TYPES = ["Sour", "Spirit-forward", "Highball", "Tiki", "Fizz & Collins", "Spritz & bubbly", "Flip & creamy", "Punch", "Hot", "Shot", "Other"];
+  const BASES = ["Gin", "Vodka", "Rum", "Tequila", "Mezcal", "Whiskey", "Brandy", "Liqueur", "Wine & fortified", "No alcohol", "Other"];
+  const KINDS = ["Spirit", "Liqueur", "Vermouth & wine", "Bitters", "Juice", "Syrup & sweetener", "Soda & mixer", "Egg & dairy", "Other"];
+  const KIND_RULES = [
+    ["Bitters", /bitters/],
+    ["Liqueur", /liqueur|cointreau|triple sec|curac|campari|aperol|chartreuse|amaro|maraschino|kahl|creme de|crème de|st[- .]?germain|elderflower|benedictine|galliano|chambord|amaretto|fernet|cynar|schnapps|falernum|allspice dram|drambuie|frangelico|limoncello|grand marnier|midori|disaronno|baileys|irish cream|pimm/],
+    ["Vermouth & wine", /vermouth|lillet|cocchi|sherry|\bport\b|wine|prosecco|champagne|cava|sparkling|madeira|sake/],
+    ["Syrup & sweetener", /syrup|sugar|honey|agave|grenadine|orgeat|cream of coconut|coco l[oó]pez|maple|demerara/],
+    ["Juice", /juice|\blime\b|\blemon\b|grapefruit|pineapple|passion ?fruit|cranberry|pur[eé]e/],
+    ["Soda & mixer", /soda|tonic|ginger beer|ginger ale|cola|club|seltzer|sparkling water|lemonade|\bwater\b|\bcoffee\b|espresso|\btea\b/],
+    ["Egg & dairy", /\begg|cream|milk|half and half|aquafaba/],
+    ["Spirit", /\bgin\b|vodka|\brum\b|rhum|tequila|mezcal|whiske?y|bourbon|\brye\b|scotch|brandy|cognac|pisco|cacha[cç]a|calvados|armagnac|absinthe|aquavit|akvavit|genever|batavia|arrack|sotol|baijiu|soju|overproof/]
+  ];
+  const guessKind = name => { const n = String(name || "").toLowerCase(); for (const [k, re] of KIND_RULES) if (re.test(n)) return k; return "Other"; };
+  const kindOf = i => i.kind || guessKind(i.name);
+  const BASE_RULES = [["Mezcal", /mezcal|sotol/], ["Tequila", /tequila/], ["Rum", /\brum\b|rhum|cacha[cç]a|arrack/], ["Whiskey", /whiske?y|bourbon|\brye\b|scotch/],
+    ["Brandy", /brandy|cognac|pisco|calvados|armagnac/], ["Gin", /\bgin\b|genever/], ["Vodka", /vodka/]];
+  function guessBase(d) {
+    const ings = (d.ingredients || []).filter(i => !i.float);
+    const spirits = ings.filter(i => kindOf(i) === "Spirit").sort((a, b) => ingMl(b) - ingMl(a));
+    for (const i of spirits) { const n = (i.name + " " + (i.brand || "")).toLowerCase(); for (const [b, re] of BASE_RULES) if (re.test(n)) return b; }
+    if (spirits.length) return "Other";
+    if (ings.some(i => kindOf(i) === "Liqueur")) return "Liqueur";
+    if (ings.some(i => kindOf(i) === "Vermouth & wine")) return "Wine & fortified";
+    return ings.length ? "No alcohol" : "Other";
+  }
+  const baseOf = d => d.base || guessBase(d);
+  function guessType(d) {
+    const ings = d.ingredients || [];
+    const names = ings.map(i => (i.name + " " + (i.brand || "")).toLowerCase()).join(" | ");
+    const kinds = new Set(ings.map(kindOf));
+    const citrus = /\blime\b|\blemon\b|grapefruit|yuzu/.test(names) && kinds.has("Juice");
+    const sweet = kinds.has("Syrup & sweetener") || kinds.has("Liqueur");
+    if (/\bhot\b|toddy|mulled|irish coffee/.test(names) || /hot/i.test(d.glass || "")) return "Hot";
+    if (baseOf(d) === "Rum" && /pineapple|orgeat|falernum|passion|coconut|allspice/.test(names)) return "Tiki";
+    if (/prosecco|champagne|cava|sparkling wine/.test(names)) return "Spritz & bubbly";
+    if (kinds.has("Soda & mixer") && !/\bwater\b|espresso|coffee/.test(names.replace(/sparkling water/g, "soda"))) return citrus && sweet && /soda|club|seltzer|sparkling water/.test(names) ? "Fizz & Collins" : "Highball";
+    if (kinds.has("Egg & dairy") && !citrus) return "Flip & creamy";
+    if (citrus) return "Sour";
+    if (d.method === "Stirred" || d.method === "Built") return "Spirit-forward";
+    return "Other";
+  }
+  const typeOf = d => d.type || guessType(d);
+
   // ---------- state ----------
   const S = {
     drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
     view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,
-    canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false
+    canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false,
+    profiles: {}, f: { owner: "", type: "", base: "", method: "", kind: "" }
   };
   try { const m = localStorage.getItem("mc-mode"); if (m) S.mode = m; } catch (e) {}
 
@@ -336,20 +417,36 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const BUCKET = "photos";
   const photoUrl = p => sb && p ? sb.storage.from(BUCKET).getPublicUrl(p).data.publicUrl : "";
 
+  const uid = () => S.session && S.session.user ? S.session.user.id : null;
+  const isMine = d => S.backend === "local" || (!!uid() && d.owner === uid());
+  const lockerName = id => !id ? "Unclaimed" : (S.profiles[id] && S.profiles[id].display_name) || "Unnamed locker";
+  const myProfile = () => uid() ? S.profiles[uid()] : null;
+
   function refreshAuthUI() {
-    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("new-btn").hidden = false; S.canWrite = true; return; }
+    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; S.canWrite = true; return; }
     S.canWrite = !!S.session;
     $("auth-btn").hidden = false;
-    $("auth-btn").textContent = S.session ? "Sign out" : "Sign in to edit";
+    $("auth-btn").textContent = S.session ? "Sign out" : "Sign in or join";
     $("new-btn").hidden = !S.canWrite;
+    const me = myProfile();
+    $("locker-btn").hidden = !S.session;
+    $("locker-btn").textContent = me && me.display_name ? me.display_name : "Name your locker";
+    $("locker-btn").title = "Rename your locker";
     if (S.session) $("signin").hidden = true;
-    setStatus(S.session ? "ok" : "", S.session ? "Signed in. Changes save for everyone." : "Browsing");
+    setStatus(S.session ? "ok" : "", S.session ? "Signed in" : "Browsing");
+  }
+
+  async function loadProfiles() {
+    const { data, error } = await sb.from("profiles").select("id, display_name");
+    if (!error) { S.profiles = {}; data.forEach(p => S.profiles[p.id] = p); }
+    refreshAuthUI();
+    if (S.session && S.loaded && !(myProfile() && myProfile().display_name)) openNameForm(true);
   }
 
   async function loadDrinks() {
-    const { data, error } = await sb.from("drinks").select("id, data");
+    const { data, error } = await sb.from("drinks").select("id, owner, data");
     if (error) { setStatus("warn", "Couldn't load drinks. Refresh to try again."); S.loaded = true; afterData(); return; }
-    S.drinks = data.map(r => Object.assign({}, r.data, { id: r.id }));
+    S.drinks = data.map(r => Object.assign({}, r.data, { id: r.id, owner: r.owner }));
     S.loaded = true; afterData();
   }
 
@@ -364,21 +461,34 @@ button, input, select, textarea { font: inherit; color: inherit; }
     try { const { data } = await sb.auth.getSession(); S.session = data.session; } catch (e) {}
     refreshAuthUI();
     sb.auth.onAuthStateChange((_ev, session) => {
-      const changed = !!S.session !== !!session;
+      const changed = uid() !== (session && session.user ? session.user.id : null);
       S.session = session; refreshAuthUI();
-      if (changed) { if (!session && S.view === "edit") { S.view = "detail"; S.editing = null; } renderList(); renderMain(); }
+      if (changed) {
+        if (S.view === "edit") { S.view = "detail"; S.editing = null; }
+        if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine") S.f.owner = ""; }
+        loadProfiles(); renderFilters(); renderList(); renderMain();
+      }
     });
-    await loadDrinks();
-    try { sb.channel("drinks-live").on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks()).subscribe(); } catch (e) {}
+    await Promise.all([loadProfiles(), loadDrinks()]);
+    renderFilters(); renderList(); if (S.view === "detail") renderMain();
+    if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
+    try {
+      sb.channel("drinks-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks())
+        .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => loadProfiles().then(() => { renderFilters(); renderList(); renderMain(); }))
+        .subscribe();
+    } catch (e) {}
   }
 
   function upsertMem(d) { const i = S.drinks.findIndex(x => x.id === d.id); if (i >= 0) S.drinks[i] = d; else S.drinks.push(d); }
   async function saveDrink(d) {
     if (S.backend === "supabase") {
-      const body = JSON.parse(JSON.stringify(d)); delete body.id;
-      const { error } = await sb.from("drinks").upsert({ id: d.id, name: d.name, data: body, updated_at: new Date().toISOString() });
-      if (error) { toast(S.session ? "Couldn't save. Try again." : "Sign in to save changes."); return false; }
-      upsertMem(d); return true;
+      if (!uid()) { toast("Sign in to save changes."); return false; }
+      const body = JSON.parse(JSON.stringify(d)); delete body.id; delete body.owner;
+      const owner = d.owner || uid();
+      const { error } = await sb.from("drinks").upsert({ id: d.id, owner, name: d.name, data: body, updated_at: new Date().toISOString() });
+      if (error) { toast(owner !== uid() ? "You can only change drinks in your own locker." : "Couldn't save. Try again."); return false; }
+      upsertMem(Object.assign({}, d, { owner })); return true;
     }
     upsertMem(d); localSave(); return true;
   }
@@ -394,35 +504,114 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
   $("auth-btn").onclick = async () => {
     if (S.session) { await sb.auth.signOut(); toast("Signed out"); return; }
-    $("signin").hidden = false; $("signin-msg").textContent = ""; $("signin-email").focus();
+    $("signin").hidden = false; $("signin-msg").textContent = "New here? The link creates your locker."; $("signin-email").focus();
   };
   $("signin-cancel").onclick = () => { $("signin").hidden = true; };
   $("signin").onsubmit = async ev => {
     ev.preventDefault();
     const email = $("signin-email").value.trim(); if (!email) return;
     $("signin-msg").textContent = "Sending…";
-    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
-    $("signin-msg").textContent = error ? "That email isn't set up to edit this site." : "Check your email and tap the link to sign in.";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname } });
+    $("signin-msg").textContent = !error ? "Check your email and tap the link to sign in."
+      : /rate|seconds|too many/i.test(error.message || "") ? "Too many sign-in emails just now. Wait a few minutes and try again."
+      : /signup|not allowed/i.test(error.message || "") ? "New sign-ups are turned off for this site."
+      : "Couldn't send the link. Check the address and try again.";
+  };
+
+  function openNameForm(first) {
+    const me = myProfile();
+    $("name-form").hidden = false;
+    $("locker-name").value = me && me.display_name ? me.display_name : "";
+    $("name-msg").textContent = first ? "Welcome. Pick a name for your locker; everyone sees it on your drinks." : "Everyone sees this name on your drinks.";
+    $("name-cancel").hidden = !!first && !(me && me.display_name);
+    $("locker-name").focus();
+  }
+  $("locker-btn").onclick = () => openNameForm(false);
+  $("name-cancel").onclick = () => { $("name-form").hidden = true; };
+  $("name-form").onsubmit = async ev => {
+    ev.preventDefault();
+    const name = $("locker-name").value.trim().slice(0, 40);
+    if (!name) { $("name-msg").textContent = "Enter a name, like Mitch's Bar."; return; }
+    $("name-msg").textContent = "Saving…";
+    const { error } = await sb.from("profiles").upsert({ id: uid(), display_name: name });
+    if (error) { $("name-msg").textContent = "Couldn't save the name. Try again."; return; }
+    S.profiles[uid()] = { id: uid(), display_name: name };
+    $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList(); renderMain();
+    toast("Locker named " + name);
   };
 
   function sorted() { return S.drinks.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "")); }
   function current() { return S.drinks.find(d => d.id === S.selected) || null; }
   function afterData() {
-    if (!current() && S.view === "detail") { const s = sorted(); S.selected = s[0] ? s[0].id : null; }
-    renderList(); if (S.view === "detail") renderMain();
+    if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
+    renderFilters(); renderList(); if (S.view === "detail") renderMain();
   }
 
-  // ---------- list ----------
+  // ---------- list + filters ----------
+  const haystack = d => [d.name, d.glass, d.garnish, d.notes, d.method, typeOf(d), baseOf(d), S.backend === "supabase" ? lockerName(d.owner) : "",
+    ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
+  function passesFilters(d, skip) {
+    const f = S.f;
+    if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : d.owner === f.owner)) return false;
+    if (skip !== "type" && f.type && typeOf(d) !== f.type) return false;
+    if (skip !== "base" && f.base && baseOf(d) !== f.base) return false;
+    if (skip !== "method" && f.method && d.method !== f.method) return false;
+    if (skip !== "kind" && f.kind && !(d.ingredients || []).some(i => kindOf(i) === f.kind)) return false;
+    if (S.query.trim()) { const h = haystack(d); if (!S.query.toLowerCase().split(/\s+/).filter(Boolean).every(w => h.includes(w))) return false; }
+    return true;
+  }
+  function filtered() { return sorted().filter(d => passesFilters(d)); }
+  function renderFilters() {
+    const multi = S.backend === "supabase";
+    $("flt-owner-wrap").hidden = !multi;
+    const opts = (key, all, label, valueOf) => {
+      const counts = {};
+      S.drinks.filter(d => passesFilters(d, key)).forEach(d => [].concat(valueOf(d)).forEach(v => counts[v] = (counts[v] || 0) + 1));
+      const sel = S.f[key];
+      const list = all.filter(v => counts[v] || v === sel);
+      return `<option value="">${label}</option>` + list.map(v => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(v)} (${counts[v] || 0})</option>`).join("");
+    };
+    if (multi) {
+      const ids = [...new Set(S.drinks.map(d => d.owner || ""))];
+      const counts = {}; S.drinks.filter(d => passesFilters(d, "owner")).forEach(d => counts[d.owner || ""] = (counts[d.owner || ""] || 0) + 1);
+      const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
+      $("flt-owner").innerHTML = `<option value="">Everyone's lockers</option>` +
+        (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My locker (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+        named.filter(id => id).map(id => `<option value="${esc(id)}" ${S.f.owner === id ? "selected" : ""}>${esc(lockerName(id))} (${counts[id] || 0})</option>`).join("");
+    }
+    $("flt-type").innerHTML = opts("type", TYPES, "Any type", typeOf);
+    $("flt-base").innerHTML = opts("base", BASES, "Any base", baseOf);
+    $("flt-method").innerHTML = opts("method", METHODS, "Any method", d => d.method || "");
+    $("flt-kind").innerHTML = opts("kind", KINDS, "Anything", d => [...new Set((d.ingredients || []).map(kindOf))]);
+    const n = Object.values(S.f).filter(Boolean).length;
+    $("fcount").hidden = !n; $("fcount").textContent = n;
+    $("fclear").hidden = !n;
+  }
+  ["owner", "type", "base", "method", "kind"].forEach(k => $("flt-" + k).addEventListener("change", e => { S.f[k] = e.target.value; refreshView(); }));
+  $("fclear").onclick = () => { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; refreshView(); };
+  function refreshView() {
+    renderFilters(); renderList();
+    const vis = filtered();
+    if (S.view === "detail" && vis.length && !vis.some(d => d.id === S.selected)) { S.selected = vis[0].id; renderList(); renderMain(); }
+  }
+  try { if (window.matchMedia("(min-width: 781px)").matches) $("filters").open = true; } catch (e) {}
+
   function renderList() {
-    const q = S.query.toLowerCase();
-    const items = sorted().filter(d => !q || (d.name || "").toLowerCase().includes(q) || (d.ingredients || []).some(i => (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q)));
-    $("count-label").textContent = S.loaded ? S.drinks.length + (S.drinks.length === 1 ? " drink" : " drinks") : "Drinks";
+    const items = filtered();
+    const total = S.drinks.length, shown = items.length;
+    $("count-label").textContent = !S.loaded ? "Drinks" : shown === total ? total + (total === 1 ? " drink" : " drinks") : `${shown} of ${total} drinks`;
     const ul = $("list");
-    if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling your recipes…</li>'; return; }
-    if (!items.length) { ul.innerHTML = '<li class="empty-list">' + (S.drinks.length ? "No drinks match that search." : "No drinks yet. Add your first one.") + "</li>"; return; }
+    if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling the recipes…</li>'; return; }
+    if (!items.length) {
+      const msg = !total ? "No drinks yet." + (S.canWrite ? " Add the first one." : " Sign in to add the first one.")
+        : S.f.owner === "mine" && !S.drinks.some(isMine) ? "Your locker is empty. Tap + New drink to add one."
+        : "No drinks match. Try fewer filters.";
+      ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>`; return;
+    }
+    const multi = S.backend === "supabase";
     ul.innerHTML = items.map(d => `<li><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
       ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
-      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc((d.ingredients || []).map(i => i.name).join(", "))}</span></span></button></li>`).join("");
+      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
   }
   $("list").addEventListener("click", e => {
     const b = e.target.closest("button[data-id]"); if (!b) return;
@@ -430,7 +619,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     renderList(); renderMain();
     if (window.matchMedia("(max-width: 780px)").matches) $("main").scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  $("search").addEventListener("input", e => { S.query = e.target.value; renderList(); });
+  $("search").addEventListener("input", e => { S.query = e.target.value; refreshView(); });
   $("new-btn").addEventListener("click", () => openEditor(null));
 
   // ---------- detail ----------
@@ -462,18 +651,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
       const w = show({ amount: perServing * dil, unit: "ml" }, S.servings, S.mode === "spec" ? "oz" : S.mode);
       waterRow = `<tr class="water"><td class="q">${esc(w.q)}</td><td class="u">${esc(w.u)}</td><td class="n">Cold water<span class="note">Stands in for ${Math.round(dil * 100)}% ${esc(d.method.toLowerCase())} dilution. Chill the batch and pour straight from the fridge.</span></td></tr>`;
     }
-    const meta = [d.glass && `<span class="chip">${esc(d.glass)}</span>`, d.method && `<span class="chip">${esc(d.method)}</span>`,
-      d.garnish && `<span class="chip amber">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`].filter(Boolean).join("");
+    const meta = [`<span class="chip amber">${esc(typeOf(d))}</span>`, `<span class="chip amber">${esc(baseOf(d))}</span>`,
+      d.glass && `<span class="chip">${esc(d.glass)}</span>`, d.method && `<span class="chip">${esc(d.method)}</span>`,
+      d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`].filter(Boolean).join("");
     const servingsLabel = S.servings === 1 ? "1 drink" : `${fmtCount(S.servings)} drinks`;
     const fillVal = S._fillL ?? "";
-    const canPhoto = S.backend === "supabase" && S.canWrite;
+    const mine = isMine(d);
+    const canPhoto = S.backend === "supabase" && mine;
+    const fromLine = S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your locker</b>" : `<button type="button" id="from-btn">${esc(lockerName(d.owner))}</button>`}</div>` : "";
     const busy = S.uploading === d.id;
 
     m.innerHTML = `
       <div class="hero${d.photo ? "" : " no-photo"}">
       <div class="spec-top">
-        <div><h2 class="drink-name">${esc(d.name)}</h2><div class="meta">${meta}</div></div>
-        <div class="actions">${S.canWrite ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+        <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div></div>
+        <div class="actions">${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">Copy to my locker</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
       </div>
       ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
         <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -539,7 +731,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
       S.servings = Math.max(0.5, Math.floor(L * 1000 / per * 2) / 2); S._fillL = $("fill").value; renderMain(); };
     $("fill-go").onclick = doFill;
     $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
-    if (S.canWrite) {
+    if ($("from-btn")) $("from-btn").onclick = () => { S.f = { owner: d.owner || "", type: "", base: "", method: "", kind: "" }; $("filters").open = true; refreshView(); };
+    if ($("copy-btn")) $("copy-btn").onclick = () => {
+      const c = JSON.parse(JSON.stringify(d)); delete c.photo; delete c.owner; c.id = null;
+      c.notes = (c.notes ? c.notes + "\n\n" : "") + "Copied from " + lockerName(d.owner) + ".";
+      openEditor(c, true);
+    };
+    if (mine) {
       $("edit-btn").onclick = () => openEditor(d);
       $("del-btn").onclick = () => { S.confirmDelete = true; renderMain(); };
     }
@@ -582,7 +780,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       const type = blob.type || "image/jpeg";
       if (!/^image\/(jpeg|png|webp|gif)$/.test(type)) throw { code: "unsupported_type" };
       const ext = { "image/png": "png", "image/webp": "webp", "image/gif": "gif" }[type] || "jpg";
-      const path = `${d.id}/${Date.now()}.${ext}`;
+      const path = `${uid()}/${d.id}/${Date.now()}.${ext}`;
       const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: "31536000" });
       if (error) throw error;
       const old = d.photo;
@@ -603,11 +801,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 
   // ---------- editor ----------
-  function openEditor(d) {
-    S.view = "edit"; S.confirmDelete = false;
+  const draftDrink = () => { const e = S.editing || {}; return { method: e.method, glass: e.glass,
+    ingredients: (e.ingredients || []).filter(i => (i.name || "").trim()).map(i => ({ name: i.name, brand: i.brand, kind: i.kind || "", unit: i.unit, float: i.float, amount: parseAmount(i.amountText) || 0 })) }; };
+  function openEditor(d, isCopy) {
+    S.view = "edit"; S.confirmDelete = false; S.isCopy = !!isCopy;
     S.editing = d ? JSON.parse(JSON.stringify(d)) : { id: null, name: "", glass: "", method: "Stirred", garnish: "", notes: "",
       ingredients: [{ amount: "", unit: "oz", name: "" }, { amount: "", unit: "oz", name: "" }, { amount: "", unit: "dash", name: "" }] };
     S.editing.ingredients = S.editing.ingredients.map(i => Object.assign({}, i, { amountText: typeof i.amount === "number" ? amountToText(i.amount) : (i.amount || "") }));
+    S.editing.type = S.editing.type || ""; S.editing.base = S.editing.base || "";
     renderList(); renderEditor();
     $("main").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -615,9 +816,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const e = S.editing;
     e.name = $("f-name").value; e.glass = $("f-glass").value; e.method = $("f-method").value;
     e.garnish = $("f-garnish").value; e.notes = $("f-notes").value;
+    e.type = $("f-type").value; e.base = $("f-base").value;
     document.querySelectorAll(".ing-row").forEach((r, i) => {
       e.ingredients[i].amountText = r.querySelector(".amt").value;
-      e.ingredients[i].unit = r.querySelector("select").value;
+      e.ingredients[i].unit = r.querySelector(".ing-unit").value;
+      e.ingredients[i].kind = r.querySelector(".ing-kind").value;
       e.ingredients[i].name = r.querySelector(".ing-name").value;
       e.ingredients[i].brand = r.querySelector(".ing-brand").value;
       e.ingredients[i].float = r.querySelector(".flt input").checked;
@@ -628,34 +831,48 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const ingRows = e.ingredients.map((i, k) => `
       <div class="ing-row">
         <input class="amt" id="ing-amt-${k}" type="text" inputmode="decimal" placeholder="1 1/2" value="${esc(i.amountText)}" aria-label="Amount">
-        <select id="ing-unit-${k}" aria-label="Unit">${UNIT_OPTS.map(([v, l]) => `<option value="${v}" ${i.unit === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <select class="ing-unit" id="ing-unit-${k}" aria-label="Unit">${UNIT_OPTS.map(([v, l]) => `<option value="${v}" ${i.unit === v ? "selected" : ""}>${l}</option>`).join("")}</select>
         <input class="ing-name" id="ing-name-${k}" type="text" placeholder="${["Bourbon","Sweet vermouth","Angostura bitters","Lemon juice"][k % 4]}" value="${esc(i.name)}" aria-label="Ingredient">
         <input class="ing-brand" id="ing-brand-${k}" type="text" placeholder="${["Buffalo Trace","Carpano Antica","Angostura",""][k % 4] || "Optional"}" value="${esc(i.brand || "")}" aria-label="Recommended brand (optional)">
+        <select class="ing-kind" id="ing-kind-${k}" aria-label="Ingredient type"><option value="">${esc("Auto: " + guessKind(i.name))}</option>${KINDS.map(x => `<option ${i.kind === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
         <label class="flt" title="Pour on top of each glass at serving"><input type="checkbox" id="ing-float-${k}" ${i.float ? "checked" : ""}>Float</label>
         <button class="x" type="button" data-rm="${k}" aria-label="Remove ingredient">×</button>
       </div>`).join("");
     m.innerHTML = `
       <form class="form" id="form" novalidate>
-        <h2>${e.id ? "Edit " + esc(e.name || "drink") : "New drink"}</h2>
+        <h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your locker" : "New drink"}</h2>
         <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Boulevardier" autocomplete="off"></div>
         <div class="row2">
           <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Rocks"></div>
           <div class="field"><label for="f-method">Method</label><select id="f-method">${METHODS.map(x => `<option ${e.method === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
           <div class="field"><label for="f-garnish">Garnish</label><input id="f-garnish" type="text" value="${esc(e.garnish)}" placeholder="Orange peel"></div>
         </div>
+        <div class="row2">
+          <div class="field"><label for="f-type">Cocktail type</label><select id="f-type"><option value="" id="f-type-auto">${esc("Auto: " + guessType(draftDrink()))}</option>${TYPES.map(x => `<option ${e.type === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
+          <div class="field"><label for="f-base">Base spirit</label><select id="f-base"><option value="" id="f-base-auto">${esc("Auto: " + guessBase(draftDrink()))}</option>${BASES.map(x => `<option ${e.base === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
+        </div>
         <datalist id="glasses"><option>Rocks</option><option>Coupe</option><option>Nick &amp; Nora</option><option>Collins</option><option>Highball</option><option>Martini</option><option>Copper mug</option><option>Wine glass</option><option>Tiki mug</option><option>Flute</option></datalist>
         <div class="field">
           <span class="label">Ingredients · amounts for one drink</span>
           <div class="ings">
-            <div class="ing-head"><span>Amount</span><span>Unit</span><span>Ingredient</span><span>Recommended brand</span><span>On top</span><span></span></div>
+            <div class="ing-head"><span>Amount</span><span>Unit</span><span>Ingredient</span><span>Recommended brand</span><span>Type</span><span>On top</span><span></span></div>
             ${ingRows}
           </div>
-          <div><button class="btn small" type="button" id="add-ing">+ Add ingredient</button> <span class="hint">Fractions like 3/4 or 1 1/2 work. Brand is optional. Tick Float for anything poured on top at the end.</span></div>
+          <div><button class="btn small" type="button" id="add-ing">+ Add ingredient</button> <span class="hint">Fractions like 3/4 or 1 1/2 work. Brand is optional. Type sorts the ingredient for filters; Auto guesses from the name. Tick Float for anything poured on top at the end.</span></div>
         </div>
         <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Technique, swaps, where you first had it…">${esc(e.notes)}</textarea></div>
         ${errMsg ? `<div class="err" role="alert">${esc(errMsg)}</div>` : ""}
-        <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to bar"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
+        <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to my locker"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
       </form>`;
+    const refreshAuto = () => {
+      readForm();
+      const dd = draftDrink();
+      $("f-type-auto").textContent = "Auto: " + guessType(dd);
+      $("f-base-auto").textContent = "Auto: " + guessBase(dd);
+      document.querySelectorAll(".ing-row").forEach((r, k) => { r.querySelector(".ing-kind option[value='']").textContent = "Auto: " + guessKind(e.ingredients[k].name); });
+    };
+    m.querySelectorAll(".ing-name, .ing-brand, .amt").forEach(x => x.addEventListener("input", refreshAuto));
+    m.querySelectorAll(".ing-unit, .ing-kind, #f-method, .flt input").forEach(x => x.addEventListener("change", refreshAuto));
     $("add-ing").onclick = () => { readForm(); e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); $("ing-amt-" + (e.ingredients.length - 1)).focus(); };
     m.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { readForm(); e.ingredients.splice(Number(b.dataset.rm), 1); if (!e.ingredients.length) e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); });
     $("cancel-btn").onclick = () => { S.view = "detail"; S.editing = null; renderList(); renderMain(); };
@@ -672,17 +889,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
         const ing = { amount: a, unit: i.unit, name: nm };
         if (i.float) ing.float = true;
         if ((i.brand || "").trim()) ing.brand = i.brand.trim();
+        if (i.kind) ing.kind = i.kind;
         ings.push(ing);
       }
       if (!ings.length) return renderEditor("Add at least one ingredient.");
       const isNew = !e.id;
       const id = e.id || (e.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "drink") + "-" + Math.random().toString(36).slice(2, 7);
       const d = { id, name: e.name.trim(), glass: e.glass.trim(), method: e.method, garnish: e.garnish.trim(), notes: e.notes.trim(), ingredients: ings, updatedAt: new Date().toISOString() };
+      if (e.type) d.type = e.type;
+      if (e.base) d.base = e.base;
       if (e.photo) d.photo = e.photo;
+      if (e.owner) d.owner = e.owner;
       $("save-btn").disabled = true;
       const ok = await saveDrink(d);
       if (!ok) { $("save-btn").disabled = false; return; }
-      S.selected = id; S.view = "detail"; S.editing = null; S.servings = 1; S._fillL = null;
+      S.selected = id; S.view = "detail"; if (!passesFilters(S.drinks.find(x => x.id === id) || d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = ""; } renderFilters(); S.editing = null; S.servings = 1; S._fillL = null;
       if (S.backend === "db" && !S.drinks.find(x => x.id === id)) S.drinks.push(d);
       renderList(); renderMain(); toast(isNew ? "Added " + d.name : "Saved " + d.name);
     };
