@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cocktail Locker</title>
+<title>The Cocktail Locker</title>
 <meta name="description" content="Everyone's house cocktail specs, scaled for one glass or the whole party.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500;1,6..96,600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500..700;1,7..72,500..600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: a back-bar spec binder — drink index on the left, the open spec card on the right with its batch calculator */
 :root {
@@ -25,7 +25,7 @@
   --green-soft: #D6E5DC;
   --danger: #A3302A;
   --focus: #2F6FB0;
-  --f-display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --f-display: "Literata", Georgia, "Times New Roman", serif;
   --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --r: 10px;
@@ -59,8 +59,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Masthead */
 .mast { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
-.brand { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 34px); letter-spacing: .01em; margin: 0; }
-.brand em { font-style: italic; font-weight: 500; color: var(--accent); }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 34px); letter-spacing: -.01em; margin: 0; }
+.brand em { font-style: italic; font-weight: 600; color: var(--accent); }
 .tag { color: var(--muted); font-size: 13px; }
 .status { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .auth { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -94,18 +94,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .index { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
 @media (max-width: 780px) { .index { position: static; } }
 .index-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.label { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .search { width: 100%; padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 60vh; overflow-y: auto; }
 @media (max-width: 780px) { .list { max-height: 240px; } }
 .list button { width: 100%; text-align: left; background: none; border: 0; border-radius: 7px; padding: 7px 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
 .list .txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.thumb { flex: none; width: 38px; height: 38px; border-radius: 7px; object-fit: cover; background: var(--green-soft); color: var(--green); display: grid; place-items: center; font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 18px; }
+.thumb { flex: none; width: 38px; height: 38px; border-radius: 7px; object-fit: cover; background: var(--green-soft); color: var(--green); display: grid; place-items: center; font-family: var(--f-display); font-weight: 700; font-size: 18px; }
 .list button:hover { background: var(--green-soft); }
 .list button[aria-current="true"] { background: var(--ink); color: var(--bg); }
 .list button[aria-current="true"] .sub { color: inherit; opacity: .7; }
-.list .nm { font-family: var(--f-display); font-size: 17px; font-weight: 600; font-style: italic; line-height: 1.2; }
-.list .sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list .nm { font-family: var(--f-display); font-size: 17px; font-weight: 600; line-height: 1.25; }
+.list .sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .empty-list { color: var(--muted); font-size: 13px; padding: 6px 4px; }
 
 .btn { border: 1px solid var(--rule); background: var(--raised); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
@@ -129,9 +129,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .photo-tools { display: flex; flex-wrap: wrap; gap: 6px; }
 .uploading { opacity: .55; }
 .spec-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; }
-.drink-name { font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: clamp(34px, 6vw, 56px); line-height: 1.02; margin: 0; text-wrap: balance; }
+.drink-name { font-family: var(--f-display); font-weight: 700; font-size: clamp(32px, 6vw, 52px); line-height: 1.08; letter-spacing: -.015em; margin: 0; text-wrap: balance; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.chip { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); }
+.chip { font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); }
 .chip.amber { background: var(--accent-soft); color: var(--accent); }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--raised); border: 1px solid var(--danger); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
@@ -154,7 +154,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .fill input { width: 88px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); font-family: var(--f-mono); }
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
 .check input { margin-top: 3px; accent-color: var(--accent); }
-.hint { font-size: 12px; color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); }
 
 /* Ingredient table */
 .spec-table { width: 100%; border-collapse: collapse; }
@@ -163,7 +163,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .spec-table .q { font-family: var(--f-mono); font-weight: 600; font-size: 19px; text-align: right; white-space: nowrap; padding-right: 8px; width: 1%; font-variant-numeric: tabular-nums; }
 .spec-table .u { font-family: var(--f-mono); color: var(--muted); font-size: 13px; white-space: nowrap; padding-right: 18px; width: 1%; }
 .spec-table .n { font-size: 16px; font-weight: 500; }
-.spec-table .note { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.spec-table .note { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
 .spec-table tr.water .n, .spec-table tr.water .q { color: var(--green); }
 .totals { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 2px solid var(--ink); padding-top: 12px; }
 .tot { display: flex; flex-direction: column; }
@@ -174,7 +174,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Form */
 .form { display: flex; flex-direction: column; gap: 18px; }
-.form h2 { font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 30px; margin: 0; }
+.form h2 { font-family: var(--f-display); font-weight: 700; font-size: 30px; margin: 0; }
 .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field label { font-size: 12px; font-weight: 600; color: var(--muted); }
@@ -206,11 +206,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .blank { text-align: center; padding: 48px 16px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.blank .glass { font-family: var(--f-display); font-style: italic; font-size: 28px; color: var(--ink); }
+.blank .glass { font-family: var(--f-display); font-weight: 600; font-size: 28px; color: var(--ink); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; z-index: 20; }
 @media (prefers-reduced-motion: no-preference) {
   .card { animation: rise .25s ease-out; }
   @keyframes rise { from { transform: translateY(4px); } to { transform: none; } }
+}
+@media (max-width: 600px) {
+  body { font-size: 16px; line-height: 1.55; }
+  input, select, textarea, .search, .fgrid select, .signin input, .fill input { font-size: 16px; }
+  .tag, .status, .btn.small, .seg button, .locker-btn, .filters summary, .fclear, .empty-list, .ing-row .flt { font-size: 14px; }
+  .label, .fgrid label, .field label, .tot span { font-size: 12.5px; }
+  .list .nm { font-size: 18px; }
+  .list .sub, .hint, .spec-table .note { font-size: 14px; }
+  .spec-table .n { font-size: 17px; }
+  .spec-table .u { font-size: 14px; }
+  .presets button { font-size: 14px; padding: 5px 12px; }
+  .fgrid select { padding: 8px 10px; }
 }
 </style>
 </head>
@@ -218,7 +230,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 <div class="wrap">
   <header class="mast">
     <div>
-      <h1 class="brand">Cocktail <em>Locker</em></h1>
+      <h1 class="brand">The Cocktail <em>Locker</em></h1>
       <div class="tag">Everyone's house specs, scaled for one glass or the whole party.</div>
     </div>
     <div class="auth">
