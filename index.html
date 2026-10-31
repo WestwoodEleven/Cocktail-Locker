@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mitch's Cocktails</title>
+<meta name="description" content="House cocktail specs, scaled for one glass or the whole party.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500;1,6..96,600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a back-bar spec binder — drink index on the left, the open spec card on the right with its batch calculator */
+:root {
+  color-scheme: light;
+  --bg: #E9EEEA;
+  --surface: #F7F9F6;
+  --raised: #FFFFFF;
+  --ink: #18261F;
+  --muted: #5B6B63;
+  --rule: #C9D3CC;
+  --accent: #9A5B0A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F3E6CF;
+  --green: #22513C;
+  --green-soft: #D6E5DC;
+  --danger: #A3302A;
+  --focus: #2F6FB0;
+  --f-display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1612; --surface: #15201B; --raised: #1B2822; --ink: #E5ECE7; --muted: #92A299;
+    --rule: #2B3B34; --accent: #E3A643; --accent-ink: #1A1206; --accent-soft: #3A2C14;
+    --green: #86C9A5; --green-soft: #1F3A2D; --danger: #EB7B70; --focus: #7FB2E8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1612; --surface: #15201B; --raised: #1B2822; --ink: #E5ECE7; --muted: #92A299;
+  --rule: #2B3B34; --accent: #E3A643; --accent-ink: #1A1206; --accent-soft: #3A2C14;
+  --green: #86C9A5; --green-soft: #1F3A2D; --danger: #EB7B70; --focus: #7FB2E8; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Masthead */
+.mast { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 34px); letter-spacing: .01em; margin: 0; }
+.brand em { font-style: italic; font-weight: 500; color: var(--accent); }
+.tag { color: var(--muted); font-size: 13px; }
+.status { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.auth { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.signin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 12px 14px; }
+.signin label { font-size: 13px; font-weight: 600; }
+.signin input { padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); min-width: 0; flex: 1 1 220px; }
+.status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.status.ok .dot { background: var(--green); }
+.status.warn .dot { background: var(--accent); }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 780px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Index */
+.index { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
+@media (max-width: 780px) { .index { position: static; } }
+.index-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.search { width: 100%; padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 60vh; overflow-y: auto; }
+@media (max-width: 780px) { .list { max-height: 240px; } }
+.list button { width: 100%; text-align: left; background: none; border: 0; border-radius: 7px; padding: 7px 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+.list .txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.thumb { flex: none; width: 38px; height: 38px; border-radius: 7px; object-fit: cover; background: var(--green-soft); color: var(--green); display: grid; place-items: center; font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 18px; }
+.list button:hover { background: var(--green-soft); }
+.list button[aria-current="true"] { background: var(--ink); color: var(--bg); }
+.list button[aria-current="true"] .sub { color: inherit; opacity: .7; }
+.list .nm { font-family: var(--f-display); font-size: 17px; font-weight: 600; font-style: italic; line-height: 1.2; }
+.list .sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty-list { color: var(--muted); font-size: 13px; padding: 6px 4px; }
+
+.btn { border: 1px solid var(--rule); background: var(--raised); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+.btn.danger { color: var(--danger); }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Spec card */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: clamp(18px, 3vw, 32px); display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; align-items: start; }
+.hero.no-photo { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 560px) { .hero { grid-template-columns: minmax(0, 1fr); } .photo { order: -1; } }
+.photo { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.photo img { width: 100%; max-width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r); background: var(--green-soft); display: block; }
+@media (max-width: 560px) { .photo img { aspect-ratio: 4 / 3; max-height: 320px; } }
+.photo .missing { aspect-ratio: 4 / 5; border-radius: var(--r); background: var(--green-soft); color: var(--muted); display: grid; place-items: center; font-size: 13px; padding: 12px; text-align: center; }
+.photo-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.uploading { opacity: .55; }
+.spec-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.drink-name { font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: clamp(34px, 6vw, 56px); line-height: 1.02; margin: 0; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); }
+.chip.amber { background: var(--accent-soft); color: var(--accent); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--raised); border: 1px solid var(--danger); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+
+/* Batch controls */
+.batch { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: var(--raised); border: 1px solid var(--rule); border-radius: var(--r); padding: 16px; }
+.ctl { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.stepper { display: flex; align-items: stretch; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; width: fit-content; }
+.stepper button { width: 40px; border: 0; background: var(--surface); cursor: pointer; font-size: 18px; font-weight: 600; }
+.stepper button:hover { background: var(--green-soft); }
+.stepper input { width: 72px; text-align: center; border: 0; border-inline: 1px solid var(--rule); font-family: var(--f-mono); font-size: 20px; font-weight: 600; padding: 6px 0; background: var(--raised); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { border: 1px solid var(--rule); background: transparent; border-radius: 999px; padding: 3px 10px; font-family: var(--f-mono); font-size: 12px; cursor: pointer; }
+.presets button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; width: fit-content; }
+.seg button { border: 0; background: transparent; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.fill { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.fill input { width: 88px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); font-family: var(--f-mono); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--accent); }
+.hint { font-size: 12px; color: var(--muted); }
+
+/* Ingredient table */
+.spec-table { width: 100%; border-collapse: collapse; }
+.spec-table td { padding: 11px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+.spec-table tr:last-child td { border-bottom: 0; }
+.spec-table .q { font-family: var(--f-mono); font-weight: 600; font-size: 19px; text-align: right; white-space: nowrap; padding-right: 8px; width: 1%; font-variant-numeric: tabular-nums; }
+.spec-table .u { font-family: var(--f-mono); color: var(--muted); font-size: 13px; white-space: nowrap; padding-right: 18px; width: 1%; }
+.spec-table .n { font-size: 16px; font-weight: 500; }
+.spec-table .note { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.spec-table tr.water .n, .spec-table tr.water .q { color: var(--green); }
+.totals { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 2px solid var(--ink); padding-top: 12px; }
+.tot { display: flex; flex-direction: column; }
+.tot b { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.tot span { font-size: 12px; color: var(--muted); }
+.notes { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; color: var(--ink); max-width: 65ch; white-space: pre-wrap; margin: 0; }
+.notes-label { margin-bottom: 6px; }
+
+/* Form */
+.form { display: flex; flex-direction: column; gap: 18px; }
+.form h2 { font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 30px; margin: 0; }
+.row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.field input, .field select, .field textarea, .ing-row input, .ing-row select { padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); width: 100%; min-width: 0; }
+.field textarea { min-height: 80px; resize: vertical; }
+.ing-head, .ing-row { display: grid; grid-template-columns: 82px 116px minmax(0, 1.2fr) minmax(0, 1fr) 64px 36px; gap: 8px; align-items: center; }
+.ing-row .flt { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.ing-row .flt input { width: auto; accent-color: var(--accent); margin: 0; }
+.float-tag { font-size: 11px; padding: 1px 7px; margin-left: 4px; vertical-align: 2px; }
+.ing-head { font-size: 12px; font-weight: 600; color: var(--muted); }
+.brand-note b { font-weight: 600; color: var(--ink); }
+.ing-row input.amt { font-family: var(--f-mono); text-align: right; }
+.ing-row .x { border: 0; background: none; cursor: pointer; font-size: 18px; color: var(--muted); border-radius: 6px; height: 36px; }
+.ing-row .x:hover { color: var(--danger); background: var(--surface); }
+@media (max-width: 480px) {
+  .ing-head { display: none; }
+  .ing-row { grid-template-columns: 72px 1fr 64px 36px; }
+  .ing-row .amt { grid-column: 1; grid-row: 1; }
+  .ing-row select { grid-column: 2; grid-row: 1; }
+  .ing-row .flt { grid-column: 3; grid-row: 1; }
+  .ing-row .x { grid-column: 4; grid-row: 1; }
+  .ing-row .ing-name { grid-column: 1 / 5; grid-row: 2; }
+  .ing-row .ing-brand { grid-column: 1 / 5; grid-row: 3; }
+  .ing-row { padding-bottom: 10px; border-bottom: 1px dashed var(--rule); }
+}
+.ings { display: flex; flex-direction: column; gap: 8px; }
+.err { color: var(--danger); font-size: 13px; font-weight: 600; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.blank { text-align: center; padding: 48px 16px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.blank .glass { font-family: var(--f-display); font-style: italic; font-size: 28px; color: var(--ink); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; z-index: 20; }
+@media (prefers-reduced-motion: no-preference) {
+  .card { animation: rise .25s ease-out; }
+  @keyframes rise { from { transform: translateY(4px); } to { transform: none; } }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1 class="brand">Mitch's <em>Cocktails</em></h1>
+      <div class="tag">House specs, scaled for one glass or the whole party.</div>
+    </div>
+    <div class="auth">
+      <div class="status" id="status"><span class="dot"></span><span id="status-text">Opening the bar…</span></div>
+      <button class="btn small" id="auth-btn" type="button" hidden>Sign in to edit</button>
+    </div>
+  </header>
+  <form class="signin" id="signin" hidden>
+    <label for="signin-email">Email</label>
+    <input id="signin-email" type="email" autocomplete="email" required placeholder="you@example.com">
+    <button class="btn primary small" type="submit">Email me a sign-in link</button>
+    <button class="btn small ghost" type="button" id="signin-cancel">Cancel</button>
+    <span class="hint" id="signin-msg" role="status"></span>
+  </form>
+
+  <div class="grid">
+    <aside class="index" aria-label="Drink index">
+      <div class="index-head">
+        <span class="label" id="count-label">Drinks</span>
+        <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Search by name or ingredient" aria-label="Search drinks">
+      <ul class="list" id="list"></ul>
+    </aside>
+
+    <main class="card" id="main" aria-live="polite"></main>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  // ---------- units ----------
+  const ML = { oz: 29.5735, ml: 1, cl: 10, tsp: 4.93, tbsp: 14.79, barspoon: 5, dash: 0.92 };
+  const UNIT_OPTS = [["oz","oz"],["ml","ml"],["cl","cl"],["barspoon","barspoon"],["tsp","tsp"],["tbsp","tbsp"],["dash","dash"],["each","each / whole"]];
+  const SPOONS = new Set(["barspoon","tsp","tbsp"]);
+  const DILUTION = { Stirred: 0.20, Shaken: 0.25, Built: 0.10, Blended: 0, Thrown: 0.15 };
+  const METHODS = ["Stirred","Shaken","Built","Blended","Thrown"];
+  const PRESETS = [1, 2, 4, 8, 12, 24, 50];
+
+  const FR8 = { 0: "", 1: "⅛", 2: "¼", 3: "⅜", 4: "½", 5: "⅝", 6: "¾", 7: "⅞" };
+  function fracFmt(v, denom) {
+    const q = Math.round(v * denom) / denom;
+    if (q === 0) return v > 0 ? (Math.round(v * 100) / 100).toString() : "0";
+    const whole = Math.floor(q + 1e-9);
+    const eighths = Math.round((q - whole) * 8);
+    return (whole ? String(whole) : "") + FR8[eighths] || "0";
+  }
+  const fmtOz = v => v < 2 ? fracFmt(v, 8) : v < 32 ? fracFmt(v, 4) : String(Math.round(v * 2) / 2).replace(/\.5$/, "½");
+  const fmtMl = v => v < 10 ? String(Math.round(v * 2) / 2) : v < 100 ? String(Math.round(v)) : String(Math.round(v / 5) * 5);
+  const fmtCl = v => String(Math.round(v * 10) / 10);
+  const fmtCount = v => fracFmt(v, 2);
+  const fmtLiters = ml => ml >= 1000 ? (Math.round(ml / 10) / 100) + " L" : fmtMl(ml) + " ml";
+
+  function parseAmount(s) {
+    s = String(s || "").trim().replace(/½/g," 1/2").replace(/¼/g," 1/4").replace(/¾/g," 3/4").replace(/⅛/g," 1/8").trim();
+    if (!s) return NaN;
+    let total = 0;
+    for (const part of s.split(/\s+/)) {
+      if (/^\d+\/\d+$/.test(part)) { const [a,b] = part.split("/").map(Number); if (!b) return NaN; total += a / b; }
+      else if (/^\d*\.?\d+$/.test(part)) total += Number(part);
+      else return NaN;
+    }
+    return total;
+  }
+  function amountToText(v) {
+    if (!isFinite(v)) return "";
+    const whole = Math.floor(v), rest = v - whole;
+    const map = { 0.125: "1/8", 0.25: "1/4", 0.375: "3/8", 0.5: "1/2", 0.625: "5/8", 0.75: "3/4", 0.875: "7/8" };
+    const key = Object.keys(map).find(k => Math.abs(rest - k) < 1e-6);
+    if (rest === 0) return String(whole);
+    if (key) return (whole ? whole + " " : "") + map[key];
+    return String(Math.round(v * 1000) / 1000);
+  }
+
+  // Show one scaled ingredient in the chosen display mode
+  function show(ing, mult, mode) {
+    const amt = (Number(ing.amount) || 0) * mult;
+    const unit = ing.unit;
+    if (unit === "each") return { q: fmtCount(amt), u: "", note: "" };
+    if (unit === "dash") {
+      const n = Math.max(1, Math.round(amt));
+      let note = "";
+      if (n >= 12) { const ml = n * ML.dash; note = "≈ " + (mode === "ml" ? fmtMl(ml) + " ml" : fmtOz(ml / ML.oz) + " oz") + " if measuring"; }
+      return { q: String(n), u: n === 1 ? "dash" : "dashes", note };
+    }
+    const ml = amt * (ML[unit] || 0);
+    let out;
+    const keepSpoon = SPOONS.has(unit) && ml < (mode === "ml" ? 15 : 30);
+    if (keepSpoon) out = { q: fracFmt(amt, 4), u: unit === "barspoon" ? (amt > 1 ? "barspoons" : "barspoon") : unit };
+    else if (mode === "ml" || (mode === "spec" && unit === "ml")) out = { q: fmtMl(ml), u: "ml" };
+    else if (mode === "spec" && unit === "cl") out = { q: fmtCl(ml / 10), u: "cl" };
+    else out = { q: fmtOz(ml / ML.oz), u: "oz" };
+    out.note = ml >= 500 ? "≈ " + (Math.round(ml / 750 * 10) / 10) + " × 750 ml bottles" : "";
+    return out;
+  }
+  const ingMl = i => i.unit === "each" ? 0 : (Number(i.amount) || 0) * (ML[i.unit] || 0);
+  const liquidMl = (d, floats = false) => (d.ingredients || []).filter(i => !!i.float === floats).reduce((s, i) => s + ingMl(i), 0);
+
+  // ---------- state ----------
+  const S = {
+    drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
+    view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,
+    canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false
+  };
+  try { const m = localStorage.getItem("mc-mode"); if (m) S.mode = m; } catch (e) {}
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2200); }
+  function setStatus(kind, text) { $("status").className = "status " + kind; $("status-text").textContent = text; }
+
+  // ---------- storage ----------
+  const LOCAL_KEY = "mc-drinks-local";
+  const LOCAL_STARTERS = [
+    { id: "negroni", name: "Negroni", glass: "Rocks", method: "Stirred", garnish: "Orange peel", starter: true,
+      ingredients: [{amount:1,unit:"oz",name:"Gin"},{amount:1,unit:"oz",name:"Campari"},{amount:1,unit:"oz",name:"Sweet vermouth"}], notes: "" },
+    { id: "daiquiri", name: "Daiquiri", glass: "Coupe", method: "Shaken", garnish: "Lime wheel", starter: true,
+      ingredients: [{amount:2,unit:"oz",name:"White rum"},{amount:1,unit:"oz",name:"Fresh lime juice"},{amount:0.75,unit:"oz",name:"Simple syrup (1:1)"}], notes: "" }
+  ];
+  function localLoad() {
+    try { const raw = localStorage.getItem(LOCAL_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return LOCAL_STARTERS.slice();
+  }
+  function localSave() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(S.drinks)); } catch (e) {} }
+
+  const CFG = window.MC_CONFIG || {};
+  const sb = CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey) : null;
+  const BUCKET = "photos";
+  const photoUrl = p => sb && p ? sb.storage.from(BUCKET).getPublicUrl(p).data.publicUrl : "";
+
+  function refreshAuthUI() {
+    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("new-btn").hidden = false; S.canWrite = true; return; }
+    S.canWrite = !!S.session;
+    $("auth-btn").hidden = false;
+    $("auth-btn").textContent = S.session ? "Sign out" : "Sign in to edit";
+    $("new-btn").hidden = !S.canWrite;
+    if (S.session) $("signin").hidden = true;
+    setStatus(S.session ? "ok" : "", S.session ? "Signed in. Changes save for everyone." : "Browsing");
+  }
+
+  async function loadDrinks() {
+    const { data, error } = await sb.from("drinks").select("id, data");
+    if (error) { setStatus("warn", "Couldn't load drinks. Refresh to try again."); S.loaded = true; afterData(); return; }
+    S.drinks = data.map(r => Object.assign({}, r.data, { id: r.id }));
+    S.loaded = true; afterData();
+  }
+
+  async function startStorage() {
+    if (!sb) {
+      S.backend = "local"; S.drinks = localLoad(); S.loaded = true;
+      refreshAuthUI();
+      setStatus("warn", "No database connected. Saving in this browser only.");
+      afterData(); return;
+    }
+    S.backend = "supabase";
+    try { const { data } = await sb.auth.getSession(); S.session = data.session; } catch (e) {}
+    refreshAuthUI();
+    sb.auth.onAuthStateChange((_ev, session) => {
+      const changed = !!S.session !== !!session;
+      S.session = session; refreshAuthUI();
+      if (changed) { if (!session && S.view === "edit") { S.view = "detail"; S.editing = null; } renderList(); renderMain(); }
+    });
+    await loadDrinks();
+    try { sb.channel("drinks-live").on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks()).subscribe(); } catch (e) {}
+  }
+
+  function upsertMem(d) { const i = S.drinks.findIndex(x => x.id === d.id); if (i >= 0) S.drinks[i] = d; else S.drinks.push(d); }
+  async function saveDrink(d) {
+    if (S.backend === "supabase") {
+      const body = JSON.parse(JSON.stringify(d)); delete body.id;
+      const { error } = await sb.from("drinks").upsert({ id: d.id, name: d.name, data: body, updated_at: new Date().toISOString() });
+      if (error) { toast(S.session ? "Couldn't save. Try again." : "Sign in to save changes."); return false; }
+      upsertMem(d); return true;
+    }
+    upsertMem(d); localSave(); return true;
+  }
+  async function removeDrink(id) {
+    if (S.backend === "supabase") {
+      const { error } = await sb.from("drinks").delete().eq("id", id);
+      if (error) { toast("Couldn't delete. Try again."); return false; }
+    }
+    S.drinks = S.drinks.filter(x => x.id !== id);
+    if (S.backend === "local") localSave();
+    return true;
+  }
+
+  $("auth-btn").onclick = async () => {
+    if (S.session) { await sb.auth.signOut(); toast("Signed out"); return; }
+    $("signin").hidden = false; $("signin-msg").textContent = ""; $("signin-email").focus();
+  };
+  $("signin-cancel").onclick = () => { $("signin").hidden = true; };
+  $("signin").onsubmit = async ev => {
+    ev.preventDefault();
+    const email = $("signin-email").value.trim(); if (!email) return;
+    $("signin-msg").textContent = "Sending…";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    $("signin-msg").textContent = error ? "That email isn't set up to edit this site." : "Check your email and tap the link to sign in.";
+  };
+
+  function sorted() { return S.drinks.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "")); }
+  function current() { return S.drinks.find(d => d.id === S.selected) || null; }
+  function afterData() {
+    if (!current() && S.view === "detail") { const s = sorted(); S.selected = s[0] ? s[0].id : null; }
+    renderList(); if (S.view === "detail") renderMain();
+  }
+
+  // ---------- list ----------
+  function renderList() {
+    const q = S.query.toLowerCase();
+    const items = sorted().filter(d => !q || (d.name || "").toLowerCase().includes(q) || (d.ingredients || []).some(i => (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q)));
+    $("count-label").textContent = S.loaded ? S.drinks.length + (S.drinks.length === 1 ? " drink" : " drinks") : "Drinks";
+    const ul = $("list");
+    if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling your recipes…</li>'; return; }
+    if (!items.length) { ul.innerHTML = '<li class="empty-list">' + (S.drinks.length ? "No drinks match that search." : "No drinks yet. Add your first one.") + "</li>"; return; }
+    ul.innerHTML = items.map(d => `<li><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
+      ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
+      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc((d.ingredients || []).map(i => i.name).join(", "))}</span></span></button></li>`).join("");
+  }
+  $("list").addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]"); if (!b) return;
+    S.selected = b.dataset.id; S.view = "detail"; S.confirmDelete = false; S.confirmPhoto = false;
+    renderList(); renderMain();
+    if (window.matchMedia("(max-width: 780px)").matches) $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("search").addEventListener("input", e => { S.query = e.target.value; renderList(); });
+  $("new-btn").addEventListener("click", () => openEditor(null));
+
+  // ---------- detail ----------
+  function renderMain() {
+    const m = $("main");
+    if (S.view === "edit") return renderEditor();
+    const d = current();
+    if (!S.loaded) { m.innerHTML = `<div class="blank"><div class="glass">Opening the bar…</div><div>Your saved drinks will appear here.</div></div>`; return; }
+    if (!d) { m.innerHTML = `<div class="blank"><div class="glass">The shelf is empty</div><div>Add a drink with its spec for one glass. You can batch it for any crowd after.</div>${S.canWrite ? `<button class="btn primary" type="button" id="blank-new">+ Add your first drink</button>` : ""}</div>`;
+      if (S.canWrite) $("blank-new").onclick = () => openEditor(null); return; }
+
+    const perServing = liquidMl(d);
+    const dil = S.prebatch ? (DILUTION[d.method] ?? 0) : 0;
+    const floatMl = liquidMl(d, true);
+    const floats = (d.ingredients || []).filter(i => i.float);
+    const totalMl = perServing * S.servings * (1 + dil);
+    const brandNote = i => i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : "";
+    const row = (i, mult, cls) => { const s = show(i, mult, S.mode);
+      return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
+    const rows = (d.ingredients || []).filter(i => !i.float).map(i => row(i, S.servings)).join("");
+    const many = S.servings !== 1;
+    const floatRows = floats.map(i => {
+      const s = show(i, S.servings, S.mode), g = show(i, 1, S.mode);
+      const note = many ? `${g.q}${g.u ? " " + g.u : ""} on top of each glass at serving. Keep it out of the batch.` : "";
+      return `<tr class="float"><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)} <span class="chip amber float-tag">Float</span>${brandNote(i)}${note ? `<span class="note">${esc(note)}</span>` : ""}</td></tr>`;
+    }).join("");
+    let waterRow = "";
+    if (S.prebatch && dil > 0) {
+      const w = show({ amount: perServing * dil, unit: "ml" }, S.servings, S.mode === "spec" ? "oz" : S.mode);
+      waterRow = `<tr class="water"><td class="q">${esc(w.q)}</td><td class="u">${esc(w.u)}</td><td class="n">Cold water<span class="note">Stands in for ${Math.round(dil * 100)}% ${esc(d.method.toLowerCase())} dilution. Chill the batch and pour straight from the fridge.</span></td></tr>`;
+    }
+    const meta = [d.glass && `<span class="chip">${esc(d.glass)}</span>`, d.method && `<span class="chip">${esc(d.method)}</span>`,
+      d.garnish && `<span class="chip amber">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`].filter(Boolean).join("");
+    const servingsLabel = S.servings === 1 ? "1 drink" : `${fmtCount(S.servings)} drinks`;
+    const fillVal = S._fillL ?? "";
+    const canPhoto = S.backend === "supabase" && S.canWrite;
+    const busy = S.uploading === d.id;
+
+    m.innerHTML = `
+      <div class="hero${d.photo ? "" : " no-photo"}">
+      <div class="spec-top">
+        <div><h2 class="drink-name">${esc(d.name)}</h2><div class="meta">${meta}</div></div>
+        <div class="actions">${S.canWrite ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+      </div>
+      ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
+        <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
+        ${canPhoto ? (S.confirmPhoto
+          ? `<div class="photo-tools"><span class="hint">Remove this photo?</span><button class="btn small danger" type="button" id="photo-rm-yes">Remove</button><button class="btn small" type="button" id="photo-rm-no">Keep</button></div>`
+          : `<div class="photo-tools"><button class="btn small" type="button" id="photo-change" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Change photo"}</button><button class="btn small ghost" type="button" id="photo-rm" ${busy ? "disabled" : ""}>Remove</button></div>`) : ""}
+      </figure>` : ""}
+      </div>
+      <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" hidden>
+      ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your bar?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
+
+      <section class="batch" aria-label="Batch size">
+        <div class="ctl">
+          <span class="label">How many</span>
+          <div class="stepper">
+            <button type="button" id="minus" aria-label="One fewer">−</button>
+            <input id="servings" type="text" inputmode="decimal" value="${esc(fmtNumPlain(S.servings))}" aria-label="Number of drinks">
+            <button type="button" id="plus" aria-label="One more">+</button>
+          </div>
+          <div class="presets" id="presets">${PRESETS.map(p => `<button type="button" data-n="${p}" aria-pressed="${S.servings === p}">${p}</button>`).join("")}</div>
+        </div>
+        <div class="ctl">
+          <span class="label">Or fill a container</span>
+          <div class="fill"><input id="fill" type="text" inputmode="decimal" placeholder="1.75" value="${esc(fillVal)}" aria-label="Container size in liters"><span class="hint">liters</span>
+            <button class="btn small" type="button" id="fill-go">Batch it</button></div>
+          <span class="hint">${perServing ? "One drink is about " + fmtMl(perServing * (1 + dil)) + " ml" + (dil ? " with water" : "") + "." : "Add liquid amounts to batch by volume."}</span>
+        </div>
+        <div class="ctl">
+          <span class="label">Show amounts in</span>
+          <div class="seg" id="mode">
+            <button type="button" data-m="spec" aria-pressed="${S.mode === "spec"}">As written</button>
+            <button type="button" data-m="oz" aria-pressed="${S.mode === "oz"}">oz</button>
+            <button type="button" data-m="ml" aria-pressed="${S.mode === "ml"}">ml</button>
+          </div>
+          <label class="check"><input type="checkbox" id="prebatch" ${S.prebatch ? "checked" : ""} ${d.method === "Blended" ? "disabled" : ""}>
+            <span>Pre-batch with water<br><span class="hint">${d.method === "Blended" ? "Blended drinks get their water from ice." : "Adds the melt you'd get from " + (d.method ? d.method.toLowerCase() : "mixing") + " on ice, so the batch pours ready to serve."}</span></span></label>
+        </div>
+      </section>
+
+      <div>
+        <div class="label" style="margin-bottom:4px">Spec for ${servingsLabel}</div>
+        <div style="overflow-x:auto"><table class="spec-table"><tbody>${rows}${waterRow}${floatRows}</tbody></table></div>
+      </div>
+      ${perServing ? `<div class="totals">
+        <div class="tot"><b>${fmtLiters(totalMl)}</b><span>${floats.length ? "Batch liquid, before floats" : "Total liquid"}</span></div>
+        <div class="tot"><b>${fmtOz(totalMl / ML.oz)} oz</b><span>Same, in ounces</span></div>
+        ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
+      </div>` : ""}
+      ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
+    `;
+
+    const setServ = n => { n = Math.max(0.5, Math.min(999, Math.round(n * 10) / 10)); S.servings = n; S._fillL = null; renderMain(); };
+    $("minus").onclick = () => setServ(S.servings - 1 >= 1 ? S.servings - 1 : 0.5);
+    $("plus").onclick = () => setServ(S.servings < 1 ? 1 : Math.floor(S.servings) + 1);
+    const si = $("servings");
+    si.onchange = () => { const v = parseAmount(si.value); if (v > 0) setServ(v); else si.value = fmtNumPlain(S.servings); };
+    si.onkeydown = e => { if (e.key === "Enter") si.blur(); };
+    $("presets").onclick = e => { const b = e.target.closest("button[data-n]"); if (b) setServ(Number(b.dataset.n)); };
+    $("mode").onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; S.mode = b.dataset.m; try { localStorage.setItem("mc-mode", S.mode); } catch (er) {} renderMain(); };
+    $("prebatch").onchange = e => { S.prebatch = e.target.checked; renderMain(); };
+    const doFill = () => { const L = parseFloat($("fill").value); const per = perServing * (1 + dil);
+      if (!(L > 0) || !per) { toast("Enter a container size in liters, like 1.75"); return; }
+      S.servings = Math.max(0.5, Math.floor(L * 1000 / per * 2) / 2); S._fillL = $("fill").value; renderMain(); };
+    $("fill-go").onclick = doFill;
+    $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
+    if (S.canWrite) {
+      $("edit-btn").onclick = () => openEditor(d);
+      $("del-btn").onclick = () => { S.confirmDelete = true; renderMain(); };
+    }
+    if (d.photo) $("photo-img").onerror = e => { e.target.replaceWith(Object.assign(document.createElement("div"), { className: "missing", textContent: "Photo couldn't load" })); };
+    if (canPhoto) {
+      const pick = () => $("photo-file").click();
+      $("photo-file").onchange = ev => { const f = ev.target.files && ev.target.files[0]; if (f) setPhoto(d, f); };
+      if ($("photo-add")) $("photo-add").onclick = pick;
+      if ($("photo-change")) $("photo-change").onclick = pick;
+      if ($("photo-rm")) $("photo-rm").onclick = () => { S.confirmPhoto = true; renderMain(); };
+      if ($("photo-rm-no")) $("photo-rm-no").onclick = () => { S.confirmPhoto = false; renderMain(); };
+      if ($("photo-rm-yes")) $("photo-rm-yes").onclick = () => removePhoto(d);
+    }
+    if (S.confirmDelete) {
+      $("del-no").onclick = () => { S.confirmDelete = false; renderMain(); };
+      $("del-yes").onclick = async () => { const name = d.name, photo = d.photo; const ok = await removeDrink(d.id);
+        if (ok && photo && sb) sb.storage.from(BUCKET).remove([photo]).catch(() => {});
+        if (ok) { S.confirmDelete = false; S.selected = null; afterData(); toast("Deleted " + name); } };
+    }
+  }
+  async function prepImage(file) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+      const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
+      if (blob) return blob;
+    } catch (e) {}
+    return file;
+  }
+  const PHOTO_ERR = { too_large: "That photo is too big. Try one under 20 MB.", unsupported_type: "That photo format isn't supported. Use a JPEG, PNG or WebP.",
+    rate_limited: "Too many uploads at once. Wait a moment and try again." };
+  async function setPhoto(d, file) {
+    S.uploading = d.id; S.confirmPhoto = false; renderMain();
+    try {
+      const blob = await prepImage(file);
+      if (blob.size > 20 * 1024 * 1024) throw { code: "too_large" };
+      const type = blob.type || "image/jpeg";
+      if (!/^image\/(jpeg|png|webp|gif)$/.test(type)) throw { code: "unsupported_type" };
+      const ext = { "image/png": "png", "image/webp": "webp", "image/gif": "gif" }[type] || "jpg";
+      const path = `${d.id}/${Date.now()}.${ext}`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: "31536000" });
+      if (error) throw error;
+      const old = d.photo;
+      const ok = await saveDrink(Object.assign({}, d, { photo: path }));
+      if (!ok) { sb.storage.from(BUCKET).remove([path]).catch(() => {}); return; }
+      if (old && old !== path) sb.storage.from(BUCKET).remove([old]).catch(() => {});
+      toast(old ? "Photo replaced" : "Photo added");
+    } catch (e) {
+      toast(PHOTO_ERR[e && e.code] || "Couldn't upload the photo. Try again.");
+    } finally { S.uploading = null; renderList(); renderMain(); }
+  }
+  async function removePhoto(d) {
+    const old = d.photo; S.confirmPhoto = false;
+    const rest = Object.assign({}, d); delete rest.photo;
+    if (await saveDrink(rest)) { if (old) sb.storage.from(BUCKET).remove([old]).catch(() => {}); toast("Photo removed"); }
+    renderList(); renderMain();
+  }
+  const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
+
+  // ---------- editor ----------
+  function openEditor(d) {
+    S.view = "edit"; S.confirmDelete = false;
+    S.editing = d ? JSON.parse(JSON.stringify(d)) : { id: null, name: "", glass: "", method: "Stirred", garnish: "", notes: "",
+      ingredients: [{ amount: "", unit: "oz", name: "" }, { amount: "", unit: "oz", name: "" }, { amount: "", unit: "dash", name: "" }] };
+    S.editing.ingredients = S.editing.ingredients.map(i => Object.assign({}, i, { amountText: typeof i.amount === "number" ? amountToText(i.amount) : (i.amount || "") }));
+    renderList(); renderEditor();
+    $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function readForm() {
+    const e = S.editing;
+    e.name = $("f-name").value; e.glass = $("f-glass").value; e.method = $("f-method").value;
+    e.garnish = $("f-garnish").value; e.notes = $("f-notes").value;
+    document.querySelectorAll(".ing-row").forEach((r, i) => {
+      e.ingredients[i].amountText = r.querySelector(".amt").value;
+      e.ingredients[i].unit = r.querySelector("select").value;
+      e.ingredients[i].name = r.querySelector(".ing-name").value;
+      e.ingredients[i].brand = r.querySelector(".ing-brand").value;
+      e.ingredients[i].float = r.querySelector(".flt input").checked;
+    });
+  }
+  function renderEditor(errMsg) {
+    const e = S.editing; const m = $("main");
+    const ingRows = e.ingredients.map((i, k) => `
+      <div class="ing-row">
+        <input class="amt" id="ing-amt-${k}" type="text" inputmode="decimal" placeholder="1 1/2" value="${esc(i.amountText)}" aria-label="Amount">
+        <select id="ing-unit-${k}" aria-label="Unit">${UNIT_OPTS.map(([v, l]) => `<option value="${v}" ${i.unit === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <input class="ing-name" id="ing-name-${k}" type="text" placeholder="${["Bourbon","Sweet vermouth","Angostura bitters","Lemon juice"][k % 4]}" value="${esc(i.name)}" aria-label="Ingredient">
+        <input class="ing-brand" id="ing-brand-${k}" type="text" placeholder="${["Buffalo Trace","Carpano Antica","Angostura",""][k % 4] || "Optional"}" value="${esc(i.brand || "")}" aria-label="Recommended brand (optional)">
+        <label class="flt" title="Pour on top of each glass at serving"><input type="checkbox" id="ing-float-${k}" ${i.float ? "checked" : ""}>Float</label>
+        <button class="x" type="button" data-rm="${k}" aria-label="Remove ingredient">×</button>
+      </div>`).join("");
+    m.innerHTML = `
+      <form class="form" id="form" novalidate>
+        <h2>${e.id ? "Edit " + esc(e.name || "drink") : "New drink"}</h2>
+        <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Boulevardier" autocomplete="off"></div>
+        <div class="row2">
+          <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Rocks"></div>
+          <div class="field"><label for="f-method">Method</label><select id="f-method">${METHODS.map(x => `<option ${e.method === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+          <div class="field"><label for="f-garnish">Garnish</label><input id="f-garnish" type="text" value="${esc(e.garnish)}" placeholder="Orange peel"></div>
+        </div>
+        <datalist id="glasses"><option>Rocks</option><option>Coupe</option><option>Nick &amp; Nora</option><option>Collins</option><option>Highball</option><option>Martini</option><option>Copper mug</option><option>Wine glass</option><option>Tiki mug</option><option>Flute</option></datalist>
+        <div class="field">
+          <span class="label">Ingredients · amounts for one drink</span>
+          <div class="ings">
+            <div class="ing-head"><span>Amount</span><span>Unit</span><span>Ingredient</span><span>Recommended brand</span><span>On top</span><span></span></div>
+            ${ingRows}
+          </div>
+          <div><button class="btn small" type="button" id="add-ing">+ Add ingredient</button> <span class="hint">Fractions like 3/4 or 1 1/2 work. Brand is optional. Tick Float for anything poured on top at the end.</span></div>
+        </div>
+        <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Technique, swaps, where you first had it…">${esc(e.notes)}</textarea></div>
+        ${errMsg ? `<div class="err" role="alert">${esc(errMsg)}</div>` : ""}
+        <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to bar"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
+      </form>`;
+    $("add-ing").onclick = () => { readForm(); e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); $("ing-amt-" + (e.ingredients.length - 1)).focus(); };
+    m.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { readForm(); e.ingredients.splice(Number(b.dataset.rm), 1); if (!e.ingredients.length) e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); });
+    $("cancel-btn").onclick = () => { S.view = "detail"; S.editing = null; renderList(); renderMain(); };
+    $("form").onsubmit = async ev => {
+      ev.preventDefault(); readForm();
+      if (!e.name.trim()) return renderEditor("Give the drink a name.");
+      const ings = [];
+      for (const i of e.ingredients) {
+        const nm = (i.name || "").trim(); const txt = (i.amountText || "").trim();
+        if (!nm && !txt) continue;
+        if (!nm) return renderEditor("One ingredient has an amount but no name.");
+        const a = parseAmount(txt);
+        if (!(a > 0)) return renderEditor(`Check the amount for ${nm}. Use numbers like 2, 0.75 or 1 1/2.`);
+        const ing = { amount: a, unit: i.unit, name: nm };
+        if (i.float) ing.float = true;
+        if ((i.brand || "").trim()) ing.brand = i.brand.trim();
+        ings.push(ing);
+      }
+      if (!ings.length) return renderEditor("Add at least one ingredient.");
+      const isNew = !e.id;
+      const id = e.id || (e.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "drink") + "-" + Math.random().toString(36).slice(2, 7);
+      const d = { id, name: e.name.trim(), glass: e.glass.trim(), method: e.method, garnish: e.garnish.trim(), notes: e.notes.trim(), ingredients: ings, updatedAt: new Date().toISOString() };
+      if (e.photo) d.photo = e.photo;
+      $("save-btn").disabled = true;
+      const ok = await saveDrink(d);
+      if (!ok) { $("save-btn").disabled = false; return; }
+      S.selected = id; S.view = "detail"; S.editing = null; S.servings = 1; S._fillL = null;
+      if (S.backend === "db" && !S.drinks.find(x => x.id === id)) S.drinks.push(d);
+      renderList(); renderMain(); toast(isNew ? "Added " + d.name : "Saved " + d.name);
+    };
+  }
+
+  renderList(); renderMain();
+  startStorage();
+})();
+</script>
+
+</body>
+</html>
