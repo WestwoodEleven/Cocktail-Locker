@@ -3,6 +3,6 @@
 // They are safe to publish: the rules in supabase/setup.sql decide who can change recipes.
 // Leave them blank and the site still works, saving recipes in each browser only.
 window.MC_CONFIG = {
-  supabaseUrl: "",      // e.g. "https://abcdefghijkl.supabase.co"
+  supabaseUrl: "https://ijvkfdglspzlpstwirvl.supabase.co",
   supabaseAnonKey: ""   // the "publishable" or "anon public" key
 };
