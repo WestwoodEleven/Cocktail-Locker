@@ -60,6 +60,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Masthead */
 .mast { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
 .brand { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 34px); letter-spacing: -.01em; margin: 0; }
+.brand a { color: inherit; text-decoration: none; border-radius: 6px; }
+.brand a:hover em { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
 .brand em { font-style: italic; font-weight: 600; color: var(--accent); }
 .tag { color: var(--muted); font-size: 13px; }
 .status { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
@@ -241,7 +243,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 <div class="wrap">
   <header class="mast">
     <div>
-      <h1 class="brand">The Cocktail <em>Locker</em></h1>
+      <h1 class="brand"><a href="./" id="home-link" title="Back to all drinks">The Cocktail <em>Locker</em></a></h1>
       <div class="tag">Everyone's house specs, scaled for one glass or the whole party.</div>
     </div>
     <div class="auth">
@@ -844,6 +846,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
   function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
   window.addEventListener("hashchange", () => { const id = hashId(); if (id && S.drinks.some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+
+  $("home-link").addEventListener("click", ev => {
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
+    ev.preventDefault();
+    S.view = "detail"; S.editing = null; S.confirmDelete = false; S.confirmPhoto = false;
+    S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = "";
+    S.servings = 1; S._fillL = null; S.prebatch = false;
+    $("signin").hidden = true; closeShare();
+    const first = sorted()[0]; S.selected = first ? first.id : null;
+    setHash(null); renderFilters(); renderList(); renderMain();
+    $("list").scrollTop = 0; window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   // ---------- share card ----------
   const CARD = { bg: "#F7F9F6", band: "#18261F", ink: "#18261F", muted: "#5B6B63", rule: "#C9D3CC", accent: "#9A5B0A", soft: "#F3E6CF", green: "#22513C" };
