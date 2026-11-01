@@ -301,3 +301,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sec-head h3 .count { font-family: var(--f-body); font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
 .ing-dym { grid-column: 1 / -1; text-align: left; background: var(--accent-soft); border: 0; border-radius: 7px; padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
 .ing-dym b { color: var(--accent); }
+.small-step button { width: 34px; font-size: 16px; }
+.small-step .sv { min-width: 44px; text-align: center; font-family: var(--f-mono); font-weight: 600; font-size: 17px; display: grid; place-items: center; border-inline: 1px solid var(--rule); background: var(--raised); }
+.shop { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.shop li { display: flex; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.shop li:last-child { border-bottom: 0; }
+.shop .sname { font-weight: 600; }
+.shop .sdetail { font-family: var(--f-mono); font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.menu-card { background: var(--raised); border: 1px solid var(--rule); border-radius: var(--r); padding: 28px 20px; text-align: center; display: flex; flex-direction: column; gap: 16px; }
+.menu-kicker { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.menu-title { font-family: var(--f-display); font-size: 30px; margin: 0; }
+.menu-name { font-family: var(--f-display); font-size: 21px; font-weight: 700; }
+.menu-desc { color: var(--muted); font-size: 14.5px; max-width: 40ch; margin: 2px auto 0; }
+@media print {
+  body.print-menu *, body.print-list * { visibility: hidden !important; }
+  body.print-menu #menu-card, body.print-menu #menu-card *, body.print-list #shop, body.print-list #shop * { visibility: visible !important; }
+  body.print-menu #menu-card, body.print-list #shop { position: absolute; left: 0; top: 0; width: 100%; border: 0; background: #fff; color: #000; }
+  body.print-list #shop .panel-actions { display: none; }
+  body { background: #fff !important; }
+}

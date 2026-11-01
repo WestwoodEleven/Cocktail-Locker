@@ -60,7 +60,7 @@ function renderMain() {
     <div class="hero${d.photo ? "" : " no-photo"}">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
-      <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+      <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button><button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
     </div>
     ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
       <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -129,6 +129,7 @@ function renderMain() {
   $("fill-go").onclick = doFill;
   $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
   $("share-btn").onclick = () => openShare(d);
+  $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });
   if ($("rate-clear")) $("rate-clear").onclick = () => rateDrink(d, 0);
