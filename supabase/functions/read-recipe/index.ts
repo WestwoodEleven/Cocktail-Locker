@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") return reply(405, { error: "method" });
 
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const apiKey = (Deno.env.get("ANTHROPIC_API_KEY") || "").trim().replace(/^["']|["']$/g, "");
   if (!apiKey) return reply(500, { error: "not_configured" });
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -112,8 +112,15 @@ Deno.serve(async (req) => {
     }),
   });
   if (!res.ok) {
-    console.error("Anthropic error", res.status, await res.text());
-    return reply(502, { error: res.status === 401 ? "bad_key" : "reader_failed" });
+    const text = await res.text();
+    console.error("Anthropic error", res.status, text);
+    const code = res.status === 401 ? "bad_key"
+      : res.status === 403 ? "key_not_allowed"
+      : /credit balance/i.test(text) ? "no_credit"
+      : res.status === 404 && /model/i.test(text) ? "bad_model"
+      : res.status === 429 || res.status === 529 ? "busy"
+      : "reader_failed";
+    return reply(502, { error: code, detail: text.slice(0, 300) });
   }
   const out = await res.json();
   const call = (out.content || []).find((c: { type: string }) => c.type === "tool_use");

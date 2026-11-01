@@ -1061,7 +1061,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
     too_large: "That photo is too big. Try a smaller one.",
     bad_image: "That photo format isn't supported. Use a JPEG or PNG.",
     not_configured: "Recipe scanning isn't switched on yet. The site owner needs to add the Claude API key.",
-    bad_key: "Recipe scanning isn't working right now. The site owner needs to check the Claude API key.",
+    bad_key: "Anthropic rejected the Claude API key. Check that the full key was pasted into the ANTHROPIC_API_KEY secret.",
+    key_not_allowed: "The Claude API key doesn't have permission to do this. Create a new key in the Anthropic Console.",
+    no_credit: "The Anthropic account is out of credit. Add credit under Billing in the Anthropic Console.",
+    bad_model: "The Claude model name isn't recognized. Remove or fix the RECIPE_MODEL secret in Supabase.",
+    busy: "Claude is busy right now. Try again in a minute.",
     not_deployed: "Recipe scanning isn't set up yet: Supabase has no function named read-recipe.",
     unreachable: "Couldn't reach the recipe scanner. In Supabase, check that read-recipe has Verify JWT turned off, then try again.",
     crashed: "The recipe scanner hit an error. Check read-recipe's Logs in Supabase."
