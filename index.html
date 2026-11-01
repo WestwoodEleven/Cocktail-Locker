@@ -1062,7 +1062,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
     bad_image: "That photo format isn't supported. Use a JPEG or PNG.",
     not_configured: "Recipe scanning isn't switched on yet. The site owner needs to add the Claude API key.",
     bad_key: "Recipe scanning isn't working right now. The site owner needs to check the Claude API key.",
-    not_deployed: "Recipe scanning isn't set up yet. The site owner needs to add the read-recipe function in Supabase."
+    not_deployed: "Recipe scanning isn't set up yet: Supabase has no function named read-recipe.",
+    unreachable: "Couldn't reach the recipe scanner. In Supabase, check that read-recipe has Verify JWT turned off, then try again.",
+    crashed: "The recipe scanner hit an error. Check read-recipe's Logs in Supabase."
   };
   async function shrinkForScan(file) {
     const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -1107,7 +1109,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
           if (resp.status === 404) code = "not_deployed";
           else { try { code = (await resp.json()).error || ""; } catch (e2) {} }
           if (!code && resp.status === 401) code = "signed_out";
-        } else code = error.name === "FunctionsFetchError" ? "not_deployed" : "";
+          if (!code && resp.status >= 500) code = "crashed";
+        } else code = error.name === "FunctionsFetchError" ? "unreachable" : "";
       } else recipe = data && data.recipe;
     } catch (e) { code = ""; }
     if (!S.scan || S.scan.token !== token) return;
