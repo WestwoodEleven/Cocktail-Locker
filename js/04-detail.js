@@ -80,7 +80,6 @@ function renderMain() {
           <input id="servings" type="text" inputmode="decimal" value="${esc(fmtNumPlain(S.servings))}" aria-label="Number of drinks">
           <button type="button" id="plus" aria-label="One more">+</button>
         </div>
-        <div class="presets" id="presets">${PRESETS.map(p => `<button type="button" data-n="${p}" aria-pressed="${S.servings === p}">${p}</button>`).join("")}</div>
       </div>
       <div class="ctl">
         <span class="label">Or fill a container</span>
@@ -121,7 +120,6 @@ function renderMain() {
   const si = $("servings");
   si.onchange = () => { const v = parseAmount(si.value); if (v > 0) setServ(v); else si.value = fmtNumPlain(S.servings); };
   si.onkeydown = e => { if (e.key === "Enter") si.blur(); };
-  $("presets").onclick = e => { const b = e.target.closest("button[data-n]"); if (b) setServ(Number(b.dataset.n)); };
   $("mode").onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; S.mode = b.dataset.m; try { localStorage.setItem("mc-mode", S.mode); } catch (er) {} renderMain(); };
   $("prebatch").onchange = e => { S.prebatch = e.target.checked; renderMain(); };
   const doFill = () => { const L = parseFloat($("fill").value); const per = perServing * (1 + dil);

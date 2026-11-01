@@ -5,7 +5,6 @@ const UNIT_OPTS = [["oz","oz"],["ml","ml"],["cl","cl"],["barspoon","barspoon"],[
 const SPOONS = new Set(["barspoon","tsp","tbsp"]);
 const DILUTION = { Stirred: 0.20, Shaken: 0.25, Built: 0.10, Blended: 0, Thrown: 0.15 };
 const METHODS = ["Stirred","Shaken","Built","Blended","Thrown"];
-const PRESETS = [1, 2, 4, 8, 12, 24, 50];
 
 const FR8 = { 0: "", 1: "⅛", 2: "¼", 3: "⅜", 4: "½", 5: "⅝", 6: "¾", 7: "⅞" };
 function fracFmt(v, denom) {

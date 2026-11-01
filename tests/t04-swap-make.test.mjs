@@ -26,7 +26,7 @@ export default async function () {
   await p.keyboard.press("Escape");
   check("Escape closes swap", await p.isHidden("#swap-modal"));
   // make mode
-  await p.click("#list button[data-id='pk']"); await p.click("#presets button[data-n='2']");
+  await p.click("#list button[data-id='pk']"); await p.fill("#servings", "2"); await p.press("#servings", "Enter");
   await p.click("#makeit-btn"); await p.waitForTimeout(100);
   const mm = await p.text("#make-mode");
   check("make mode shows doubled amounts", mm.includes("4 | oz | Gold rum") || mm.includes("4 oz | Gold rum"), mm.slice(0, 300));

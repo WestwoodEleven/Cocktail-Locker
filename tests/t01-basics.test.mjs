@@ -13,7 +13,7 @@ export default async function () {
   await p.fill("#search", "");
   await p.click("#list button[data-id='pk']");
   check("float shows on detail", (await p.text("#main")).includes("Float"));
-  await p.click("#presets button[data-n='8']");
+  await p.fill("#servings", "8"); await p.press("#servings", "Enter");
   check("batch scales to 16 oz rum", (await p.text(".spec-table")).includes("16 | oz | Gold rum"), await p.text(".spec-table"));
   await p.setViewportSize({ width: 390, height: 844 });
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
