@@ -23,8 +23,10 @@ Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new dr
 
 Anyone signed in can also rate any drink 1 to 5 stars; averages show on each drink and in the list, and the Rating filter finds the best ones.
 
+### My locker and favorites
 
-Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new drink) to read a recipe from a photo with Claude. It needs an Anthropic API key and costs roughly a cent per photo; each person can scan 25 photos a day.
+Signed-in people get a **My locker** page (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
+
 
 1. Get an API key at [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys) and add a little credit under Billing.
 2. If you ran `setup.sql` before these features existed, run [`supabase/bartender-setup.sql`](supabase/bartender-setup.sql) in the SQL Editor (it adds saved bars, ratings and the daily allowance).
@@ -51,5 +53,6 @@ Supabase's built-in email service only sends a few sign-in emails per hour, whic
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
+- `supabase/favorites-setup.sql`: adds favorites to an existing project
 - `supabase/bartender-setup.sql`: adds saved bars, ratings and the AI allowance to an existing project
 - `supabase/functions/read-recipe/index.ts`: reads recipe photos and suggests drinks with Claude

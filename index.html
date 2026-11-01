@@ -277,6 +277,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .idea-head h3 { margin: 0; font-family: var(--f-display); font-size: 24px; line-height: 1.15; }
 .idea-line { margin: 0; max-width: 65ch; }
 .idea .spec-table .q { font-size: 17px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--raised); border: 1px solid var(--rule); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; text-decoration: none; color: var(--ink); min-width: 0; }
+.stat:hover { border-color: var(--ink); }
+.stat b { font-family: var(--f-display); font-size: 26px; line-height: 1.1; }
+.stat span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.plist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.prow { width: 100%; text-align: left; background: var(--raised); border: 1px solid var(--rule); border-radius: 9px; padding: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.prow:hover { border-color: var(--ink); }
+.prow .txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.prow .nm { font-family: var(--f-display); font-weight: 600; font-size: 17px; line-height: 1.25; }
+.prow .sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fav-mark { color: var(--danger); font-size: 16px; }
+.btn.fav-on { color: var(--danger); border-color: var(--danger); }
+.list .fav-dot { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -521,8 +535,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("make-btn").hidden = !S.canWrite;
     const me = myProfile();
     $("locker-btn").hidden = !S.session;
-    $("locker-btn").textContent = me && me.display_name ? me.display_name : "Name your locker";
-    $("locker-btn").title = "Rename your locker";
+    $("locker-btn").textContent = me && me.display_name ? "My locker" : "Name your locker";
+    $("locker-btn").title = "Open my locker";
+    $("locker-btn").setAttribute("aria-label", "My locker: " + $("locker-btn").textContent);
     if (S.session) $("signin").hidden = true;
     setStatus(S.session ? "ok" : "", S.session ? "Signed in" : "Browsing");
   }
@@ -558,11 +573,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
         if (S.view !== "detail") { S.view = "detail"; S.editing = null; S.ideasState = null; }
         S.bar = { liquors: [], syrups: [], bitters: [] }; loadBar();
         loadRatings().then(() => { renderFilters(); renderList(); renderMain(); });
-        if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine") S.f.owner = ""; }
+        if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine" || S.f.owner === "fav") S.f.owner = ""; }
+        loadFavorites().then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
         loadProfiles(); renderFilters(); renderList(); renderMain();
       }
     });
-    await Promise.all([loadProfiles(), loadDrinks(), loadRatings()]);
+    await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites()]);
     loadBar();
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
     if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
@@ -621,7 +637,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("name-cancel").hidden = !!first && !(me && me.display_name);
     $("locker-name").focus();
   }
-  $("locker-btn").onclick = () => openNameForm(false);
+  $("locker-btn").onclick = () => { const me = myProfile(); if (me && me.display_name) openProfile(); else openNameForm(true); };
   $("name-cancel").onclick = () => { $("name-form").hidden = true; };
   $("name-form").onsubmit = async ev => {
     ev.preventDefault();
@@ -631,7 +647,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const { error } = await sb.from("profiles").upsert({ id: uid(), display_name: name });
     if (error) { $("name-msg").textContent = "Couldn't save the name. Try again."; return; }
     S.profiles[uid()] = { id: uid(), display_name: name };
-    $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList(); renderMain();
+    $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
     toast("Locker named " + name);
   };
 
@@ -639,6 +655,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function current() { return S.drinks.find(d => d.id === S.selected) || null; }
   function afterData() {
     const want = hashId();
+    if (want === "my-locker" && !S._hashDone && uid() && S.loaded) { S._hashDone = true; S.view = "profile"; }
     if (want && !S._hashDone && S.drinks.some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
     if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
@@ -649,7 +666,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
   function passesFilters(d, skip) {
     const f = S.f;
-    if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : d.owner === f.owner)) return false;
+    if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : f.owner === "fav" ? isFav(d) : d.owner === f.owner)) return false;
     if (skip !== "type" && f.type && typeOf(d) !== f.type) return false;
     if (skip !== "base" && f.base && baseOf(d) !== f.base) return false;
     if (skip !== "method" && f.method && d.method !== f.method) return false;
@@ -675,6 +692,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
       $("flt-owner").innerHTML = `<option value="">Everyone's lockers</option>` +
         (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My locker (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+        (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${S.drinks.filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
         named.filter(id => id).map(id => `<option value="${esc(id)}" ${S.f.owner === id ? "selected" : ""}>${esc(lockerName(id))} (${counts[id] || 0})</option>`).join("");
     }
     $("flt-type").innerHTML = opts("type", TYPES, "Any type", typeOf);
@@ -713,7 +731,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const multi = S.backend === "supabase";
     ul.innerHTML = items.map(d => `<li><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
       ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
-      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
+      <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
   }
   $("list").addEventListener("click", e => {
     const b = e.target.closest("button[data-id]"); if (!b) return;
@@ -729,6 +747,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const m = $("main");
     if (S.view === "edit") return renderEditor();
     if (S.view === "make") return renderMake();
+    if (S.view === "profile") return renderProfile();
     if (S.view === "scan") {
       m.innerHTML = `<div class="scanning">${S.scan && S.scan.preview ? `<img src="${S.scan.preview}" alt="Your recipe photo">` : ""}
         <div class="glass dots">Reading the recipe</div>
@@ -776,7 +795,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       <div class="hero${d.photo ? "" : " no-photo"}">
       <div class="spec-top">
         <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
-        <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">Copy to my locker</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+        <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">Copy to my locker</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
       </div>
       ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
         <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -844,6 +863,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("fill-go").onclick = doFill;
     $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
     $("share-btn").onclick = () => openShare(d);
+    if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
     m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });
     if ($("rate-clear")) $("rate-clear").onclick = () => rateDrink(d, 0);
     if ($("from-btn")) $("from-btn").onclick = () => { S.f = { owner: d.owner || "", type: "", base: "", method: "", kind: "" }; $("filters").open = true; refreshView(); };
@@ -919,7 +939,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
   const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
   function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-  window.addEventListener("hashchange", () => { const id = hashId(); if (id && S.drinks.some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+  window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (id && S.drinks.some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
   $("home-link").addEventListener("click", ev => {
     if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
@@ -1243,6 +1263,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const it = (data && data.items) || {};
     S.bar = { liquors: [].concat(it.liquors || []), syrups: [].concat(it.syrups || []), bitters: [].concat(it.bitters || []) };
     if (S.view === "make") renderMake();
+    if (S.view === "profile") renderProfile();
   }
   let barTimer = null;
   function saveBarSoon() {
@@ -1273,7 +1294,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     renderChips(key);
     const g = GROUPS.find(x => x.key === key);
     $("dl-" + key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
-    $("make-go").disabled = !totalItems();
+    if ($("make-go")) $("make-go").disabled = !totalItems();
+    if (S.view === "profile") { const st = document.querySelectorAll(".stat b")[2]; if (st) st.textContent = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length; }
   }
   const totalItems = () => S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length + S.fresh.length;
   function renderChips(key) {
@@ -1288,15 +1310,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
     renderList(); renderMake();
     $("main").scrollIntoView({ behavior: "smooth", block: "start" });
   }
-  const sel = (id, label, opts, cur) => `<div class="field"><label for="${id}">${label}</label><select id="${id}"><option value="">Any</option>${opts.map(o => `<option ${o === cur ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
-  function renderMake() {
-    const m = $("main");
-    const group = g => `<div class="cgroup">
+  const chipGroupHtml = g => `<div class="cgroup">
         <label class="label" for="in-${g.key}">${esc(g.label)}</label>
         <div class="chips" id="chips-${g.key}"></div>
         <div class="chip-add"><input id="in-${g.key}" type="text" list="dl-${g.key}" placeholder="${esc(g.ph)}" autocomplete="off" enterkeyhint="done">
           <button class="btn small" type="button" data-add="${g.key}">Add</button></div>
         <datalist id="dl-${g.key}"></datalist></div>`;
+  function wireGroups(groups) {
+    groups.forEach(g => {
+      renderChips(g.key); $("dl-" + g.key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
+      const inp = $("in-" + g.key);
+      document.querySelector(`[data-add="${g.key}"]`).onclick = () => { addItem(g.key, inp.value); inp.value = ""; inp.focus(); };
+      inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addItem(g.key, inp.value); inp.value = ""; } });
+      inp.addEventListener("change", () => { if (suggestionsFor(g).some(n => n === inp.value)) { addItem(g.key, inp.value); inp.value = ""; } });
+      $("chips-" + g.key).addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (b) removeItem(g.key, Number(b.dataset.rm)); });
+    });
+  }
+  const sel = (id, label, opts, cur) => `<div class="field"><label for="${id}">${label}</label><select id="${id}"><option value="">Any</option>${opts.map(o => `<option ${o === cur ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
+  function renderMake() {
+    const m = $("main");
+    const group = chipGroupHtml;
     m.innerHTML = `
       <div class="make">
         <div class="editor-top"><h2 class="make-title">Make me a drink</h2><button class="btn small" type="button" id="make-close">Back to drinks</button></div>
@@ -1322,14 +1355,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         <div class="form-actions"><button class="btn primary" type="button" id="make-go" ${totalItems() ? "" : "disabled"}>Suggest 3 drinks</button></div>
         <div id="ideas" aria-live="polite">${ideasHtml()}</div>
       </div>`;
-    GROUPS.forEach(g => { renderChips(g.key); $("dl-" + g.key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join(""); });
-    m.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const inp = $("in-" + b.dataset.add); addItem(b.dataset.add, inp.value); inp.value = ""; inp.focus(); });
-    GROUPS.forEach(g => {
-      const inp = $("in-" + g.key);
-      inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addItem(g.key, inp.value); inp.value = ""; } });
-      inp.addEventListener("change", () => { if (suggestionsFor(g).some(n => n === inp.value)) { addItem(g.key, inp.value); inp.value = ""; } });
-      $("chips-" + g.key).addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (b) removeItem(g.key, Number(b.dataset.rm)); });
-    });
+    wireGroups(GROUPS);
     ["style", "strength", "taste", "method"].forEach(k => $("p-" + k).onchange = e => { S.prefs[k] = e.target.value; });
     $("p-notes").oninput = e => { S.prefs.notes = e.target.value; };
     $("make-close").onclick = () => { S.view = "detail"; renderList(); renderMain(); };
@@ -1400,6 +1426,98 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = !totalItems();
   }
   $("make-btn").onclick = openMake;
+
+  // ---------- favorites ----------
+  S.favs = new Set();
+  async function loadFavorites() {
+    S.favs = new Set();
+    if (!sb || !uid()) return;
+    const { data, error } = await sb.from("favorites").select("drink_id").eq("user_id", uid());
+    if (error) { S.favsOff = true; return; }
+    S.favsOff = false;
+    data.forEach(r => S.favs.add(r.drink_id));
+  }
+  const isFav = d => S.favs.has(d.id);
+  async function toggleFav(d) {
+    if (!uid()) { toast("Sign in to save favorites."); return; }
+    if (S.favsOff) { toast("Favorites aren't switched on yet. The site owner needs to run favorites-setup.sql."); return; }
+    const on = !isFav(d);
+    const { error } = on ? await sb.from("favorites").upsert({ user_id: uid(), drink_id: d.id })
+                         : await sb.from("favorites").delete().eq("user_id", uid()).eq("drink_id", d.id);
+    if (error) { toast("Couldn't update your favorites. Try again."); return; }
+    on ? S.favs.add(d.id) : S.favs.delete(d.id);
+    toast(on ? `Added ${d.name} to your favorites` : `Removed ${d.name} from your favorites`);
+    renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
+  }
+
+  // ---------- my locker page ----------
+  function openProfile() {
+    if (!uid()) { toast("Sign in to see your locker."); return; }
+    S.view = "profile"; S.confirmDelete = false; setHash("my-locker");
+    $("name-form").hidden = true;
+    renderList(); renderProfile();
+    $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function drinkRow(d, showFrom) {
+    const r = ratingOf(d);
+    const sub = [typeOf(d), showFrom && !isMine(d) ? lockerName(d.owner) : "", r.count ? `★ ${avgOf(d).toFixed(1)}` : ""].filter(Boolean).join(" · ");
+    return `<li><button type="button" class="prow" data-open="${esc(d.id)}">
+      ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
+      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc(sub)}</span></span>
+      ${isFav(d) ? `<span class="fav-mark" aria-label="Favorite">♥</span>` : ""}</button></li>`;
+  }
+  function renderProfile() {
+    const m = $("main");
+    const me = myProfile();
+    const mine = sorted().filter(d => isMine(d));
+    const favs = sorted().filter(d => isFav(d));
+    const barCount = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length;
+    const email = S.session && S.session.user && S.session.user.email;
+    m.innerHTML = `
+      <div class="make">
+        <div class="editor-top">
+          <div><span class="label">My locker</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed locker")}</h2>
+            ${email ? `<div class="hint">Signed in as ${esc(email)}</div>` : ""}</div>
+          <button class="btn small" type="button" id="prof-rename">Rename</button>
+        </div>
+        <div class="stats">
+          <a href="#prof-drinks" class="stat"><b>${mine.length}</b><span>My drinks</span></a>
+          <a href="#prof-favs" class="stat"><b>${favs.length}</b><span>Favorites</span></a>
+          <a href="#prof-bar" class="stat"><b>${barCount}</b><span>Bottles &amp; supplies</span></a>
+        </div>
+
+        <section class="make-sec" id="prof-drinks">
+          <div class="sec-head"><h3>My drinks</h3>
+            <div class="panel-actions"><button class="btn small" type="button" id="prof-scan">Scan a recipe</button><button class="btn primary small" type="button" id="prof-new">+ New drink</button></div></div>
+          ${mine.length ? `<ul class="plist">${mine.map(d => drinkRow(d, false)).join("")}</ul>`
+            : `<p class="hint" style="margin:0">Your locker has no drinks yet. Add one, scan a recipe, or copy someone else's drink.</p>`}
+        </section>
+
+        <section class="make-sec" id="prof-favs">
+          <div class="sec-head"><h3>Favorites</h3><span class="hint">Only you can see these.</span></div>
+          ${S.favsOff ? `<p class="hint" style="margin:0">Favorites aren't switched on yet. The site owner needs to run favorites-setup.sql in Supabase.</p>`
+            : favs.length ? `<ul class="plist">${favs.map(d => drinkRow(d, true)).join("")}</ul>`
+            : `<p class="hint" style="margin:0">No favorites yet. Tap ♡ Favorite on any drink, yours or someone else's, to keep it here.</p>`}
+        </section>
+
+        <section class="make-sec" id="prof-bar">
+          <div class="sec-head"><h3>My bar</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></div>
+          ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
+          <div><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bar</button></div>
+        </section>
+      </div>`;
+    wireGroups(GROUPS.filter(g => g.saved));
+    m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
+      S.selected = b.dataset.open; S.view = "detail"; setHash(S.selected);
+      const d = current(); if (d && !passesFilters(d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; renderFilters(); }
+      renderList(); renderMain(); $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    m.querySelectorAll(".stat").forEach(a => a.onclick = e => { e.preventDefault(); const t = $(a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    $("prof-rename").onclick = () => openNameForm(false);
+    $("prof-new").onclick = () => openEditor(null);
+    $("prof-scan").onclick = () => $("scan-file").click();
+    $("prof-make").onclick = openMake;
+  }
 
   // ---------- editor ----------
   const draftDrink = () => { const e = S.editing || {}; return { method: e.method, glass: e.glass,
