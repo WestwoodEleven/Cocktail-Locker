@@ -1,9 +1,11 @@
 import { open, check } from "./harness.mjs";
 import { readFileSync } from "node:fs";
+import { stampedHtml } from "../tools/stamp.mjs";
 export default async function () {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  const scripts = [...html.matchAll(/<script src="(js\/[^"]+)"/g)].map(m => m[1]);
+  check("code version stamps are current (run: node tools/stamp.mjs)", stampedHtml() === html);
+  const scripts = [...html.matchAll(/<script src="(js\/[^"?]+)/g)].map(m => m[1]);
   const listed = [...sw.matchAll(/"\.\/(js\/[^"]+)"/g)].map(m => m[1]);
   check("offline copy lists every script", scripts.every(s => listed.includes(s)) && listed.every(s => scripts.includes(s)), JSON.stringify({ scripts, listed }));
   const man = JSON.parse(readFileSync(new URL("../manifest.webmanifest", import.meta.url), "utf8"));

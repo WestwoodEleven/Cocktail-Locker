@@ -36,7 +36,7 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   page.on("pageerror", e => errors.push(String(e)));
   await page.route("**/*", r => {
     const u = r.request().url();
-    if (u.endsWith("config.js")) return r.fulfill({ body: "window.MC_CONFIG={supabaseUrl:'https://x.supabase.co',supabaseAnonKey:'k'};", contentType: "text/javascript" });
+    if (/config\.js(\?|$)/.test(u)) return r.fulfill({ body: "window.MC_CONFIG={supabaseUrl:'https://x.supabase.co',supabaseAnonKey:'k'};", contentType: "text/javascript" });
     if (/^https?:/.test(u)) return r.abort();
     return r.continue();
   });

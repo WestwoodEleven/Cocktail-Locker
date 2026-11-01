@@ -66,6 +66,10 @@ Recipes from before lockers existed don't belong to anyone. Sign in on the site 
 
 Supabase's built-in email service only sends a few sign-in emails per hour, which is fine for a handful of people. For more traffic, connect your own email provider under **Authentication > Emails > SMTP Settings**.
 
+## Making changes
+
+After editing anything in `js/` or `styles.css`, run `node tools/stamp.mjs`. It adds a version to each file link in `index.html` so phones and browsers load the new code right away instead of a cached copy. The tests fail if you forget.
+
 ## Tests
 
 `npm install`, then `npm test`. It runs the site in headless Chromium against an in-memory stand-in for Supabase (`tests/mock-supabase.js`), plus the `read-recipe` function against a fake Claude. GitHub runs the same tests on every push (`.github/workflows/tests.yml`).

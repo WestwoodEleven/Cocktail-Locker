@@ -1,7 +1,7 @@
 // The Cocktail Locker service worker: lets the site install as an app and open without a connection.
 // Pages and code load fresh from the network when online and fall back to the saved copy offline.
 // Recipes, sign-in and photos always come from Supabase and are never cached here.
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./config.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png",
@@ -37,7 +37,7 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if (url.origin === location.origin) {
     // Network first, so updates show up right away; saved copy when offline.
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match("./index.html"))));
