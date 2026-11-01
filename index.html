@@ -250,6 +250,33 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
 @media (prefers-reduced-motion: reduce) { .dots::after { animation: none; content: "…"; } }
 .editor-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rate { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 14px; }
+.rate-stars { display: inline-flex; gap: 2px; }
+.star { border: 0; background: none; cursor: pointer; font-size: 30px; line-height: 1; padding: 2px 3px; color: var(--rule); border-radius: 6px; }
+.star.on { color: var(--accent); }
+.rate-stars:hover .star { color: var(--accent); }
+.rate-stars .star:hover ~ .star { color: var(--rule); }
+.linkish { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 13px; padding: 4px; }
+.avg { font-size: 14px; color: var(--muted); font-weight: 600; display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; }
+.avg .stars, .sub .stars { color: var(--accent); letter-spacing: 1px; }
+.make { display: flex; flex-direction: column; gap: 18px; }
+.make-title { font-family: var(--f-display); font-weight: 700; font-size: 30px; margin: 0; }
+.make-sec { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sec-head h3 { margin: 0; font-family: var(--f-display); font-size: 20px; }
+.cgroup { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-item { display: inline-flex; align-items: center; gap: 2px; background: var(--green-soft); color: var(--green); border-radius: 999px; padding: 4px 4px 4px 12px; font-size: 14px; font-weight: 600; }
+.chip-item button { border: 0; background: none; color: inherit; cursor: pointer; font-size: 17px; line-height: 1; padding: 2px 7px; border-radius: 999px; }
+.chip-item button:hover { background: var(--raised); }
+.chip-add { display: flex; gap: 6px; }
+.chip-add input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); }
+.ideas { display: grid; gap: 14px; }
+.idea { background: var(--raised); border: 1px solid var(--rule); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.idea-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.idea-head h3 { margin: 0; font-family: var(--f-display); font-size: 24px; line-height: 1.15; }
+.idea-line { margin: 0; max-width: 65ch; }
+.idea .spec-table .q { font-size: 17px; }
 </style>
 </head>
 <body>
@@ -293,6 +320,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
           <label>Base spirit<select id="flt-base"></select></label>
           <label>Method<select id="flt-method"></select></label>
           <label>Has ingredient<select id="flt-kind"></select></label>
+          <label id="flt-rating-wrap">Rating<select id="flt-rating"></select></label>
         </div>
         <button class="fclear" id="fclear" type="button" hidden>Clear filters</button>
       </details>
@@ -301,6 +329,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       <div class="index-head">
         <h2 class="panel-title" id="drinks-title">Drinks <span class="count" id="count-label"></span></h2>
         <div class="panel-actions">
+          <button class="btn small" id="make-btn" type="button" hidden>Make me a drink</button>
           <button class="btn small" id="scan-btn" type="button" hidden>Scan a recipe</button>
           <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
         </div>
@@ -449,7 +478,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
     view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,
     canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false,
-    profiles: {}, f: { owner: "", type: "", base: "", method: "", kind: "" }
+    profiles: {}, ratings: {}, f: { owner: "", type: "", base: "", method: "", kind: "", rating: "" }
   };
   try { const m = localStorage.getItem("mc-mode"); if (m) S.mode = m; } catch (e) {}
 
@@ -483,12 +512,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const myProfile = () => uid() ? S.profiles[uid()] : null;
 
   function refreshAuthUI() {
-    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; S.canWrite = true; return; }
+    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; $("make-btn").hidden = true; S.canWrite = true; return; }
     S.canWrite = !!S.session;
     $("auth-btn").hidden = false;
     $("auth-btn").textContent = S.session ? "Sign out" : "Sign in or join";
     $("new-btn").hidden = !S.canWrite;
     $("scan-btn").hidden = !S.canWrite;
+    $("make-btn").hidden = !S.canWrite;
     const me = myProfile();
     $("locker-btn").hidden = !S.session;
     $("locker-btn").textContent = me && me.display_name ? me.display_name : "Name your locker";
@@ -525,17 +555,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
       const changed = uid() !== (session && session.user ? session.user.id : null);
       S.session = session; refreshAuthUI();
       if (changed) {
-        if (S.view === "edit") { S.view = "detail"; S.editing = null; }
+        if (S.view !== "detail") { S.view = "detail"; S.editing = null; S.ideasState = null; }
+        S.bar = { liquors: [], syrups: [], bitters: [] }; loadBar();
+        loadRatings().then(() => { renderFilters(); renderList(); renderMain(); });
         if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine") S.f.owner = ""; }
         loadProfiles(); renderFilters(); renderList(); renderMain();
       }
     });
-    await Promise.all([loadProfiles(), loadDrinks()]);
+    await Promise.all([loadProfiles(), loadDrinks(), loadRatings()]);
+    loadBar();
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
     if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
     try {
       sb.channel("drinks-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks())
+        .on("postgres_changes", { event: "*", schema: "public", table: "ratings" }, () => loadRatings().then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); }))
         .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => loadProfiles().then(() => { renderFilters(); renderList(); renderMain(); }))
         .subscribe();
     } catch (e) {}
@@ -605,7 +639,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function current() { return S.drinks.find(d => d.id === S.selected) || null; }
   function afterData() {
     const want = hashId();
-    if (want && !S._hashDone && S.drinks.some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "" }; }
+    if (want && !S._hashDone && S.drinks.some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
     if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
   }
@@ -620,6 +654,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (skip !== "base" && f.base && baseOf(d) !== f.base) return false;
     if (skip !== "method" && f.method && d.method !== f.method) return false;
     if (skip !== "kind" && f.kind && !(d.ingredients || []).some(i => kindOf(i) === f.kind)) return false;
+    if (skip !== "rating" && f.rating && !(f.rating === "none" ? !ratingOf(d).count : avgOf(d) >= Number(f.rating))) return false;
     if (S.query.trim()) { const h = haystack(d); if (!S.query.toLowerCase().split(/\s+/).filter(Boolean).every(w => h.includes(w))) return false; }
     return true;
   }
@@ -646,12 +681,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("flt-base").innerHTML = opts("base", BASES, "Any base", baseOf);
     $("flt-method").innerHTML = opts("method", METHODS, "Any method", d => d.method || "");
     $("flt-kind").innerHTML = opts("kind", KINDS, "Anything", d => [...new Set((d.ingredients || []).map(kindOf))]);
+    $("flt-rating-wrap").hidden = !multi || !!S.ratingsOff;
+    const rpool = S.drinks.filter(d => passesFilters(d, "rating"));
+    const rc = v => rpool.filter(d => v === "none" ? !ratingOf(d).count : avgOf(d) >= Number(v)).length;
+    $("flt-rating").innerHTML = `<option value="">Any rating</option>` + [["4", "4 stars and up"], ["3", "3 stars and up"], ["none", "Not rated yet"]]
+      .map(([v, l]) => `<option value="${v}" ${S.f.rating === v ? "selected" : ""}>${l} (${rc(v)})</option>`).join("");
     const n = Object.values(S.f).filter(Boolean).length;
     $("fcount").hidden = !n; $("fcount").textContent = n;
     $("fclear").hidden = !n;
   }
-  ["owner", "type", "base", "method", "kind"].forEach(k => $("flt-" + k).addEventListener("change", e => { S.f[k] = e.target.value; refreshView(); }));
-  $("fclear").onclick = () => { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; refreshView(); };
+  ["owner", "type", "base", "method", "kind", "rating"].forEach(k => $("flt-" + k).addEventListener("change", e => { S.f[k] = e.target.value; refreshView(); }));
+  $("fclear").onclick = () => { S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; refreshView(); };
   function refreshView() {
     renderFilters(); renderList();
     const vis = filtered();
@@ -673,7 +713,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const multi = S.backend === "supabase";
     ul.innerHTML = items.map(d => `<li><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
       ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
-      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
+      <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
   }
   $("list").addEventListener("click", e => {
     const b = e.target.closest("button[data-id]"); if (!b) return;
@@ -688,6 +728,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function renderMain() {
     const m = $("main");
     if (S.view === "edit") return renderEditor();
+    if (S.view === "make") return renderMake();
     if (S.view === "scan") {
       m.innerHTML = `<div class="scanning">${S.scan && S.scan.preview ? `<img src="${S.scan.preview}" alt="Your recipe photo">` : ""}
         <div class="glass dots">Reading the recipe</div>
@@ -723,7 +764,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     }
     const meta = [`<span class="chip amber">${esc(typeOf(d))}</span>`, `<span class="chip amber">${esc(baseOf(d))}</span>`,
       d.glass && `<span class="chip">${esc(d.glass)}</span>`, d.method && `<span class="chip">${esc(d.method)}</span>`,
-      d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`].filter(Boolean).join("");
+      d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`, d.origin && `<span class="chip amber">${esc(d.origin)}</span>`].filter(Boolean).join("");
     const servingsLabel = S.servings === 1 ? "1 drink" : `${fmtCount(S.servings)} drinks`;
     const fillVal = S._fillL ?? "";
     const mine = isMine(d);
@@ -734,7 +775,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     m.innerHTML = `
       <div class="hero${d.photo ? "" : " no-photo"}">
       <div class="spec-top">
-        <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div></div>
+        <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
         <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">Copy to my locker</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
       </div>
       ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
@@ -785,6 +826,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
       </div>` : ""}
       ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
+      ${rateBlock(d)}
     `;
 
     const setServ = n => { n = Math.max(0.5, Math.min(999, Math.round(n * 10) / 10)); S.servings = n; S._fillL = null; renderMain(); };
@@ -802,6 +844,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("fill-go").onclick = doFill;
     $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
     $("share-btn").onclick = () => openShare(d);
+    m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });
+    if ($("rate-clear")) $("rate-clear").onclick = () => rateDrink(d, 0);
     if ($("from-btn")) $("from-btn").onclick = () => { S.f = { owner: d.owner || "", type: "", base: "", method: "", kind: "" }; $("filters").open = true; refreshView(); };
     if ($("copy-btn")) $("copy-btn").onclick = () => {
       const c = JSON.parse(JSON.stringify(d)); delete c.photo; delete c.owner; c.id = null;
@@ -881,7 +925,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
     ev.preventDefault();
     S.view = "detail"; S.editing = null; S.confirmDelete = false; S.confirmPhoto = false;
-    S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = "";
+    S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = "";
     S.servings = 1; S._fillL = null; S.prebatch = false;
     $("signin").hidden = true; closeShare(); $("filters").open = true;
     const first = sorted()[0]; S.selected = first ? first.id : null;
@@ -1056,7 +1100,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   // ---------- scan a recipe photo ----------
   const SCAN_ERR = {
     signed_out: "Your sign-in expired. Sign in again to scan recipes.",
-    daily_limit: "You've hit today's limit for scanning recipes. Try again tomorrow.",
+    daily_limit: "You've used today's AI allowance for scans and drink ideas. Try again tomorrow.",
     no_recipe: "Couldn't find a cocktail recipe in that photo. Try a closer, sharper shot.",
     too_large: "That photo is too big. Try a smaller one.",
     bad_image: "That photo format isn't supported. Use a JPEG or PNG.",
@@ -1137,6 +1181,226 @@ button, input, select, textarea { font: inherit; color: inherit; }
   $("scan-btn").onclick = () => $("scan-file").click();
   $("scan-file").onchange = ev => { const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (f) scanRecipe(f); };
 
+  // ---------- ratings ----------
+  async function loadRatings() {
+    if (!sb) return;
+    const { data, error } = await sb.from("ratings").select("drink_id, user_id, stars");
+    if (error) { S.ratingsOff = true; return; }
+    S.ratingsOff = false;
+    const m = {};
+    data.forEach(r => { const x = m[r.drink_id] || (m[r.drink_id] = { sum: 0, count: 0, mine: 0 }); x.sum += r.stars; x.count++; if (r.user_id === uid()) x.mine = r.stars; });
+    S.ratings = m;
+  }
+  const ratingOf = d => S.ratings[d.id] || { sum: 0, count: 0, mine: 0 };
+  const avgOf = d => { const r = ratingOf(d); return r.count ? r.sum / r.count : 0; };
+  const starText = n => "★★★★★".slice(0, Math.round(n)) + "☆☆☆☆☆".slice(0, 5 - Math.round(n));
+  async function rateDrink(d, stars) {
+    if (!uid()) { toast("Sign in to rate drinks."); return; }
+    const prev = ratingOf(d).mine;
+    const q = stars ? sb.from("ratings").upsert({ drink_id: d.id, user_id: uid(), stars, updated_at: new Date().toISOString() })
+                    : sb.from("ratings").delete().eq("drink_id", d.id).eq("user_id", uid());
+    const { error } = await q;
+    if (error) { toast("Couldn't save your rating. Try again."); return; }
+    const r = S.ratings[d.id] || (S.ratings[d.id] = { sum: 0, count: 0, mine: 0 });
+    if (prev) { r.sum -= prev; r.count--; }
+    if (stars) { r.sum += stars; r.count++; }
+    r.mine = stars;
+    toast(stars ? `Rated ${d.name} ${stars} star${stars === 1 ? "" : "s"}` : "Rating removed");
+    renderFilters(); renderList(); renderMain();
+  }
+  function ratingSummary(d) {
+    const r = ratingOf(d);
+    return r.count ? `<span class="avg" aria-label="Average ${(r.sum / r.count).toFixed(1)} out of 5"><span class="stars">${starText(r.sum / r.count)}</span> ${(r.sum / r.count).toFixed(1)} · ${r.count} rating${r.count === 1 ? "" : "s"}</span>` : "";
+  }
+  function rateBlock(d) {
+    if (S.backend !== "supabase" || S.ratingsOff) return "";
+    const mine = ratingOf(d).mine;
+    if (!uid()) return `<div class="rate"><span class="label">Made it?</span><span class="hint">Sign in to rate this drink.</span></div>`;
+    return `<div class="rate"><span class="label">${mine ? "Your rating" : "Made it? Rate it"}</span>
+      <div class="rate-stars" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n => `<button type="button" class="star${n <= mine ? " on" : ""}" data-star="${n}" role="radio" aria-checked="${n === mine}" aria-label="${n} star${n === 1 ? "" : "s"}">★</button>`).join("")}</div>
+      ${mine ? `<button type="button" class="linkish" id="rate-clear">Remove</button>` : ""}</div>`;
+  }
+
+  // ---------- make me a drink ----------
+  const GROUPS = [
+    { key: "liquors", label: "Liquors & liqueurs", saved: true, kinds: ["Spirit", "Liqueur", "Vermouth & wine"], ph: "Add a bottle, like bourbon or Campari",
+      extra: ["Bourbon", "Rye whiskey", "London dry gin", "Vodka", "White rum", "Dark rum", "Blanco tequila", "Mezcal", "Cognac", "Campari", "Aperol", "Sweet vermouth", "Dry vermouth", "Cointreau", "Green Chartreuse", "Maraschino liqueur", "Amaro Nonino", "Coffee liqueur"] },
+    { key: "syrups", label: "Syrups & sweeteners", saved: true, kinds: ["Syrup & sweetener"], ph: "Add a syrup, like honey syrup",
+      extra: ["Simple syrup", "Rich demerara syrup", "Honey syrup", "Agave syrup", "Maple syrup", "Grenadine", "Orgeat", "Cinnamon syrup", "Ginger syrup"] },
+    { key: "bitters", label: "Bitters", saved: true, kinds: ["Bitters"], ph: "Add bitters, like Angostura",
+      extra: ["Angostura bitters", "Orange bitters", "Peychaud's bitters", "Chocolate bitters", "Mole bitters"] },
+    { key: "fresh", label: "Juices, mixers & garnishes", saved: false, kinds: ["Juice", "Soda & mixer", "Egg & dairy", "Other"], ph: "Add what's in the fridge, like limes or soda",
+      extra: ["Limes", "Lemons", "Oranges", "Grapefruit juice", "Pineapple juice", "Cranberry juice", "Soda water", "Tonic water", "Ginger beer", "Cola", "Prosecco", "Egg whites", "Heavy cream", "Mint", "Cucumber", "Espresso"] }
+  ];
+  S.bar = { liquors: [], syrups: [], bitters: [] };
+  S.fresh = (() => { try { return JSON.parse(localStorage.getItem("mc-fresh") || "[]"); } catch (e) { return []; } })();
+  S.prefs = { style: "", strength: "", taste: "", method: "", notes: "" };
+  const groupList = k => k === "fresh" ? S.fresh : S.bar[k];
+  async function loadBar() {
+    if (!sb || !uid()) return;
+    const { data, error } = await sb.from("bars").select("items").eq("user_id", uid()).maybeSingle();
+    if (error) { S.barOff = true; return; }
+    const it = (data && data.items) || {};
+    S.bar = { liquors: [].concat(it.liquors || []), syrups: [].concat(it.syrups || []), bitters: [].concat(it.bitters || []) };
+    if (S.view === "make") renderMake();
+  }
+  let barTimer = null;
+  function saveBarSoon() {
+    clearTimeout(barTimer);
+    barTimer = setTimeout(async () => {
+      if (!sb || !uid()) return;
+      const { error } = await sb.from("bars").upsert({ user_id: uid(), items: S.bar, updated_at: new Date().toISOString() });
+      const el = $("bar-saved"); if (el) el.textContent = error ? "Couldn't save your bar just now." : "Saved to your locker.";
+    }, 700);
+  }
+  function saveFresh() { try { localStorage.setItem("mc-fresh", JSON.stringify(S.fresh)); } catch (e) {} }
+  function suggestionsFor(g) {
+    const have = new Set(groupList(g.key).map(x => x.toLowerCase()));
+    const seen = new Set(), out = [];
+    S.drinks.forEach(d => (d.ingredients || []).forEach(i => { if (g.kinds.includes(kindOf(i))) out.push(i.name); }));
+    return out.concat(g.extra).filter(n => { const k = n.toLowerCase(); if (seen.has(k) || have.has(k)) return false; seen.add(k); return true; }).slice(0, 80);
+  }
+  function addItem(key, text) {
+    const list = groupList(key);
+    String(text || "").split(/[,\n]/).map(x => x.trim().slice(0, 60)).filter(Boolean).forEach(v => {
+      if (!list.some(x => x.toLowerCase() === v.toLowerCase()) && list.length < 60) list.push(v);
+    });
+    afterItems(key);
+  }
+  function removeItem(key, idx) { groupList(key).splice(idx, 1); afterItems(key); }
+  function afterItems(key) {
+    if (key === "fresh") saveFresh(); else saveBarSoon();
+    renderChips(key);
+    const g = GROUPS.find(x => x.key === key);
+    $("dl-" + key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
+    $("make-go").disabled = !totalItems();
+  }
+  const totalItems = () => S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length + S.fresh.length;
+  function renderChips(key) {
+    const el = $("chips-" + key); if (!el) return;
+    const list = groupList(key);
+    el.innerHTML = list.length ? list.map((v, i) => `<span class="chip-item">${esc(v)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">×</button></span>`).join("")
+      : `<span class="hint">Nothing yet.</span>`;
+  }
+  function openMake() {
+    if (!S.canWrite || S.backend !== "supabase") { toast("Sign in to use the AI bartender."); return; }
+    S.view = "make"; S.confirmDelete = false; setHash(null);
+    renderList(); renderMake();
+    $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  const sel = (id, label, opts, cur) => `<div class="field"><label for="${id}">${label}</label><select id="${id}"><option value="">Any</option>${opts.map(o => `<option ${o === cur ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
+  function renderMake() {
+    const m = $("main");
+    const group = g => `<div class="cgroup">
+        <label class="label" for="in-${g.key}">${esc(g.label)}</label>
+        <div class="chips" id="chips-${g.key}"></div>
+        <div class="chip-add"><input id="in-${g.key}" type="text" list="dl-${g.key}" placeholder="${esc(g.ph)}" autocomplete="off" enterkeyhint="done">
+          <button class="btn small" type="button" data-add="${g.key}">Add</button></div>
+        <datalist id="dl-${g.key}"></datalist></div>`;
+    m.innerHTML = `
+      <div class="make">
+        <div class="editor-top"><h2 class="make-title">Make me a drink</h2><button class="btn small" type="button" id="make-close">Back to drinks</button></div>
+        <p class="hint" style="margin:0">List what you have and Claude suggests 3 cocktails you can make right now. It may add ice, water and sugar, nothing else.</p>
+        <section class="make-sec">
+          <div class="sec-head"><h3>Your bar</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your locker for next time."}</span></div>
+          ${GROUPS.filter(g => g.saved).map(group).join("")}
+        </section>
+        <section class="make-sec">
+          <div class="sec-head"><h3>Fresh today</h3><span class="hint">Remembered on this device only.</span></div>
+          ${GROUPS.filter(g => !g.saved).map(group).join("")}
+        </section>
+        <section class="make-sec">
+          <div class="sec-head"><h3>What you're in the mood for</h3><span class="hint">All optional.</span></div>
+          <div class="row2">
+            ${sel("p-style", "Style", TYPES.filter(t => t !== "Other"), S.prefs.style)}
+            ${sel("p-strength", "Strength", ["Light", "Medium", "Strong"], S.prefs.strength)}
+            ${sel("p-taste", "Taste", ["Sweet", "Balanced", "Tart", "Bitter", "Dry", "Fruity", "Herbal", "Smoky"], S.prefs.taste)}
+            ${sel("p-method", "Method", METHODS, S.prefs.method)}
+          </div>
+          <div class="field"><label for="p-notes">Anything else</label><input id="p-notes" type="text" maxlength="300" value="${esc(S.prefs.notes)}" placeholder="Anything else"></div>
+        </section>
+        <div class="form-actions"><button class="btn primary" type="button" id="make-go" ${totalItems() ? "" : "disabled"}>Suggest 3 drinks</button></div>
+        <div id="ideas" aria-live="polite">${ideasHtml()}</div>
+      </div>`;
+    GROUPS.forEach(g => { renderChips(g.key); $("dl-" + g.key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join(""); });
+    m.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const inp = $("in-" + b.dataset.add); addItem(b.dataset.add, inp.value); inp.value = ""; inp.focus(); });
+    GROUPS.forEach(g => {
+      const inp = $("in-" + g.key);
+      inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addItem(g.key, inp.value); inp.value = ""; } });
+      inp.addEventListener("change", () => { if (suggestionsFor(g).some(n => n === inp.value)) { addItem(g.key, inp.value); inp.value = ""; } });
+      $("chips-" + g.key).addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (b) removeItem(g.key, Number(b.dataset.rm)); });
+    });
+    ["style", "strength", "taste", "method"].forEach(k => $("p-" + k).onchange = e => { S.prefs[k] = e.target.value; });
+    $("p-notes").oninput = e => { S.prefs.notes = e.target.value; };
+    $("make-close").onclick = () => { S.view = "detail"; renderList(); renderMain(); };
+    $("make-go").onclick = generateIdeas;
+    wireIdeas();
+  }
+  function ideasHtml() {
+    const st = S.ideasState;
+    if (!st) return "";
+    if (st.loading) return `<div class="scanning"><div class="glass dots">Mixing up ideas</div><div class="hint">This usually takes 10 to 20 seconds.</div><button class="btn" type="button" id="ideas-cancel">Cancel</button></div>`;
+    if (st.error) return `<div class="scan-banner"><span><b>Couldn't get drink ideas.</b> ${esc(st.error)}</span></div>`;
+    return `${st.note ? `<div class="scan-banner"><span>${esc(st.note)}</span></div>` : ""}
+      <div class="ideas">${st.drinks.map((x, k) => `<article class="idea">
+        <div class="idea-head"><h3>${esc(x.name || "Untitled")}</h3><span class="chip amber">${x.classic ? "Classic: " + esc(x.classic) : "Original"}</span></div>
+        <div class="meta">${[x.type, x.base, x.method, x.glass].filter(Boolean).map(v => `<span class="chip">${esc(v)}</span>`).join("")}</div>
+        <table class="spec-table"><tbody>${(x.ingredients || []).map(i => { const s = show({ amount: Number(i.amount) || 0, unit: i.unit }, 1, "spec");
+          return `<tr${i.float ? ' class="float"' : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${i.float ? ' <span class="chip amber float-tag">Float</span>' : ""}${i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : ""}</td></tr>`; }).join("")}</tbody></table>
+        ${x.garnish ? `<p class="idea-line"><b>Garnish:</b> ${esc(x.garnish)}</p>` : ""}
+        ${x.notes ? `<p class="idea-line">${esc(x.notes)}</p>` : ""}
+        ${x.why ? `<p class="idea-line hint">${esc(x.why)}</p>` : ""}
+        ${x.extras ? `<p class="idea-line hint"><b>Even better with:</b> ${esc(x.extras)}</p>` : ""}
+        <div><button class="btn primary small" type="button" data-save-idea="${k}">Save to my locker</button></div>
+      </article>`).join("")}</div>
+      <div class="form-actions"><button class="btn" type="button" id="ideas-again">Suggest 3 more</button></div>`;
+  }
+  function wireIdeas() {
+    if ($("ideas-cancel")) $("ideas-cancel").onclick = () => { S.ideasState = null; $("ideas").innerHTML = ""; $("make-go").disabled = !totalItems(); };
+    if ($("ideas-again")) $("ideas-again").onclick = generateIdeas;
+    document.querySelectorAll("[data-save-idea]").forEach(b => b.onclick = () => {
+      const x = S.ideasState.drinks[Number(b.dataset.saveIdea)];
+      const d = recipeToDrink(Object.assign({}, x, { notes: [x.notes, x.why].filter(Boolean).join("\n\n") }));
+      d.origin = "AI bartender";
+      openEditor(d, false, { title: "Made by the AI bartender.", body: "Tweak anything before saving.", warning: x.extras ? "Even better with: " + x.extras : "" });
+    });
+  }
+  async function invokeHelper(body) {
+    let code = "", detail = "", data = null;
+    try {
+      const res = await sb.functions.invoke("read-recipe", { body });
+      if (res.error) {
+        const resp = res.error.context;
+        if (resp && typeof resp.json === "function") {
+          if (resp.status === 404) code = "not_deployed";
+          else { try { const j = await resp.json(); code = j.error || ""; detail = j.detail || ""; } catch (e2) {} }
+          if (!code && resp.status === 401) code = "signed_out";
+          if (!code && resp.status >= 500) code = "crashed";
+          if (!code) detail = detail || ("HTTP " + resp.status);
+        } else code = res.error.name === "FunctionsFetchError" ? "unreachable" : "";
+      } else data = res.data;
+    } catch (e) { detail = String(e && e.message || e); }
+    return { data, code, detail };
+  }
+  async function generateIdeas() {
+    if (!totalItems()) { toast("Add at least one ingredient."); return; }
+    const token = {};
+    S.ideasState = { loading: true, token };
+    $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = true;
+    $("ideas").scrollIntoView({ behavior: "smooth", block: "start" });
+    const { data, code, detail } = await invokeHelper({ mode: "generate", bar: S.bar, fresh: S.fresh, prefs: S.prefs });
+    if (!S.ideasState || S.ideasState.token !== token) return;
+    if (data && Array.isArray(data.drinks) && data.drinks.length) S.ideasState = { drinks: data.drinks, note: data.note || "" };
+    else {
+      let msg = detail; try { const j = JSON.parse(detail); msg = (j.error && j.error.message) || detail; } catch (e) {}
+      const known = { no_ingredients: "Add at least one ingredient first.", reader_failed: "" };
+      S.ideasState = { error: (code in known ? known[code] : SCAN_ERR[code]) || msg || "Something went wrong. Try again." };
+    }
+    if (S.view !== "make") return;
+    $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = !totalItems();
+  }
+  $("make-btn").onclick = openMake;
+
   // ---------- editor ----------
   const draftDrink = () => { const e = S.editing || {}; return { method: e.method, glass: e.glass,
     ingredients: (e.ingredients || []).filter(i => (i.name || "").trim()).map(i => ({ name: i.name, brand: i.brand, kind: i.kind || "", unit: i.unit, float: i.float, amount: parseAmount(i.amountText) || 0 })) }; };
@@ -1179,7 +1443,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       <form class="form" id="form" novalidate>
         <div class="editor-top"><h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your locker" : "New drink"}</h2>
           ${!e.id && !S.isCopy && S.backend === "supabase" ? `<button class="btn small" type="button" id="fill-photo">Fill from a photo</button>` : ""}</div>
-        ${S.scanNote ? `<div class="scan-banner"><span><b>Read from your photo.</b> Check the amounts and names before saving.</span>${S.scanNote.warning ? `<span>${esc(S.scanNote.warning)}</span>` : ""}</div>` : ""}
+        ${S.scanNote ? `<div class="scan-banner"><span><b>${esc(S.scanNote.title || "Read from your photo.")}</b> ${esc(S.scanNote.body || "Check the amounts and names before saving.")}</span>${S.scanNote.warning ? `<span>${esc(S.scanNote.warning)}</span>` : ""}</div>` : ""}
         <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Drink name" autocomplete="off"></div>
         <div class="row2">
           <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Glass"></div>
@@ -1214,7 +1478,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     m.querySelectorAll(".ing-unit, .ing-kind, #f-method, .flt input").forEach(x => x.addEventListener("change", refreshAuto));
     $("add-ing").onclick = () => { readForm(); e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); $("ing-amt-" + (e.ingredients.length - 1)).focus(); };
     m.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { readForm(); e.ingredients.splice(Number(b.dataset.rm), 1); if (!e.ingredients.length) e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); });
-    $("cancel-btn").onclick = () => { S.view = "detail"; S.editing = null; S.scanNote = null; renderList(); renderMain(); };
+    $("cancel-btn").onclick = () => { const back = S.scanNote && S.scanNote.title && S.ideasState && S.ideasState.drinks; S.editing = null; S.scanNote = null; if (back) { S.view = "make"; renderList(); renderMake(); } else { S.view = "detail"; renderList(); renderMain(); } };
     if ($("fill-photo")) $("fill-photo").onclick = () => $("scan-file").click();
     $("form").onsubmit = async ev => {
       ev.preventDefault(); readForm();
@@ -1240,10 +1504,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
       if (e.base) d.base = e.base;
       if (e.photo) d.photo = e.photo;
       if (e.owner) d.owner = e.owner;
+      if (e.origin) d.origin = e.origin;
       $("save-btn").disabled = true;
       const ok = await saveDrink(d);
       if (!ok) { $("save-btn").disabled = false; return; }
-      S.selected = id; S.view = "detail"; S.scanNote = null; if (!passesFilters(S.drinks.find(x => x.id === id) || d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = ""; } renderFilters(); S.editing = null; S.servings = 1; S._fillL = null;
+      S.selected = id; S.view = "detail"; S.scanNote = null; if (!passesFilters(S.drinks.find(x => x.id === id) || d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; } renderFilters(); S.editing = null; S.servings = 1; S._fillL = null;
       if (S.backend === "db" && !S.drinks.find(x => x.id === id)) S.drinks.push(d);
       renderList(); renderMain(); toast(isNew ? "Added " + d.name : "Saved " + d.name);
     };

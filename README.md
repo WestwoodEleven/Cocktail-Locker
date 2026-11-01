@@ -17,12 +17,17 @@ Live site: https://westwoodeleven.github.io/Cocktail-Locker/
 3. Under **Authentication > URL Configuration**, set **Site URL** to `https://westwoodeleven.github.io/Cocktail-Locker/` and add the same address to **Redirect URLs**.
 4. Put the Project URL and publishable key in [`config.js`](config.js) (already done for this site).
 
-### Recipe photo scanning
+### AI features: recipe scanning and the AI bartender
+
+Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new drink) to read a recipe from a photo, and **Make me a drink** to get 3 cocktail ideas from the ingredients they have. Their liquors, syrups and bitters are saved as their bar for next time. Both use Claude through the `read-recipe` function, cost roughly a cent or two per use, and share one allowance of 25 per person per day.
+
+Anyone signed in can also rate any drink 1 to 5 stars; averages show on each drink and in the list, and the Rating filter finds the best ones.
+
 
 Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new drink) to read a recipe from a photo with Claude. It needs an Anthropic API key and costs roughly a cent per photo; each person can scan 25 photos a day.
 
 1. Get an API key at [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys) and add a little credit under Billing.
-2. If you ran `setup.sql` before scanning existed, run [`supabase/scan-setup.sql`](supabase/scan-setup.sql) in the SQL Editor.
+2. If you ran `setup.sql` before these features existed, run [`supabase/bartender-setup.sql`](supabase/bartender-setup.sql) in the SQL Editor (it adds saved bars, ratings and the daily allowance).
 3. In Supabase, open **Edge Functions > Deploy a new function > Via Editor**. Name it `read-recipe`, replace the sample code with [`supabase/functions/read-recipe/index.ts`](supabase/functions/read-recipe/index.ts), and deploy. In the function's **Details** tab, turn off **Verify JWT** (the function checks sign-in itself).
 4. Under **Edge Functions > Secrets**, add `ANTHROPIC_API_KEY` with your key.
 
@@ -46,5 +51,5 @@ Supabase's built-in email service only sends a few sign-in emails per hour, whic
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
-- `supabase/scan-setup.sql`: adds the scan log table to an existing project
-- `supabase/functions/read-recipe/index.ts`: reads recipe photos with Claude
+- `supabase/bartender-setup.sql`: adds saved bars, ratings and the AI allowance to an existing project
+- `supabase/functions/read-recipe/index.ts`: reads recipe photos and suggests drinks with Claude
