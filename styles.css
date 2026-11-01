@@ -355,3 +355,14 @@ body.no-scroll { overflow: hidden; }
 .lockerchip { border: 0; cursor: pointer; padding: 6px 12px; }
 .from button[data-locker] { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--green); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .install-tip { background: var(--accent-soft); border-radius: 9px; padding: 10px 12px; font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.chip-add.with-brand { flex-wrap: wrap; }
+.chip-add.with-brand input:first-child { flex: 2 1 180px; }
+.chip-add .brand-in { flex: 1 1 130px; min-width: 0; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); }
+.bar-chip { padding-left: 4px; }
+.bar-chip .chip-main { font-weight: 600; font-size: 14px; padding: 2px 6px 2px 8px; }
+.bar-chip .chip-main small { font-weight: 500; opacity: .8; }
+.bar-chip .chip-stock { font-size: 14px; }
+.bar-chip.out { background: var(--surface); color: var(--muted); border: 1px dashed var(--rule); }
+.bar-chip.out .chip-main { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.bar-chip .out-tag { text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px; color: var(--danger); text-decoration: none; display: inline-block; }
+@media (max-width: 480px) { .chip-add.with-brand input:first-child { flex-basis: 100%; } }

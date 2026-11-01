@@ -78,11 +78,17 @@ function sameThing(a, b) {
   return SYN.some(g => g.includes(a) && g.includes(b));
 }
 function barKeys() {
-  return [...S.bar.liquors, ...S.bar.syrups, ...S.bar.bitters, ...S.fresh].map(ingKey).filter(Boolean);
+  return [...inStock(savedItems()).flatMap(x => typeof x === "string" ? [x] : [x.name, x.brand]), ...S.fresh].map(ingKey).filter(Boolean);
 }
 function haveIngredient(i, keys) {
   const k = ingKey(i.name), bk = ingKey(i.brand);
   if (ALWAYS_HAVE.includes(k)) return true;
+  return keys.some(b => sameThing(b, k) || (bk && sameThing(b, bk)));
+}
+// Ingredients you have on your list but marked out of stock
+function outOfStock(i) {
+  const k = ingKey(i.name), bk = ingKey(i.brand);
+  const keys = savedItems().filter(x => typeof x !== "string" && x.out).flatMap(x => [x.name, x.brand]).map(ingKey).filter(Boolean);
   return keys.some(b => sameThing(b, k) || (bk && sameThing(b, bk)));
 }
 function missingFor(d, keys) { return (d.ingredients || []).filter(i => !haveIngredient(i, keys)); }
@@ -108,7 +114,7 @@ HASH_VIEWS["can-make"] = openCanMake;
 VIEWS.canmake = function renderCanMake() {
   const m = $("main");
   const r = canMakeResults();
-  const missRow = ([d, miss]) => drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">Missing ${esc(miss.map(i => i.name).join(" and "))}</span> · `);
+  const missRow = ([d, miss]) => drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">${esc(miss.every(outOfStock) ? "Out of " + miss.map(i => i.name).join(" and ") : "Missing " + miss.map(i => i.name + (outOfStock(i) ? " (out)" : "")).join(" and "))}</span> · `);
   const commonMissing = (() => {
     const c = new Map();
     r.one.forEach(([, miss]) => { const k = ingKey(miss[0].name); const e = c.get(k) || { name: miss[0].name, n: 0 }; e.n++; c.set(k, e); });

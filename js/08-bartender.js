@@ -14,12 +14,20 @@ S.bar = { liquors: [], syrups: [], bitters: [] };
 S.fresh = (() => { try { return JSON.parse(localStorage.getItem("mc-fresh") || "[]"); } catch (e) { return []; } })();
 S.prefs = { style: "", strength: "", taste: "", method: "", notes: "" };
 const groupList = k => k === "fresh" ? S.fresh : S.bar[k];
+// Saved bar items are { name, brand, out }; older bars saved plain names, which still work.
+const barItem = x => typeof x === "string" ? { name: x, brand: "", out: false } : { name: String((x && x.name) || ""), brand: String((x && x.brand) || ""), out: !!(x && x.out) };
+const itemName = x => typeof x === "string" ? x : x.name;
+const itemLabel = x => typeof x === "string" ? x : (x.brand ? `${x.name} (${x.brand})` : x.name);
+const savedItems = () => [...S.bar.liquors, ...S.bar.syrups, ...S.bar.bitters];
+const inStock = list => list.filter(x => typeof x === "string" || !x.out);
+// What the AI tools are told you have: in-stock bottles, with brands.
+const barForAI = () => ({ liquors: inStock(S.bar.liquors).map(itemLabel), syrups: inStock(S.bar.syrups).map(itemLabel), bitters: inStock(S.bar.bitters).map(itemLabel) });
 async function loadBar() {
   if (!sb || !uid()) return;
   const { data, error } = await sb.from("bars").select("items").eq("user_id", uid()).maybeSingle();
   if (error) { S.barOff = true; return; }
   const it = (data && data.items) || {};
-  S.bar = { liquors: [].concat(it.liquors || []), syrups: [].concat(it.syrups || []), bitters: [].concat(it.bitters || []) };
+  S.bar = { liquors: [].concat(it.liquors || []).map(barItem), syrups: [].concat(it.syrups || []).map(barItem), bitters: [].concat(it.bitters || []).map(barItem) };
   if (S.view === "make") renderMake();
   if (S.view === "profile") renderProfile();
   if (VIEWS[S.view]) renderMain();
@@ -35,18 +43,38 @@ function saveBarSoon() {
 }
 function saveFresh() { try { localStorage.setItem("mc-fresh", JSON.stringify(S.fresh)); } catch (e) {} }
 function suggestionsFor(g) {
-  const have = new Set(groupList(g.key).map(x => x.toLowerCase()));
+  const have = new Set(g.saved ? [] : groupList(g.key).map(x => itemName(x).toLowerCase()));
   const seen = new Set(), out = [];
   S.drinks.forEach(d => (d.ingredients || []).forEach(i => { if (g.kinds.includes(kindOf(i))) out.push(i.name); }));
   return out.concat(g.extra).filter(n => { const k = n.toLowerCase(); if (seen.has(k) || have.has(k)) return false; seen.add(k); return true; }).slice(0, 80);
 }
-function addItem(key, text) {
+function addItem(key, text, brand) {
   const list = groupList(key);
+  brand = String(brand || "").trim().slice(0, 60);
   String(text || "").split(/[,\n]/).map(x => x.trim().slice(0, 60)).filter(Boolean).forEach(v => {
-    if (!list.some(x => x.toLowerCase() === v.toLowerCase()) && list.length < 60) list.push(v);
+    if (key === "fresh") { if (!list.some(x => x.toLowerCase() === v.toLowerCase()) && list.length < 60) list.push(v); return; }
+    const same = list.find(x => x.name.toLowerCase() === v.toLowerCase() && x.brand.toLowerCase() === brand.toLowerCase());
+    if (same) { same.out = false; return; } // re-adding something marked out puts it back in stock
+    if (list.length < 80) list.push({ name: v, brand, out: false });
   });
   afterItems(key);
 }
+function editItem(key, idx) {
+  const it = groupList(key)[idx]; if (!it) return;
+  const body = sheet("Edit " + it.name, `
+    <div class="field"><label for="bi-name">Name</label><input id="bi-name" type="text" maxlength="60" value="${esc(it.name)}"></div>
+    <div class="field"><label for="bi-brand">Brand</label><input id="bi-brand" type="text" maxlength="60" value="${esc(it.brand)}" placeholder="Brand (optional)"></div>
+    <label class="check" for="bi-out"><input type="checkbox" id="bi-out" ${it.out ? "checked" : ""}><span>Out of stock<br><span class="hint">Kept on your list, but left out of What can I make? and the AI tools until you restock.</span></span></label>
+    <div class="panel-actions" style="justify-content:flex-start"><button class="btn primary small" type="button" id="bi-save">Save</button><button class="btn small danger ghost" type="button" id="bi-rm">Remove from bar</button></div>`);
+  $("bi-save").onclick = () => {
+    const n = $("bi-name").value.trim().slice(0, 60); if (!n) { $("bi-name").focus(); return; }
+    it.name = n; it.brand = $("bi-brand").value.trim().slice(0, 60); it.out = $("bi-out").checked;
+    closeSheet(); afterItems(key);
+  };
+  $("bi-rm").onclick = () => { closeSheet(); removeItem(key, idx); };
+  body.querySelectorAll("input[type=text]").forEach(x => x.onkeydown = e => { if (e.key === "Enter") $("bi-save").click(); });
+}
+function toggleOut(key, idx) { const it = groupList(key)[idx]; if (!it) return; it.out = !it.out; toast(it.out ? `${it.name} marked out of stock` : `${it.name} back in stock`); afterItems(key); }
 function removeItem(key, idx) { groupList(key).splice(idx, 1); afterItems(key); }
 function afterItems(key) {
   if (key === "fresh") saveFresh(); else saveBarSoon();
@@ -55,14 +83,21 @@ function afterItems(key) {
   $("dl-" + key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
   if ($("make-go")) $("make-go").disabled = !totalItems();
   if (VIEWS[S.view] && S.view === "canmake") { clearTimeout(afterItems.t); afterItems.t = setTimeout(() => { const a = document.activeElement && document.activeElement.id; renderMain(); if (a && $(a)) $(a).focus(); }, 300); }
-  if (S.view === "profile") { const st = document.querySelectorAll(".stat b")[2]; if (st) st.textContent = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length; }
+  if (S.view === "profile") { const st = document.querySelectorAll(".stat b")[2]; if (st) st.textContent = inStock(savedItems()).length; const o = $("bar-out"); if (o) o.outerHTML = outSummary(); }
 }
-const totalItems = () => S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length + S.fresh.length;
+const totalItems = () => inStock(savedItems()).length + S.fresh.length;
+function outSummary() {
+  const out = savedItems().filter(x => typeof x !== "string" && x.out);
+  return `<p class="hint" id="bar-out" style="margin:0">${out.length ? `<b>Out of stock:</b> ${esc(out.map(itemLabel).join(", "))}` : ""}</p>`;
+}
 function renderChips(key) {
   const el = $("chips-" + key); if (!el) return;
   const list = groupList(key);
-  el.innerHTML = list.length ? list.map((v, i) => `<span class="chip-item">${esc(v)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">×</button></span>`).join("")
-    : `<span class="hint">Nothing yet.</span>`;
+  el.innerHTML = !list.length ? `<span class="hint">Nothing yet.</span>` : key === "fresh"
+    ? list.map((v, i) => `<span class="chip-item">${esc(v)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">×</button></span>`).join("")
+    : list.map((v, i) => `<span class="chip-item bar-chip${v.out ? " out" : ""}"><button type="button" class="chip-main" data-edit="${i}" title="Edit brand or stock">${esc(v.name)}${v.brand ? ` <small>${esc(v.brand)}</small>` : ""}${v.out ? ` <small class="out-tag">out</small>` : ""}</button>`
+      + `<button type="button" class="chip-stock" data-out="${i}" aria-label="${v.out ? "Mark " + esc(v.name) + " back in stock" : "Mark " + esc(v.name) + " out of stock"}" title="${v.out ? "Back in stock" : "Out of stock"}">${v.out ? "↺" : "○"}</button>`
+      + `<button type="button" data-rm="${i}" aria-label="Remove ${esc(v.name)}">×</button></span>`).join("");
 }
 function openMake() {
   if (!S.canWrite || S.backend !== "supabase") { toast("Sign in to use the AI bartender."); return; }
@@ -73,17 +108,28 @@ function openMake() {
 const chipGroupHtml = g => `<div class="cgroup">
       <label class="label" for="in-${g.key}">${esc(g.label)}</label>
       <div class="chips" id="chips-${g.key}"></div>
-      <div class="chip-add"><input id="in-${g.key}" type="text" list="dl-${g.key}" placeholder="${esc(g.ph)}" autocomplete="off" enterkeyhint="done">
+      <div class="chip-add${g.saved ? " with-brand" : ""}"><input id="in-${g.key}" type="text" list="dl-${g.key}" placeholder="${esc(g.ph)}" autocomplete="off" enterkeyhint="${g.saved ? "next" : "done"}" aria-label="${esc(g.label)}">
+        ${g.saved ? `<input id="br-${g.key}" type="text" class="brand-in" placeholder="Brand (optional)" autocomplete="off" enterkeyhint="done" aria-label="Brand">` : ""}
         <button class="btn small" type="button" data-add="${g.key}">Add</button></div>
       <datalist id="dl-${g.key}"></datalist></div>`;
 function wireGroups(groups) {
   groups.forEach(g => {
     renderChips(g.key); $("dl-" + g.key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
     const inp = $("in-" + g.key);
-    document.querySelector(`[data-add="${g.key}"]`).onclick = () => { addItem(g.key, inp.value); inp.value = ""; inp.focus(); };
-    inp.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addItem(g.key, inp.value); inp.value = ""; } });
-    inp.addEventListener("change", () => { if (suggestionsFor(g).some(n => n === inp.value)) { addItem(g.key, inp.value); inp.value = ""; } });
-    $("chips-" + g.key).addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (b) removeItem(g.key, Number(b.dataset.rm)); });
+    const br = $("br-" + g.key);
+    const add = () => { addItem(g.key, inp.value, br ? br.value : ""); inp.value = ""; if (br) br.value = ""; inp.focus(); };
+    document.querySelector(`[data-add="${g.key}"]`).onclick = add;
+    inp.addEventListener("keydown", e => {
+      if (e.key === "Enter" || (e.key === "," && !g.saved)) { e.preventDefault(); if (g.saved && br && !br.value && inp.value.trim()) { br.focus(); return; } add(); }
+    });
+    if (br) br.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (inp.value.trim()) add(); } });
+    if (!g.saved) inp.addEventListener("change", () => { if (suggestionsFor(g).some(n => n === inp.value)) { addItem(g.key, inp.value); inp.value = ""; } });
+    $("chips-" + g.key).addEventListener("click", e => {
+      const rm = e.target.closest("[data-rm]"), ed = e.target.closest("[data-edit]"), out = e.target.closest("[data-out]");
+      if (rm) removeItem(g.key, Number(rm.dataset.rm));
+      else if (out) toggleOut(g.key, Number(out.dataset.out));
+      else if (ed) editItem(g.key, Number(ed.dataset.edit));
+    });
   });
 }
 const sel = (id, label, opts, cur) => `<div class="field"><label for="${id}">${label}</label><select id="${id}"><option value="">Any</option>${opts.map(o => `<option ${o === cur ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
@@ -191,7 +237,7 @@ async function generateIdeas() {
   S.ideasState = { loading: true, token };
   $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = true;
   $("ideas").scrollIntoView({ behavior: "smooth", block: "start" });
-  const { data, code, detail } = await invokeHelper({ mode: "generate", bar: S.bar, fresh: S.fresh, prefs: S.prefs, taste: S.useTaste ? tasteProfile() : null });
+  const { data, code, detail } = await invokeHelper({ mode: "generate", bar: barForAI(), fresh: S.fresh, prefs: S.prefs, taste: S.useTaste ? tasteProfile() : null });
   if (!S.ideasState || S.ideasState.token !== token) return;
   if (data && Array.isArray(data.drinks) && data.drinks.length) S.ideasState = { drinks: data.drinks, note: data.note || "" };
   else {

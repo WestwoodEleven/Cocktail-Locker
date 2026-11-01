@@ -28,7 +28,7 @@ async function openSwap(d, idx) {
   const render = st => {
     if (st.loading) return swapSheet(`<div class="scanning"><div class="glass dots">Finding substitutes</div><div class="hint">Claude is checking what works in a ${esc(d.name)}.</div></div>`);
     if (st.error) return swapSheet(`<div class="scan-banner"><span><b>Couldn't get substitutes.</b> ${esc(st.error)}</span></div>`);
-    swapSheet(`<p class="hint" style="margin:0">Out of ${esc(i.name)}? Options for this ${esc(d.name)}${S.bar.liquors.length ? ", starting with what's in your bar" : ""}:</p>
+    swapSheet(`<p class="hint" style="margin:0">Out of ${esc(i.name)}? Options for this ${esc(d.name)}${inStock(savedItems()).length ? ", starting with what's in your bar" : ""}:</p>
       <div class="swaps">${st.options.map((o, k) => `<div class="swap-opt">
         <div class="swap-name"><b>${esc(o.name)}</b>${o.in_bar ? ' <span class="chip">In your bar</span>' : ""}</div>
         <div class="hint">${esc(o.amount ? `${fmtOz(Number(o.amount))} ${o.unit || "oz"}` : "")}${o.adjust ? (o.amount ? " · " : "") + esc(o.adjust) : ""}</div>
@@ -49,7 +49,7 @@ async function openSwap(d, idx) {
   if (S.swapCache[key]) return render(S.swapCache[key]);
   const token = {}; S.swapToken = token;
   render({ loading: true });
-  const { data, code, detail } = await invokeHelper({ mode: "substitute", drink: { name: d.name, method: d.method, ingredients: (d.ingredients || []).map(x => ({ amount: x.amount, unit: x.unit, name: x.name, brand: x.brand || "" })) }, index: idx, bar: S.bar });
+  const { data, code, detail } = await invokeHelper({ mode: "substitute", drink: { name: d.name, method: d.method, ingredients: (d.ingredients || []).map(x => ({ amount: x.amount, unit: x.unit, name: x.name, brand: x.brand || "" })) }, index: idx, bar: barForAI() });
   if (S.swapToken !== token) return;
   let st;
   if (data && Array.isArray(data.options) && data.options.length) st = S.swapCache[key] = { options: data.options.slice(0, 3) };

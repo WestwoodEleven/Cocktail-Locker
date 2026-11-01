@@ -43,7 +43,7 @@ function renderProfile() {
   const me = myProfile();
   const mine = sorted().filter(d => isMine(d));
   const favs = allSorted().filter(d => isFav(d));
-  const barCount = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length;
+  const barCount = inStock(savedItems()).length;
   const email = S.session && S.session.user && S.session.user.email;
   m.innerHTML = `
     <div class="make">
@@ -76,6 +76,8 @@ function renderProfile() {
 
       <section class="make-sec" id="prof-bar">
         <div class="sec-head"><h3>My bar</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></div>
+        <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock.</p>
+        ${outSummary()}
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
         <div><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bar</button></div>
       </section>
