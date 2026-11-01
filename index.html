@@ -291,6 +291,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .fav-mark { color: var(--danger); font-size: 16px; }
 .btn.fav-on { color: var(--danger); border-color: var(--danger); }
 .list .fav-dot { color: var(--danger); }
+.sortrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.sortrow select { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 7px; background: var(--raised); font-size: 13px; color: var(--ink); font-weight: 500; }
+.list .ghead { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 8px 2px; display: flex; justify-content: space-between; gap: 8px; }
+.list .ghead span { letter-spacing: 0; text-transform: none; font-weight: 600; }
+.list li.ver button { padding-left: 18px; }
+.list .std-tag { color: var(--accent); font-weight: 700; }
+.list .lookup-btn { width: 100%; align-items: flex-start; text-align: left; border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 14px; display: flex; flex-direction: column; gap: 2px; margin: 6px 0 2px; }
+.list .lookup-btn b { color: var(--accent); }
+.list .lookup-btn:disabled { cursor: default; opacity: .8; }
+.about { margin: 0; max-width: 65ch; color: var(--muted); }
+@media (max-width: 600px) { .sortrow, .sortrow select { font-size: 15px; } }
 </style>
 </head>
 <body>
@@ -326,6 +337,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       <section class="panel" aria-labelledby="find-title">
       <h2 class="panel-title" id="find-title">Find a drink</h2>
       <input class="search" id="search" type="search" placeholder="Search drinks, ingredients, brands" aria-label="Search drinks">
+      <div class="sortrow"><label for="sort">Sort by</label><select id="sort"><option value="rated">Top rated</option><option value="az">A–Z</option><option value="new">Newest</option></select></div>
       <details class="filters" id="filters" open>
         <summary><span>Filters<span class="fcount" id="fcount" hidden></span></span></summary>
         <div class="fgrid">
@@ -492,7 +504,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
     view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,
     canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false,
-    profiles: {}, ratings: {}, f: { owner: "", type: "", base: "", method: "", kind: "", rating: "" }
+    profiles: {}, ratings: {}, sort: (() => { try { return localStorage.getItem("mc-sort") || "rated"; } catch (e) { return "rated"; } })(), f: { owner: "", type: "", base: "", method: "", kind: "", rating: "" }
   };
   try { const m = localStorage.getItem("mc-mode"); if (m) S.mode = m; } catch (e) {}
 
@@ -578,13 +590,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
         loadProfiles(); renderFilters(); renderList(); renderMain();
       }
     });
-    await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites()]);
+    await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd()]);
     loadBar();
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
     if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
     try {
       sb.channel("drinks-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks())
+        .on("postgres_changes", { event: "*", schema: "public", table: "standard_recipes" }, () => loadStd().then(() => renderList()))
         .on("postgres_changes", { event: "*", schema: "public", table: "ratings" }, () => loadRatings().then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); }))
         .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => loadProfiles().then(() => { renderFilters(); renderList(); renderMain(); }))
         .subscribe();
@@ -651,18 +664,29 @@ button, input, select, textarea { font: inherit; color: inherit; }
     toast("Locker named " + name);
   };
 
-  function sorted() { return S.drinks.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "")); }
-  function current() { return S.drinks.find(d => d.id === S.selected) || null; }
+  const byName = (a, b) => (a.name || "").localeCompare(b.name || "");
+  function sorted() { return S.drinks.slice().sort(byName); }
+  const allDrinks = () => S.drinks.concat(S.std || []);
+  function allSorted() { return allDrinks().sort(byName); }
+  function current() { return allDrinks().find(d => d.id === S.selected) || null; }
+  // Weighted rating: a drink needs a few ratings before it can outrank well-rated ones.
+  const score = d => { const r = ratingOf(d); return (2 * 3.5 + r.sum) / (2 + r.count); };
+  function sortItems(list) {
+    const k = S.sort;
+    return list.sort((a, b) => k === "az" ? byName(a, b)
+      : k === "new" ? (String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")) || byName(a, b))
+      : (score(b) - score(a)) || (ratingOf(b).count - ratingOf(a).count) || byName(a, b));
+  }
   function afterData() {
     const want = hashId();
     if (want === "my-locker" && !S._hashDone && uid() && S.loaded) { S._hashDone = true; S.view = "profile"; }
-    if (want && !S._hashDone && S.drinks.some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
+    if (want && !S._hashDone && allDrinks().some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
     if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
     renderFilters(); renderList(); if (S.view === "detail") renderMain();
   }
 
   // ---------- list + filters ----------
-  const haystack = d => [d.name, d.glass, d.garnish, d.notes, d.method, typeOf(d), baseOf(d), S.backend === "supabase" ? lockerName(d.owner) : "",
+  const haystack = d => [d.name, d.glass, d.garnish, d.notes, d.method, typeOf(d), baseOf(d), S.backend === "supabase" ? (d.standard ? "standard recipe classic" : lockerName(d.owner)) : "",
     ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
   function passesFilters(d, skip) {
     const f = S.f;
@@ -672,10 +696,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (skip !== "method" && f.method && d.method !== f.method) return false;
     if (skip !== "kind" && f.kind && !(d.ingredients || []).some(i => kindOf(i) === f.kind)) return false;
     if (skip !== "rating" && f.rating && !(f.rating === "none" ? !ratingOf(d).count : avgOf(d) >= Number(f.rating))) return false;
-    if (S.query.trim()) { const h = haystack(d); if (!S.query.toLowerCase().split(/\s+/).filter(Boolean).every(w => h.includes(w))) return false; }
+    if (S.query.trim()) {
+      const qs = slugify(S.query);
+      const byName = qs && (slugify(d.name).includes(qs) || (d.aliases || []).includes(qs));
+      const h = haystack(d);
+      if (!byName && !S.query.toLowerCase().split(/\s+/).filter(w => w && w !== "the").every(w => h.includes(w))) return false;
+    }
     return true;
   }
-  function filtered() { return sorted().filter(d => passesFilters(d)); }
+  // Standard recipes appear only when searching, or under My favorites.
+  const pool = () => (S.query.trim() || S.f.owner === "fav") ? allDrinks() : S.drinks.slice();
+  function filtered() { return sortItems(pool().filter(d => passesFilters(d))); }
   function renderFilters() {
     const multi = S.backend === "supabase";
     $("flt-owner-wrap").hidden = !multi;
@@ -692,7 +723,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
       $("flt-owner").innerHTML = `<option value="">Everyone's lockers</option>` +
         (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My locker (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
-        (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${S.drinks.filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
+        (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
         named.filter(id => id).map(id => `<option value="${esc(id)}" ${S.f.owner === id ? "selected" : ""}>${esc(lockerName(id))} (${counts[id] || 0})</option>`).join("");
     }
     $("flt-type").innerHTML = opts("type", TYPES, "Any type", typeOf);
@@ -716,23 +747,42 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (S.view === "detail" && vis.length && !vis.some(d => d.id === S.selected)) { S.selected = vis[0].id; renderList(); renderMain(); }
   }
 
+  function rowHtml(d, ver) {
+    const multi = S.backend === "supabase";
+    const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d));
+    return `<li${ver ? ' class="ver"' : ""}><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
+      ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
+      <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
+  }
+  function lookupRow() {
+    const q = S.query.trim();
+    if (S.backend !== "supabase" || S.stdOff || q.length < 2 || stdFor(q)) return "";
+    return `<li><button type="button" class="lookup-btn" id="lookup-btn" ${uid() ? "" : "disabled"}>
+      <span><b>Look up the standard recipe</b> for “${esc(q)}”</span>
+      <span class="hint">${uid() ? "Saved to the shared library so everyone can use it." : "Sign in to look up recipes that aren't here yet."}</span></button></li>`;
+  }
   function renderList() {
     const items = filtered();
     const total = S.drinks.length, shown = items.length;
-    $("count-label").textContent = !S.loaded ? "" : shown === total ? String(total) : `${shown} of ${total}`;
+    $("count-label").textContent = !S.loaded ? "" : S.query.trim() ? `${shown} found` : shown === total ? String(total) : `${shown} of ${total}`;
     const ul = $("list");
     if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling the recipes…</li>'; return; }
     if (!items.length) {
-      const msg = !total ? "No drinks yet." + (S.canWrite ? " Add the first one." : " Sign in to add the first one.")
+      const msg = S.query.trim() ? "Nobody has this one yet."
+        : !total ? "No drinks yet." + (S.canWrite ? " Add the first one." : " Sign in to add the first one.")
         : S.f.owner === "mine" && !S.drinks.some(isMine) ? "Your locker is empty. Tap + New drink to add one."
         : "No drinks match. Try fewer filters.";
-      ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>`; return;
+      ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + lookupRow(); wireLookup(); return;
     }
-    const multi = S.backend === "supabase";
-    ul.innerHTML = items.map(d => `<li><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
-      ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
-      <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${esc([typeOf(d), multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d)].join(" · "))}</span></span></button></li>`).join("");
+    // Group versions of the same drink; groups keep the order of their best member.
+    const groups = new Map();
+    items.forEach(d => { const k = slugify(d.name) || d.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(d); });
+    ul.innerHTML = [...groups.values()].map(g => g.length === 1 ? rowHtml(g[0], false)
+      : `<li class="ghead">${esc(g[0].name)}<span>${g.length} versions${S.sort === "rated" ? ", best rated first" : ""}</span></li>` + g.map(d => rowHtml(d, true)).join("")).join("") + lookupRow();
+    wireLookup();
   }
+  function wireLookup() { if ($("lookup-btn")) $("lookup-btn").onclick = () => lookupStandard(S.query); }
+  $("sort").addEventListener("change", e => { S.sort = e.target.value; try { localStorage.setItem("mc-sort", S.sort); } catch (er) {} renderList(); });
   $("list").addEventListener("click", e => {
     const b = e.target.closest("button[data-id]"); if (!b) return;
     S.selected = b.dataset.id; S.view = "detail"; S.confirmDelete = false; S.confirmPhoto = false; setHash(S.selected);
@@ -740,6 +790,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (window.matchMedia("(max-width: 780px)").matches) $("main").scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("search").addEventListener("input", e => { S.query = e.target.value; refreshView(); });
+  $("search").addEventListener("keydown", e => { if (e.key === "Enter" && !filtered().length && S.query.trim().length >= 2 && uid()) lookupStandard(S.query); });
+  try { $("sort").value = S.sort; } catch (e) {}
   $("new-btn").addEventListener("click", () => openEditor(null));
 
   // ---------- detail ----------
@@ -747,6 +799,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const m = $("main");
     if (S.view === "edit") return renderEditor();
     if (S.view === "make") return renderMake();
+    if (S.view === "lookup") {
+      m.innerHTML = `<div class="scanning"><div class="glass dots">Looking up the ${esc(S.lookup ? S.lookup.q.replace(/^\s*the\s+/i, "") : "")} recipe</div>
+        <div class="hint">This usually takes 5 to 10 seconds. Next time it'll be instant.</div>
+        <button class="btn" type="button" id="lookup-cancel">Cancel</button></div>`;
+      $("lookup-cancel").onclick = () => { S.lookup = null; S.view = "detail"; renderList(); renderMain(); };
+      return;
+    }
     if (S.view === "profile") return renderProfile();
     if (S.view === "scan") {
       m.innerHTML = `<div class="scanning">${S.scan && S.scan.preview ? `<img src="${S.scan.preview}" alt="Your recipe photo">` : ""}
@@ -783,19 +842,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
     }
     const meta = [`<span class="chip amber">${esc(typeOf(d))}</span>`, `<span class="chip amber">${esc(baseOf(d))}</span>`,
       d.glass && `<span class="chip">${esc(d.glass)}</span>`, d.method && `<span class="chip">${esc(d.method)}</span>`,
-      d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`, d.origin && `<span class="chip amber">${esc(d.origin)}</span>`].filter(Boolean).join("");
+      d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`, d.origin && `<span class="chip amber">${esc(d.origin)}</span>`, d.standard && `<span class="chip amber">Classic</span>`].filter(Boolean).join("");
     const servingsLabel = S.servings === 1 ? "1 drink" : `${fmtCount(S.servings)} drinks`;
     const fillVal = S._fillL ?? "";
     const mine = isMine(d);
     const canPhoto = S.backend === "supabase" && mine;
-    const fromLine = S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your locker</b>" : `<button type="button" id="from-btn">${esc(lockerName(d.owner))}</button>`}</div>` : "";
+    const fromLine = d.standard ? `<div class="from"><b>Standard recipe</b> from the shared library</div>` : S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your locker</b>" : `<button type="button" id="from-btn">${esc(lockerName(d.owner))}</button>`}</div>` : "";
     const busy = S.uploading === d.id;
 
     m.innerHTML = `
       <div class="hero${d.photo ? "" : " no-photo"}">
       <div class="spec-top">
         <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
-        <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">Copy to my locker</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+        <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
       </div>
       ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
         <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -845,6 +904,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
       </div>` : ""}
       ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
+      ${d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p></div>` : ""}
       ${rateBlock(d)}
     `;
 
@@ -869,7 +929,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if ($("from-btn")) $("from-btn").onclick = () => { S.f = { owner: d.owner || "", type: "", base: "", method: "", kind: "" }; $("filters").open = true; refreshView(); };
     if ($("copy-btn")) $("copy-btn").onclick = () => {
       const c = JSON.parse(JSON.stringify(d)); delete c.photo; delete c.owner; c.id = null;
-      c.notes = (c.notes ? c.notes + "\n\n" : "") + "Copied from " + lockerName(d.owner) + ".";
+      if (d.standard) { delete c.standard; delete c.slug; delete c.aliases; delete c.about; }
+      c.notes = (c.notes ? c.notes + "\n\n" : "") + (d.standard ? "Based on the standard recipe." : "Copied from " + lockerName(d.owner) + ".");
       openEditor(c, true);
     };
     if (mine) {
@@ -939,7 +1000,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
   const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
   function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-  window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (id && S.drinks.some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+  window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
   $("home-link").addEventListener("click", ev => {
     if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
@@ -981,7 +1042,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (dil > 0) rows.push({ water: true, s: show({ amount: per * dil, unit: "ml" }, S.servings, S.mode === "spec" ? "oz" : S.mode) });
     (d.ingredients || []).filter(i => i.float).forEach(i => rows.push({ i, s: show(i, S.servings, S.mode), float: true, g: show(i, 1, S.mode) }));
     const meta = [typeOf(d), baseOf(d), d.method, d.glass].filter(Boolean).join("  ·  ");
-    const from = S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
+    const from = d.standard ? "Standard recipe" : S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
 
     const layout = (ctx, draw) => {
       let y = 0;
@@ -1396,12 +1457,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   S.useTaste = (() => { try { return localStorage.getItem("mc-use-taste") !== "0"; } catch (e) { return true; } })();
   function likedDrinks() {
-    return sorted().filter(d => isFav(d) || ratingOf(d).mine >= 4)
+    return allSorted().filter(d => isFav(d) || ratingOf(d).mine >= 4)
       .sort((a, b) => (isFav(b) - isFav(a)) || (ratingOf(b).mine - ratingOf(a).mine));
   }
   function tasteProfile() {
     const liked = likedDrinks().slice(0, 15).map(d => ({ name: d.name, type: typeOf(d), base: baseOf(d), ingredients: (d.ingredients || []).map(i => i.name).slice(0, 10) }));
-    const avoid = [...new Set(sorted().filter(d => isMine(d) || isFav(d)).map(d => d.name))].slice(0, 60);
+    const avoid = [...new Set(allSorted().filter(d => isMine(d) || isFav(d)).map(d => d.name))].slice(0, 60);
     return { liked, avoid };
   }
   function tasteHint() {
@@ -1409,21 +1470,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
     return n ? `Leans toward ${n} drink${n === 1 ? "" : "s"} you love and skips ones you already have.` : "Favorite drinks or rate them 4 stars or more to personalize ideas. It still skips drinks you already have.";
   }
   async function invokeHelper(body) {
-    let code = "", detail = "", data = null;
+    let code = "", detail = "", data = null, reply = null;
     try {
       const res = await sb.functions.invoke("read-recipe", { body });
       if (res.error) {
         const resp = res.error.context;
         if (resp && typeof resp.json === "function") {
           if (resp.status === 404) code = "not_deployed";
-          else { try { const j = await resp.json(); code = j.error || ""; detail = j.detail || ""; } catch (e2) {} }
+          else { try { const j = await resp.json(); reply = j; code = j.error || ""; detail = j.detail || ""; } catch (e2) {} }
           if (!code && resp.status === 401) code = "signed_out";
           if (!code && resp.status >= 500) code = "crashed";
           if (!code) detail = detail || ("HTTP " + resp.status);
         } else code = res.error.name === "FunctionsFetchError" ? "unreachable" : "";
       } else data = res.data;
     } catch (e) { detail = String(e && e.message || e); }
-    return { data, code, detail };
+    return { data, code, detail, reply };
   }
   async function generateIdeas() {
     if (!totalItems()) { toast("Add at least one ingredient."); return; }
@@ -1477,7 +1538,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   function drinkRow(d, showFrom) {
     const r = ratingOf(d);
-    const sub = [typeOf(d), showFrom && !isMine(d) ? lockerName(d.owner) : "", r.count ? `★ ${avgOf(d).toFixed(1)}` : ""].filter(Boolean).join(" · ");
+    const sub = [typeOf(d), showFrom && !isMine(d) ? (d.standard ? "Standard recipe" : lockerName(d.owner)) : "", r.count ? `★ ${avgOf(d).toFixed(1)}` : ""].filter(Boolean).join(" · ");
     return `<li><button type="button" class="prow" data-open="${esc(d.id)}">
       ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
       <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc(sub)}</span></span>
@@ -1487,7 +1548,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const m = $("main");
     const me = myProfile();
     const mine = sorted().filter(d => isMine(d));
-    const favs = sorted().filter(d => isFav(d));
+    const favs = allSorted().filter(d => isFav(d));
     const barCount = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length;
     const email = S.session && S.session.user && S.session.user.email;
     m.innerHTML = `
@@ -1534,6 +1595,61 @@ button, input, select, textarea { font: inherit; color: inherit; }
     $("prof-new").onclick = () => openEditor(null);
     $("prof-scan").onclick = () => $("scan-file").click();
     $("prof-make").onclick = openMake;
+  }
+
+  // ---------- standard recipe library ----------
+  S.std = [];
+  const slugify = v => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    .replace(/&/g, " and ").replace(/^\s*the\s+/, "").replace(/\s+cocktail\s*$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  function stdToDrink(row) {
+    const data = row.data || {};
+    const d = recipeToDrink(Object.assign({}, data, { name: row.name || data.name }));
+    return Object.assign(d, { id: "std:" + row.slug, slug: row.slug, aliases: row.aliases || [], standard: true, owner: null, about: String(data.about || "").slice(0, 600) });
+  }
+  async function loadStd() {
+    if (!sb) return;
+    const { data, error } = await sb.from("standard_recipes").select("slug, name, data, aliases");
+    if (error) { S.stdOff = true; return; }
+    S.stdOff = false;
+    S.std = data.map(stdToDrink);
+  }
+  const stdFor = q => { const k = slugify(q); return k ? S.std.find(d => d.slug === k || d.aliases.includes(k)) : null; };
+  async function lookupStandard(q) {
+    q = String(q || "").trim().slice(0, 80);
+    if (!q) return;
+    const have = stdFor(q);
+    if (have) { selectDrink(have.id); return; }
+    if (!uid()) { toast("Sign in to look up standard recipes."); return; }
+    const token = {};
+    S.lookup = { q, token }; S.view = "lookup"; renderList(); renderMain();
+    $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+    const { data, code, detail, reply } = await invokeHelper({ mode: "standard", query: q });
+    if (!S.lookup || S.lookup.token !== token) return;
+    S.lookup = null;
+    if (data && data.standard) {
+      const d = stdToDrink(data.standard);
+      S.std = S.std.filter(x => x.id !== d.id).concat(d);
+      selectDrink(d.id); return;
+    }
+    S.view = "detail";
+    if (code === "not_a_cocktail") {
+      S.lookupDym = String((reply && reply.did_you_mean) || "").trim();
+      if (slugify(S.lookupDym) === slugify(q)) S.lookupDym = "";
+      const m = $("main");
+      m.innerHTML = `<div class="blank"><div class="glass">No cocktail called “${esc(q)}”</div>
+        <div>Check the spelling, or search for another drink.</div>
+        ${S.lookupDym ? `<button class="btn primary" type="button" id="dym-btn">Look up ${esc(S.lookupDym)}</button>` : ""}
+        <button class="btn" type="button" id="dym-back">Back to drinks</button></div>`;
+      if ($("dym-btn")) $("dym-btn").onclick = () => { const n = S.lookupDym; S.lookupDym = ""; $("search").value = n; S.query = n; refreshView(); lookupStandard(n); };
+      $("dym-back").onclick = () => { renderList(); renderMain(); };
+      renderList(); return;
+    }
+    renderList();
+    if (SCAN_ERR[code]) { renderMain(); toast(SCAN_ERR[code]); } else showScanError(code, detail);
+  }
+  function selectDrink(id) {
+    S.selected = id; S.view = "detail"; S.confirmDelete = false; setHash(id);
+    renderFilters(); renderList(); renderMain();
   }
 
   // ---------- editor ----------

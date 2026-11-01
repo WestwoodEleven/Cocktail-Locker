@@ -36,6 +36,10 @@ Optional secrets: `RECIPE_DAILY_LIMIT` (default 25) and `RECIPE_MODEL` (default 
 
 Signed-in people get a **My locker** page (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
 
+### Search and standard recipes
+
+Search covers every locker. Versions of the same drink are grouped together and sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
+
 ### Claiming the first recipes
 
 Recipes from before lockers existed don't belong to anyone. Sign in on the site once, then edit the email in [`supabase/claim-recipes.sql`](supabase/claim-recipes.sql) to yours and run it. Those recipes move into your locker.
@@ -54,6 +58,7 @@ Supabase's built-in email service only sends a few sign-in emails per hour, whic
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
+- `supabase/standard-setup.sql`: adds the shared standard recipe library to an existing project
 - `supabase/favorites-setup.sql`: adds favorites to an existing project
 - `supabase/bartender-setup.sql`: adds saved bars, ratings and the AI allowance to an existing project
-- `supabase/functions/read-recipe/index.ts`: reads recipe photos and suggests drinks with Claude
+- `supabase/functions/read-recipe/index.ts`: reads recipe photos, suggests drinks and looks up standard recipes with Claude
