@@ -239,6 +239,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .share-preview img { display: block; width: 100%; height: auto; }
 .share-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
 .share-actions .btn { padding: 11px 14px; font-size: 15px; }
+.panel-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.index-head { flex-wrap: wrap; }
+.scan-banner { background: var(--accent-soft); color: var(--ink); border-radius: var(--r); padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.scan-banner b { color: var(--accent); }
+.scanning { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px 8px; text-align: center; }
+.scanning img { max-width: min(280px, 100%); max-height: 320px; border-radius: var(--r); border: 1px solid var(--rule); object-fit: contain; background: var(--raised); }
+.scanning .glass { font-family: var(--f-display); font-weight: 700; font-size: 24px; }
+.dots::after { content: ""; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+@media (prefers-reduced-motion: reduce) { .dots::after { animation: none; content: "…"; } }
+.editor-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -289,8 +300,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
       <section class="panel" aria-labelledby="drinks-title">
       <div class="index-head">
         <h2 class="panel-title" id="drinks-title">Drinks <span class="count" id="count-label"></span></h2>
-        <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
+        <div class="panel-actions">
+          <button class="btn small" id="scan-btn" type="button" hidden>Scan a recipe</button>
+          <button class="btn primary small" id="new-btn" type="button" hidden>+ New drink</button>
+        </div>
       </div>
+      <input type="file" id="scan-file" accept="image/*" hidden>
       <ul class="list" id="list"></ul>
       </section>
     </aside>
@@ -440,7 +455,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2200); }
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, Math.max(2200, String(msg).length * 55)); }
   function setStatus(kind, text) { $("status").className = "status " + kind; $("status-text").textContent = text; }
 
   // ---------- storage ----------
@@ -468,11 +483,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
   const myProfile = () => uid() ? S.profiles[uid()] : null;
 
   function refreshAuthUI() {
-    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; S.canWrite = true; return; }
+    if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; S.canWrite = true; return; }
     S.canWrite = !!S.session;
     $("auth-btn").hidden = false;
     $("auth-btn").textContent = S.session ? "Sign out" : "Sign in or join";
     $("new-btn").hidden = !S.canWrite;
+    $("scan-btn").hidden = !S.canWrite;
     const me = myProfile();
     $("locker-btn").hidden = !S.session;
     $("locker-btn").textContent = me && me.display_name ? me.display_name : "Name your locker";
@@ -672,6 +688,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function renderMain() {
     const m = $("main");
     if (S.view === "edit") return renderEditor();
+    if (S.view === "scan") {
+      m.innerHTML = `<div class="scanning">${S.scan && S.scan.preview ? `<img src="${S.scan.preview}" alt="Your recipe photo">` : ""}
+        <div class="glass dots">Reading the recipe</div>
+        <div class="hint">This usually takes 5 to 15 seconds.</div>
+        <button class="btn" type="button" id="scan-cancel">Cancel</button></div>`;
+      $("scan-cancel").onclick = () => { S.scan = null; S.view = "detail"; renderList(); renderMain(); };
+      return;
+    }
     const d = current();
     if (!S.loaded) { m.innerHTML = `<div class="blank"><div class="glass">Opening the bar…</div><div>Your saved drinks will appear here.</div></div>`; return; }
     if (!d) { m.innerHTML = `<div class="blank"><div class="glass">The shelf is empty</div><div>Add a drink with its spec for one glass. You can batch it for any crowd after.</div>${S.canWrite ? `<button class="btn primary" type="button" id="blank-new">+ Add your first drink</button>` : ""}</div>`;
@@ -1029,11 +1053,76 @@ button, input, select, textarea { font: inherit; color: inherit; }
     catch (e) { $("share-note").textContent = link; toast("Copy the link shown above"); }
   };
 
+  // ---------- scan a recipe photo ----------
+  const SCAN_ERR = {
+    signed_out: "Your sign-in expired. Sign in again to scan recipes.",
+    daily_limit: "You've hit today's limit for scanning recipes. Try again tomorrow.",
+    no_recipe: "Couldn't find a cocktail recipe in that photo. Try a closer, sharper shot.",
+    too_large: "That photo is too big. Try a smaller one.",
+    bad_image: "That photo format isn't supported. Use a JPEG or PNG.",
+    not_configured: "Recipe scanning isn't switched on yet. The site owner needs to add the Claude API key.",
+    bad_key: "Recipe scanning isn't working right now. The site owner needs to check the Claude API key.",
+    not_deployed: "Recipe scanning isn't set up yet. The site owner needs to add the read-recipe function in Supabase."
+  };
+  async function shrinkForScan(file) {
+    const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const scale = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.85);
+  }
+  function recipeToDrink(r) {
+    const okUnit = u => ["oz", "ml", "cl", "barspoon", "tsp", "tbsp", "dash", "each"].includes(u) ? u : "oz";
+    const ings = (r.ingredients || []).filter(i => i && String(i.name || "").trim()).map(i => {
+      const out = { amount: Number(i.amount) > 0 ? Math.round(Number(i.amount) * 1000) / 1000 : "", unit: okUnit(i.unit), name: String(i.name).trim().slice(0, 80) };
+      if (i.brand && String(i.brand).trim()) out.brand = String(i.brand).trim().slice(0, 80);
+      if (i.float) out.float = true;
+      return out;
+    });
+    return {
+      id: null, name: String(r.name || "").trim().slice(0, 80),
+      glass: String(r.glass || "").trim().slice(0, 40), garnish: String(r.garnish || "").trim().slice(0, 80),
+      method: METHODS.includes(r.method) ? r.method : "Shaken",
+      type: TYPES.includes(r.type) ? r.type : "", base: BASES.includes(r.base) ? r.base : "",
+      notes: String(r.notes || "").trim().slice(0, 1500),
+      ingredients: ings.length ? ings : [{ amount: "", unit: "oz", name: "" }]
+    };
+  }
+  async function scanRecipe(file) {
+    if (!sb || !S.session) { toast("Sign in to scan recipes."); return; }
+    let dataUrl;
+    try { dataUrl = await shrinkForScan(file); }
+    catch (e) { toast("Couldn't open that photo. Try a JPEG or PNG."); return; }
+    const token = {};
+    S.scan = { preview: dataUrl, token }; S.view = "scan"; S.scanNote = null;
+    renderList(); renderMain(); $("main").scrollIntoView({ behavior: "smooth", block: "start" });
+    let code = "", recipe = null;
+    try {
+      const { data, error } = await sb.functions.invoke("read-recipe", { body: { image: dataUrl.split(",")[1], mediaType: "image/jpeg" } });
+      if (error) {
+        const resp = error.context;
+        if (resp && typeof resp.json === "function") {
+          if (resp.status === 404) code = "not_deployed";
+          else { try { code = (await resp.json()).error || ""; } catch (e2) {} }
+          if (!code && resp.status === 401) code = "signed_out";
+        } else code = error.name === "FunctionsFetchError" ? "not_deployed" : "";
+      } else recipe = data && data.recipe;
+    } catch (e) { code = ""; }
+    if (!S.scan || S.scan.token !== token) return;
+    S.scan = null;
+    if (!recipe) { S.view = "detail"; renderList(); renderMain(); toast(SCAN_ERR[code] || "Couldn't read that photo. Try again."); return; }
+    openEditor(recipeToDrink(recipe), false, { warning: String(recipe.warning || "").trim() });
+  }
+  $("scan-btn").onclick = () => $("scan-file").click();
+  $("scan-file").onchange = ev => { const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (f) scanRecipe(f); };
+
   // ---------- editor ----------
   const draftDrink = () => { const e = S.editing || {}; return { method: e.method, glass: e.glass,
     ingredients: (e.ingredients || []).filter(i => (i.name || "").trim()).map(i => ({ name: i.name, brand: i.brand, kind: i.kind || "", unit: i.unit, float: i.float, amount: parseAmount(i.amountText) || 0 })) }; };
-  function openEditor(d, isCopy) {
-    S.view = "edit"; S.confirmDelete = false; S.isCopy = !!isCopy;
+  function openEditor(d, isCopy, scanNote) {
+    S.view = "edit"; S.confirmDelete = false; S.isCopy = !!isCopy; S.scanNote = scanNote || null;
     S.editing = d ? JSON.parse(JSON.stringify(d)) : { id: null, name: "", glass: "", method: "Stirred", garnish: "", notes: "",
       ingredients: [{ amount: "", unit: "oz", name: "" }, { amount: "", unit: "oz", name: "" }, { amount: "", unit: "dash", name: "" }] };
     S.editing.ingredients = S.editing.ingredients.map(i => Object.assign({}, i, { amountText: typeof i.amount === "number" ? amountToText(i.amount) : (i.amount || "") }));
@@ -1069,7 +1158,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
       </div>`).join("");
     m.innerHTML = `
       <form class="form" id="form" novalidate>
-        <h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your locker" : "New drink"}</h2>
+        <div class="editor-top"><h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your locker" : "New drink"}</h2>
+          ${!e.id && !S.isCopy && S.backend === "supabase" ? `<button class="btn small" type="button" id="fill-photo">Fill from a photo</button>` : ""}</div>
+        ${S.scanNote ? `<div class="scan-banner"><span><b>Read from your photo.</b> Check the amounts and names before saving.</span>${S.scanNote.warning ? `<span>${esc(S.scanNote.warning)}</span>` : ""}</div>` : ""}
         <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Drink name" autocomplete="off"></div>
         <div class="row2">
           <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Glass"></div>
@@ -1104,7 +1195,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     m.querySelectorAll(".ing-unit, .ing-kind, #f-method, .flt input").forEach(x => x.addEventListener("change", refreshAuto));
     $("add-ing").onclick = () => { readForm(); e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); $("ing-amt-" + (e.ingredients.length - 1)).focus(); };
     m.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { readForm(); e.ingredients.splice(Number(b.dataset.rm), 1); if (!e.ingredients.length) e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); });
-    $("cancel-btn").onclick = () => { S.view = "detail"; S.editing = null; renderList(); renderMain(); };
+    $("cancel-btn").onclick = () => { S.view = "detail"; S.editing = null; S.scanNote = null; renderList(); renderMain(); };
+    if ($("fill-photo")) $("fill-photo").onclick = () => $("scan-file").click();
     $("form").onsubmit = async ev => {
       ev.preventDefault(); readForm();
       if (!e.name.trim()) return renderEditor("Give the drink a name.");
@@ -1132,7 +1224,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       $("save-btn").disabled = true;
       const ok = await saveDrink(d);
       if (!ok) { $("save-btn").disabled = false; return; }
-      S.selected = id; S.view = "detail"; if (!passesFilters(S.drinks.find(x => x.id === id) || d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = ""; } renderFilters(); S.editing = null; S.servings = 1; S._fillL = null;
+      S.selected = id; S.view = "detail"; S.scanNote = null; if (!passesFilters(S.drinks.find(x => x.id === id) || d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "" }; S.query = ""; $("search").value = ""; } renderFilters(); S.editing = null; S.servings = 1; S._fillL = null;
       if (S.backend === "db" && !S.drinks.find(x => x.id === id)) S.drinks.push(d);
       renderList(); renderMain(); toast(isNew ? "Added " + d.name : "Saved " + d.name);
     };

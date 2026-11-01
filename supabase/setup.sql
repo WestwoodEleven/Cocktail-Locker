@@ -96,3 +96,15 @@ insert into public.drinks (id, name, data) values
   ('mitch-a-rita-bbgcq', 'Mitch-A-Rita', '{"garnish": "", "glass": "", "ingredients": [{"amount": 1.5, "brand": "Corralejo Silver", "name": "Tequila Blanco", "unit": "oz"}, {"amount": 1, "name": "Lime Juice (Freshly Squeezed)", "unit": "oz"}, {"amount": 0.5, "name": "1:1 Simple Syrup", "unit": "oz"}, {"amount": 0.5, "brand": "Cointreau", "name": "Orange Liqueur", "unit": "oz"}], "method": "Shaken", "name": "Mitch-A-Rita", "notes": "", "updatedAt": "2026-10-31T19:48:05.636Z"}'::jsonb),
   ('painkiller-86miq', 'Painkiller', '{"garnish": "", "glass": "", "ingredients": [{"amount": 2, "brand": "Planteray 5-Year-Old Barbados Rum", "name": "Gold Rum", "unit": "oz"}, {"amount": 3, "name": "Pineapple Juice", "unit": "oz"}, {"amount": 1, "brand": "Liquid Alchemist Coconut Syrup", "name": "Coconut Syrup", "unit": "oz"}, {"amount": 1, "name": "Orange Juice", "unit": "oz"}, {"amount": 0.5, "brand": "Coruba Dark Jamaican Rum", "float": true, "name": "Dark Rum Float", "unit": "oz"}], "method": "Shaken", "name": "Painkiller", "notes": "", "updatedAt": "2026-10-31T19:44:15.199Z"}'::jsonb)
 on conflict (id) do nothing;
+
+-------------------------------------------------------------------------------
+-- Recipe photo scans: a log the read-recipe function uses for its daily limit.
+-- Row level security with no policies: only the function (service role) can use it.
+-------------------------------------------------------------------------------
+create table if not exists public.recipe_scans (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create index if not exists recipe_scans_user_time_idx on public.recipe_scans (user_id, created_at);
+alter table public.recipe_scans enable row level security;

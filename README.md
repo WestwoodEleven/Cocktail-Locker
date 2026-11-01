@@ -17,6 +17,17 @@ Live site: https://westwoodeleven.github.io/Cocktail-Locker/
 3. Under **Authentication > URL Configuration**, set **Site URL** to `https://westwoodeleven.github.io/Cocktail-Locker/` and add the same address to **Redirect URLs**.
 4. Put the Project URL and publishable key in [`config.js`](config.js) (already done for this site).
 
+### Recipe photo scanning
+
+Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new drink) to read a recipe from a photo with Claude. It needs an Anthropic API key and costs roughly a cent per photo; each person can scan 25 photos a day.
+
+1. Get an API key at [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys) and add a little credit under Billing.
+2. If you ran `setup.sql` before scanning existed, run [`supabase/scan-setup.sql`](supabase/scan-setup.sql) in the SQL Editor.
+3. In Supabase, open **Edge Functions > Deploy a new function > Via Editor**. Name it `read-recipe`, replace the sample code with [`supabase/functions/read-recipe/index.ts`](supabase/functions/read-recipe/index.ts), and deploy. In the function's **Details** tab, turn off **Verify JWT** (the function checks sign-in itself).
+4. Under **Edge Functions > Secrets**, add `ANTHROPIC_API_KEY` with your key.
+
+Optional secrets: `RECIPE_DAILY_LIMIT` (default 25) and `RECIPE_MODEL` (default `claude-sonnet-5-5`).
+
 ### Claiming the first recipes
 
 Recipes from before lockers existed don't belong to anyone. Sign in on the site once, then edit the email in [`supabase/claim-recipes.sql`](supabase/claim-recipes.sql) to yours and run it. Those recipes move into your locker.
@@ -35,3 +46,5 @@ Supabase's built-in email service only sends a few sign-in emails per hour, whic
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
+- `supabase/scan-setup.sql`: adds the scan log table to an existing project
+- `supabase/functions/read-recipe/index.ts`: reads recipe photos with Claude
