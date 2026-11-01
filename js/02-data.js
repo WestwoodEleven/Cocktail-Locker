@@ -24,13 +24,15 @@ const lockerName = id => !id ? "Unclaimed" : (S.profiles[id] && S.profiles[id].d
 const myProfile = () => uid() ? S.profiles[uid()] : null;
 
 function refreshAuthUI() {
-  if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; $("make-btn").hidden = true; S.canWrite = true; return; }
+  if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; $("make-btn").hidden = true; $("canmake-btn").hidden = true; $("tools-hint").hidden = true; S.canWrite = true; return; }
   S.canWrite = !!S.session;
   $("auth-btn").hidden = false;
   $("auth-btn").textContent = S.session ? "Sign out" : "Sign in or join";
   $("new-btn").hidden = !S.canWrite;
   $("scan-btn").hidden = !S.canWrite;
   $("make-btn").hidden = !S.canWrite;
+  $("canmake-btn").hidden = !S.canWrite;
+  $("tools-hint").hidden = S.canWrite;
   const me = myProfile();
   $("locker-btn").hidden = !S.session;
   $("locker-btn").textContent = me && me.display_name ? "My locker" : "Name your locker";
@@ -166,6 +168,7 @@ function sortItems(list) {
 function afterData() {
   const want = hashId();
   if (want === "my-locker" && !S._hashDone && uid() && S.loaded) { S._hashDone = true; S.view = "profile"; }
+  if (HASH_VIEWS[want] && !S._hashDone && S.loaded) { S._hashDone = true; setTimeout(() => HASH_VIEWS[want](), 0); }
   if (want && !S._hashDone && allDrinks().some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
   if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
   renderFilters(); renderList(); if (S.view === "detail") renderMain();

@@ -112,6 +112,10 @@ function guessType(d) {
 const typeOf = d => d.type || guessType(d);
 
 // ---------- state ----------
+// Extra full-page views register here: VIEWS.name = () => render into #main.
+const VIEWS = {};
+// Views that have their own link (#name), opened on load or when the link changes.
+const HASH_VIEWS = {};
 const S = {
   drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
   view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,

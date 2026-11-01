@@ -78,6 +78,7 @@ function renderEditor(errMsg) {
   m.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { readForm(); e.ingredients.splice(Number(b.dataset.rm), 1); if (!e.ingredients.length) e.ingredients.push({ amountText: "", unit: "oz", name: "" }); renderEditor(); });
   $("cancel-btn").onclick = () => { const back = S.scanNote && S.scanNote.title && S.ideasState && S.ideasState.drinks; S.editing = null; S.scanNote = null; if (back) { S.view = "make"; renderList(); renderMake(); } else { S.view = "detail"; renderList(); renderMain(); } };
   if ($("fill-photo")) $("fill-photo").onclick = () => $("scan-file").click();
+  wireIngredientHelp(m);
   $("form").onsubmit = async ev => {
     ev.preventDefault(); readForm();
     if (!e.name.trim()) return renderEditor("Give the drink a name.");

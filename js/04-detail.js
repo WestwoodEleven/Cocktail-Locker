@@ -2,6 +2,7 @@
 // ---------- detail ----------
 function renderMain() {
   const m = $("main");
+  if (VIEWS[S.view]) return VIEWS[S.view]();
   if (S.view === "edit") return renderEditor();
   if (S.view === "make") return renderMake();
   if (S.view === "lookup") {
@@ -205,7 +206,7 @@ const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
 const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
 function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
 $("home-link").addEventListener("click", ev => {
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;

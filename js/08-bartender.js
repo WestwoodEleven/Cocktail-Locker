@@ -22,6 +22,7 @@ async function loadBar() {
   S.bar = { liquors: [].concat(it.liquors || []), syrups: [].concat(it.syrups || []), bitters: [].concat(it.bitters || []) };
   if (S.view === "make") renderMake();
   if (S.view === "profile") renderProfile();
+  if (VIEWS[S.view]) renderMain();
 }
 let barTimer = null;
 function saveBarSoon() {
@@ -53,6 +54,7 @@ function afterItems(key) {
   const g = GROUPS.find(x => x.key === key);
   $("dl-" + key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
   if ($("make-go")) $("make-go").disabled = !totalItems();
+  if (VIEWS[S.view] && S.view === "canmake") { clearTimeout(afterItems.t); afterItems.t = setTimeout(() => { const a = document.activeElement && document.activeElement.id; renderMain(); if (a && $(a)) $(a).focus(); }, 300); }
   if (S.view === "profile") { const st = document.querySelectorAll(".stat b")[2]; if (st) st.textContent = S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length; }
 }
 const totalItems = () => S.bar.liquors.length + S.bar.syrups.length + S.bar.bitters.length + S.fresh.length;

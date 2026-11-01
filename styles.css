@@ -291,3 +291,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .list .lookup-btn:disabled { cursor: default; opacity: .8; }
 .about { margin: 0; max-width: 65ch; color: var(--muted); }
 @media (max-width: 600px) { .sortrow, .sortrow select { font-size: 15px; } }
+.tools { display: grid; grid-template-columns: 1fr; gap: 6px; }
+@media (max-width: 780px) { .tools { grid-template-columns: 1fr 1fr; } }
+.tool { text-align: left; background: var(--raised); border: 1px solid var(--rule); border-radius: 9px; padding: 9px 11px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; color: var(--ink); min-width: 0; }
+.tool:hover { border-color: var(--ink); }
+.tool b { font-size: 14px; }
+.tool span { font-size: 12.5px; color: var(--muted); }
+.miss { color: var(--accent); font-weight: 600; }
+.sec-head h3 .count { font-family: var(--f-body); font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+.ing-dym { grid-column: 1 / -1; text-align: left; background: var(--accent-soft); border: 0; border-radius: 7px; padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
+.ing-dym b { color: var(--accent); }
