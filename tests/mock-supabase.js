@@ -30,6 +30,7 @@
         if (single === false && Array.isArray(payload)) out = list;
       } else if (op === "update") { rows().filter(match).forEach(r => Object.assign(r, payload)); out = rows().filter(match); }
       else if (op === "delete") { const keep = rows().filter(r => !match(r)); M.tables[t] = keep; }
+      out = out == null ? out : JSON.parse(JSON.stringify(out)); // real responses are copies, not live rows
       M.writes.push(op === "select" ? null : [t, op, payload]);
       M.writes = M.writes.filter(Boolean);
       return Promise.resolve({ data: out, error: null });

@@ -346,3 +346,15 @@ body.no-scroll { overflow: hidden; }
 .mm-progress { font-weight: 700; color: var(--green); }
 .mm-done { padding: 14px; font-size: 17px; }
 @media (max-width: 480px) { .mm-ing { grid-template-columns: 84px 1fr; } .mm-q { font-size: 22px; } .mm-n { font-size: 18px; } }
+.note-form { display: flex; flex-direction: column; gap: 6px; }
+.rnotes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rnotes li { border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; }
+.rnotes .stars { color: var(--accent); letter-spacing: 1px; }
+.rnotes p { margin: 3px 0 0; max-width: 65ch; }
+.linkish.who { color: var(--green); font-weight: 700; font-size: inherit; padding: 0; }
+.list-pick { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.listbox { border: 1px solid var(--rule); border-radius: var(--r); padding: 10px 12px; background: var(--raised); }
+.listbox[open] { display: flex; flex-direction: column; gap: 10px; }
+.listbox summary { cursor: pointer; }
+.lockerchip { border: 0; cursor: pointer; padding: 6px 12px; }
+.from button[data-locker] { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--green); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }

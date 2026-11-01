@@ -72,6 +72,8 @@ function renderProfile() {
           : `<p class="hint" style="margin:0">No favorites yet. Tap ♡ Favorite on any drink, yours or someone else's, to keep it here.</p>`}
       </section>
 
+      ${profileSocialHtml()}
+
       <section class="make-sec" id="prof-bar">
         <div class="sec-head"><h3>My bar</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></div>
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
@@ -85,6 +87,7 @@ function renderProfile() {
     renderList(); renderMain(); $("main").scrollIntoView({ behavior: "smooth", block: "start" });
   });
   m.querySelectorAll(".stat").forEach(a => a.onclick = e => { e.preventDefault(); const t = $(a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
+  wireProfileSocial(m);
   $("prof-rename").onclick = () => openNameForm(false);
   $("prof-new").onclick = () => openEditor(null);
   $("prof-scan").onclick = () => $("scan-file").click();

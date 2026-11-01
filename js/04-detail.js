@@ -53,14 +53,14 @@ function renderMain() {
   const fillVal = S._fillL ?? "";
   const mine = isMine(d);
   const canPhoto = S.backend === "supabase" && mine;
-  const fromLine = d.standard ? `<div class="from"><b>Standard recipe</b> from the shared library</div>` : S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your locker</b>" : `<button type="button" id="from-btn">${esc(lockerName(d.owner))}</button>`}</div>` : "";
+  const fromLine = d.standard ? `<div class="from"><b>Standard recipe</b> from the shared library</div>` : S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your locker</b>" : `<button type="button" data-locker="${esc(d.owner || "")}">${esc(lockerName(d.owner))}</button>`}</div>` : "";
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
     <div class="hero${d.photo ? "" : " no-photo"}">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
-      <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button><button class="btn small" type="button" id="share-btn">Share</button><button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+      <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button><button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small" type="button" id="list-add">Add to list</button>` : ""}<button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
     </div>
     ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
       <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -112,6 +112,7 @@ function renderMain() {
     ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
     ${d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p></div>` : ""}
     ${rateBlock(d)}
+    ${notesBlock(d)}
   `;
 
   const setServ = n => { n = Math.max(0.5, Math.min(999, Math.round(n * 10) / 10)); S.servings = n; S._fillL = null; renderMain(); };
@@ -135,7 +136,8 @@ function renderMain() {
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });
   if ($("rate-clear")) $("rate-clear").onclick = () => rateDrink(d, 0);
-  if ($("from-btn")) $("from-btn").onclick = () => { S.f = { owner: d.owner || "", type: "", base: "", method: "", kind: "" }; $("filters").open = true; refreshView(); };
+  if ($("note-save")) { $("note-save").onclick = () => saveNote(d, $("note-in").value); $("note-in").onkeydown = e => { if (e.key === "Enter") saveNote(d, $("note-in").value); }; }
+  if ($("list-add")) $("list-add").onclick = () => openListsFor(d);
   if ($("copy-btn")) $("copy-btn").onclick = () => {
     const c = JSON.parse(JSON.stringify(d)); delete c.photo; delete c.owner; c.id = null;
     if (d.standard) { delete c.standard; delete c.slug; delete c.aliases; delete c.about; }
@@ -209,7 +211,7 @@ const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
 const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
 function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
 $("home-link").addEventListener("click", ev => {
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;

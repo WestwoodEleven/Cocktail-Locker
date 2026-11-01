@@ -4,7 +4,7 @@ const haystack = d => [d.name, d.glass, d.garnish, d.notes, d.method, typeOf(d),
   ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
 function passesFilters(d, skip) {
   const f = S.f;
-  if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : f.owner === "fav" ? isFav(d) : d.owner === f.owner)) return false;
+  if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : f.owner === "fav" ? isFav(d) : f.owner === "following" ? followingIds().includes(d.owner) : f.owner.startsWith("col:") ? !!(S.colItems[f.owner.slice(4)] && S.colItems[f.owner.slice(4)].has(d.id)) : d.owner === f.owner)) return false;
   if (skip !== "type" && f.type && typeOf(d) !== f.type) return false;
   if (skip !== "base" && f.base && baseOf(d) !== f.base) return false;
   if (skip !== "method" && f.method && d.method !== f.method) return false;
@@ -19,7 +19,7 @@ function passesFilters(d, skip) {
   return true;
 }
 // Standard recipes appear only when searching, or under My favorites.
-const pool = () => (S.query.trim() || S.f.owner === "fav") ? allDrinks() : S.drinks.slice();
+const pool = () => (S.query.trim() || S.f.owner === "fav" || S.f.owner.startsWith("col:")) ? allDrinks() : S.drinks.slice();
 function filtered() { return sortItems(pool().filter(d => passesFilters(d))); }
 function renderFilters() {
   const multi = S.backend === "supabase";
@@ -38,6 +38,8 @@ function renderFilters() {
     $("flt-owner").innerHTML = `<option value="">Everyone's lockers</option>` +
       (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My locker (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
       (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
+      (uid() && !S.followsOff && followingIds().length ? `<option value="following" ${S.f.owner === "following" ? "selected" : ""}>People I follow (${S.drinks.filter(d => passesFilters(d, "owner") && followingIds().includes(d.owner)).length})</option>` : "") +
+      (uid() ? myLists().map(c => `<option value="col:${esc(c.id)}" ${S.f.owner === "col:" + c.id ? "selected" : ""}>List: ${esc(c.name)} (${allDrinks().filter(d => passesFilters(d, "owner") && S.colItems[c.id] && S.colItems[c.id].has(d.id)).length})</option>`).join("") : "") +
       named.filter(id => id).map(id => `<option value="${esc(id)}" ${S.f.owner === id ? "selected" : ""}>${esc(lockerName(id))} (${counts[id] || 0})</option>`).join("");
   }
   $("flt-type").innerHTML = opts("type", TYPES, "Any type", typeOf);

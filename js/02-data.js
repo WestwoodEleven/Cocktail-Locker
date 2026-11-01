@@ -74,11 +74,11 @@ async function startStorage() {
       S.bar = { liquors: [], syrups: [], bitters: [] }; loadBar();
       loadRatings().then(() => { renderFilters(); renderList(); renderMain(); });
       if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine" || S.f.owner === "fav") S.f.owner = ""; }
-      loadFavorites().then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
+      Promise.all([loadFavorites(), loadCollections(), loadFollows()]).then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
       loadProfiles(); renderFilters(); renderList(); renderMain();
     }
   });
-  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd()]);
+  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows()]);
   loadBar();
   renderFilters(); renderList(); if (S.view === "detail") renderMain();
   if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
@@ -168,6 +168,7 @@ function sortItems(list) {
 function afterData() {
   const want = hashId();
   if (want === "my-locker" && !S._hashDone && uid() && S.loaded) { S._hashDone = true; S.view = "profile"; }
+  if (/^locker-/.test(want) && !S._hashDone && S.loaded) { S._hashDone = true; setTimeout(() => openLocker(want.slice(7)), 0); }
   if (HASH_VIEWS[want] && !S._hashDone && S.loaded) { S._hashDone = true; setTimeout(() => HASH_VIEWS[want](), 0); }
   if (want && !S._hashDone && allDrinks().some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
   if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
