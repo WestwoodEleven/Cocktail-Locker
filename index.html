@@ -1104,23 +1104,35 @@ button, input, select, textarea { font: inherit; color: inherit; }
     const token = {};
     S.scan = { preview: dataUrl, token }; S.view = "scan"; S.scanNote = null;
     renderList(); renderMain(); $("main").scrollIntoView({ behavior: "smooth", block: "start" });
-    let code = "", recipe = null;
+    let code = "", recipe = null, detail = "";
     try {
       const { data, error } = await sb.functions.invoke("read-recipe", { body: { image: dataUrl.split(",")[1], mediaType: "image/jpeg" } });
       if (error) {
         const resp = error.context;
         if (resp && typeof resp.json === "function") {
           if (resp.status === 404) code = "not_deployed";
-          else { try { code = (await resp.json()).error || ""; } catch (e2) {} }
+          else { try { const j = await resp.json(); code = j.error || ""; detail = j.detail || ""; } catch (e2) {} }
+          if (!code) detail = detail || ("HTTP " + resp.status);
           if (!code && resp.status === 401) code = "signed_out";
           if (!code && resp.status >= 500) code = "crashed";
         } else code = error.name === "FunctionsFetchError" ? "unreachable" : "";
       } else recipe = data && data.recipe;
-    } catch (e) { code = ""; }
+    } catch (e) { code = ""; detail = String(e && e.message || e); }
     if (!S.scan || S.scan.token !== token) return;
     S.scan = null;
-    if (!recipe) { S.view = "detail"; renderList(); renderMain(); toast(SCAN_ERR[code] || "Couldn't read that photo. Try again."); return; }
+    if (!recipe) { S.view = "detail"; renderList(); if (SCAN_ERR[code]) renderMain(); if (SCAN_ERR[code]) toast(SCAN_ERR[code]);
+      else showScanError(code, detail);
+      return; }
     openEditor(recipeToDrink(recipe), false, { warning: String(recipe.warning || "").trim() });
+  }
+  function showScanError(code, detail) {
+    let msg = detail;
+    try { const j = JSON.parse(detail); msg = (j.error && (j.error.message || j.error.type)) || detail; } catch (e) {}
+    $("main").innerHTML = `<div class="blank"><div class="glass">Couldn't read that photo</div>
+      <div>Here's what came back, so it can be fixed:</div>
+      <div class="hint" style="max-width:60ch;word-break:break-word">${esc([code, msg].filter(Boolean).join(": ") || "No details were returned.")}</div>
+      <button class="btn" type="button" id="scan-err-ok">Back to drinks</button></div>`;
+    $("scan-err-ok").onclick = () => { S.view = "detail"; renderMain(); };
   }
   $("scan-btn").onclick = () => $("scan-file").click();
   $("scan-file").onchange = ev => { const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (f) scanRecipe(f); };
