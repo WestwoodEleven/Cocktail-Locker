@@ -33,13 +33,13 @@ function renderMain() {
   const totalMl = perServing * S.servings * (1 + dil);
   const brandNote = i => i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : "";
   const row = (i, mult, cls) => { const s = show(i, mult, S.mode);
-    return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
+    return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${swapBtn(d, i)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
   const rows = (d.ingredients || []).filter(i => !i.float).map(i => row(i, S.servings)).join("");
   const many = S.servings !== 1;
   const floatRows = floats.map(i => {
     const s = show(i, S.servings, S.mode), g = show(i, 1, S.mode);
     const note = many ? `${g.q}${g.u ? " " + g.u : ""} on top of each glass at serving. Keep it out of the batch.` : "";
-    return `<tr class="float"><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)} <span class="chip amber float-tag">Float</span>${brandNote(i)}${note ? `<span class="note">${esc(note)}</span>` : ""}</td></tr>`;
+    return `<tr class="float"><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)} <span class="chip amber float-tag">Float</span>${swapBtn(d, i)}${brandNote(i)}${note ? `<span class="note">${esc(note)}</span>` : ""}</td></tr>`;
   }).join("");
   let waterRow = "";
   if (S.prebatch && dil > 0) {
@@ -60,7 +60,7 @@ function renderMain() {
     <div class="hero${d.photo ? "" : " no-photo"}">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
-      <div class="actions"><button class="btn small primary" type="button" id="share-btn">Share</button><button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
+      <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button><button class="btn small" type="button" id="share-btn">Share</button><button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my locker" : "Copy to my locker"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
     </div>
     ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
       <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -129,6 +129,8 @@ function renderMain() {
   $("fill-go").onclick = doFill;
   $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
   $("share-btn").onclick = () => openShare(d);
+  $("makeit-btn").onclick = () => openMakeMode(d);
+  m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });
