@@ -54,7 +54,7 @@ const TOOL = {
 };
 
 const PROMPT = `This photo should show a cocktail recipe: printed, handwritten, a menu, a book page or a screenshot.
-Read it and call save_recipe with ONE drink.
+Read it and call the save_recipe tool exactly once with ONE drink. Always answer by calling the tool, never with plain text.
 - Amounts are for a single drink. Convert fractions to decimals (3/4 = 0.75, 1 1/2 = 1.5).
 - Use the unit written when it is allowed. "Bar spoon" = barspoon, "dashes" = dash, "teaspoon" = tsp.
 - "Parts": treat 1 part as 1 oz and say so in warning. A batch recipe: divide down to one drink and say so.
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
       model: MODEL,
       max_tokens: 2000,
       tools: [TOOL],
-      tool_choice: { type: "tool", name: "save_recipe" },
+      tool_choice: { type: "auto" },
       messages: [{ role: "user", content: [
         { type: "image", source: { type: "base64", media_type: mediaType, data: image } },
         { type: "text", text: PROMPT },
@@ -123,8 +123,15 @@ Deno.serve(async (req) => {
     return reply(502, { error: code, detail: text.slice(0, 300) });
   }
   const out = await res.json();
-  const call = (out.content || []).find((c: { type: string }) => c.type === "tool_use");
-  if (!call?.input) return reply(502, { error: "reader_failed" });
-  if (!call.input.found || !(call.input.ingredients || []).length) return reply(422, { error: "no_recipe" });
-  return reply(200, { recipe: call.input });
+  const blocks = out.content || [];
+  let recipe = blocks.find((c: { type: string; name?: string }) => c.type === "tool_use" && c.name === "save_recipe")?.input;
+  if (!recipe) {
+    // Fallback: the model answered in text; pull out a JSON object if there is one.
+    const text = blocks.filter((c: { type: string }) => c.type === "text").map((c: { text: string }) => c.text).join("\n");
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { try { recipe = JSON.parse(m[0]); } catch { /* ignore */ } }
+  }
+  if (!recipe) return reply(502, { error: "reader_failed", detail: "The reader answered without a recipe." });
+  if (recipe.found === false || !(recipe.ingredients || []).length) return reply(422, { error: "no_recipe" });
+  return reply(200, { recipe });
 });
