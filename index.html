@@ -1350,6 +1350,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
             ${sel("p-taste", "Taste", ["Sweet", "Balanced", "Tart", "Bitter", "Dry", "Fruity", "Herbal", "Smoky"], S.prefs.taste)}
             ${sel("p-method", "Method", METHODS, S.prefs.method)}
           </div>
+          <label class="check" for="p-taste-on"><input type="checkbox" id="p-taste-on" ${S.useTaste ? "checked" : ""}>
+            <span>Use my favorites and top-rated drinks<br><span class="hint">${tasteHint()}</span></span></label>
           <div class="field"><label for="p-notes">Anything else</label><input id="p-notes" type="text" maxlength="300" value="${esc(S.prefs.notes)}" placeholder="Anything else"></div>
         </section>
         <div class="form-actions"><button class="btn primary" type="button" id="make-go" ${totalItems() ? "" : "disabled"}>Suggest 3 drinks</button></div>
@@ -1358,6 +1360,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     wireGroups(GROUPS);
     ["style", "strength", "taste", "method"].forEach(k => $("p-" + k).onchange = e => { S.prefs[k] = e.target.value; });
     $("p-notes").oninput = e => { S.prefs.notes = e.target.value; };
+    $("p-taste-on").onchange = e => { S.useTaste = e.target.checked; try { localStorage.setItem("mc-use-taste", S.useTaste ? "1" : "0"); } catch (er) {} };
     $("make-close").onclick = () => { S.view = "detail"; renderList(); renderMain(); };
     $("make-go").onclick = generateIdeas;
     wireIdeas();
@@ -1391,6 +1394,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
       openEditor(d, false, { title: "Made by the AI bartender.", body: "Tweak anything before saving.", warning: x.extras ? "Even better with: " + x.extras : "" });
     });
   }
+  S.useTaste = (() => { try { return localStorage.getItem("mc-use-taste") !== "0"; } catch (e) { return true; } })();
+  function likedDrinks() {
+    return sorted().filter(d => isFav(d) || ratingOf(d).mine >= 4)
+      .sort((a, b) => (isFav(b) - isFav(a)) || (ratingOf(b).mine - ratingOf(a).mine));
+  }
+  function tasteProfile() {
+    const liked = likedDrinks().slice(0, 15).map(d => ({ name: d.name, type: typeOf(d), base: baseOf(d), ingredients: (d.ingredients || []).map(i => i.name).slice(0, 10) }));
+    const avoid = [...new Set(sorted().filter(d => isMine(d) || isFav(d)).map(d => d.name))].slice(0, 60);
+    return { liked, avoid };
+  }
+  function tasteHint() {
+    const n = likedDrinks().length;
+    return n ? `Leans toward ${n} drink${n === 1 ? "" : "s"} you love and skips ones you already have.` : "Favorite drinks or rate them 4 stars or more to personalize ideas. It still skips drinks you already have.";
+  }
   async function invokeHelper(body) {
     let code = "", detail = "", data = null;
     try {
@@ -1414,7 +1431,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     S.ideasState = { loading: true, token };
     $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = true;
     $("ideas").scrollIntoView({ behavior: "smooth", block: "start" });
-    const { data, code, detail } = await invokeHelper({ mode: "generate", bar: S.bar, fresh: S.fresh, prefs: S.prefs });
+    const { data, code, detail } = await invokeHelper({ mode: "generate", bar: S.bar, fresh: S.fresh, prefs: S.prefs, taste: S.useTaste ? tasteProfile() : null });
     if (!S.ideasState || S.ideasState.token !== token) return;
     if (data && Array.isArray(data.drinks) && data.drinks.length) S.ideasState = { drinks: data.drinks, note: data.note || "" };
     else {
