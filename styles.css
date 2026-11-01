@@ -358,3 +358,4 @@ body.no-scroll { overflow: hidden; }
 .listbox summary { cursor: pointer; }
 .lockerchip { border: 0; cursor: pointer; padding: 6px 12px; }
 .from button[data-locker] { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--green); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.install-tip { background: var(--accent-soft); border-radius: 9px; padding: 10px 12px; font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }

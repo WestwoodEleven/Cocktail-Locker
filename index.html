@@ -9,6 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500..700;1,7..72,500..600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#18261F">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cocktails">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 <div class="wrap">
@@ -20,6 +28,7 @@
     <div class="auth">
       <div class="status" id="status"><span class="dot"></span><span id="status-text">Opening the bar…</span></div>
       <button class="locker-btn" id="locker-btn" type="button" hidden></button>
+      <button class="btn small" id="install-btn" type="button" hidden>Install app</button>
       <button class="btn small" id="auth-btn" type="button" hidden>Sign in or join</button>
     </div>
   </header>
@@ -66,6 +75,7 @@
         <button class="tool" id="scan-btn" type="button" hidden><b>Scan a recipe</b><span>Turn a photo into a drink</span></button>
       </div>
       <p class="hint" id="tools-hint" hidden>Sign in for your bar, AI ideas and recipe scanning.</p>
+      <div class="install-tip" id="ios-tip" hidden><span><b>Use it like an app:</b> tap the Share button, then <b>Add to Home Screen</b>.</span><button class="linkish" type="button" id="ios-tip-x">Got it</button></div>
       </section>
       <section class="panel" aria-labelledby="drinks-title">
       <div class="index-head">
@@ -114,6 +124,7 @@
 <script src="js/14-party.js"></script>
 <script src="js/15-swap-makemode.js"></script>
 <script src="js/16-social.js"></script>
+<script src="js/17-app.js"></script>
 <script src="js/99-start.js"></script>
 
 </body>

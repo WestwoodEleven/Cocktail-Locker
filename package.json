@@ -1,0 +1,11 @@
+{
+  "name": "cocktail-locker",
+  "private": true,
+  "description": "The Cocktail Locker: static site plus Supabase. Only the tests use npm.",
+  "scripts": {
+    "test": "node tests/run.mjs && node --experimental-strip-types tests/function.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}
