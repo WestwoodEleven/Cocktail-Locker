@@ -68,7 +68,11 @@ Read it and call save_recipe with ONE drink.
 - If nothing readable is a cocktail recipe, set found to false.`;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (req.method === "OPTIONS") {
+    // Allow whatever headers the browser asks for, so newer Supabase client versions aren't blocked.
+    const asked = req.headers.get("Access-Control-Request-Headers");
+    return new Response("ok", { headers: { ...CORS, ...(asked ? { "Access-Control-Allow-Headers": asked } : {}), "Access-Control-Max-Age": "86400" } });
+  }
   if (req.method !== "POST") return reply(405, { error: "method" });
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
