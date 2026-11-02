@@ -24,6 +24,8 @@ export default async function () {
   check("menu card lists drinks", (await p.text("#menu-card")).includes("Moscow Mule"));
   await p.click("[data-sv='mule'][data-d='1']"); await p.waitForTimeout(100);
   check("manual servings override", (await p.text(".party-drink:nth-of-type(2) .sv")) === "13");
+  await p.waitForFunction(() => (localStorage.getItem("mc-party") || "").includes("mule"), null, { timeout: 3000 }).catch(() => {});
+  await p.waitForTimeout(300); // let the test browser finish writing storage for a file:// page before reloading
   await p.evaluate("location.hash = '#party'"); await p.reload();
   await p.waitForFunction(() => (document.getElementById("main").innerText || "").includes("Moscow Mule"), null, { timeout: 5000 }).catch(() => {});
   const q = p;
