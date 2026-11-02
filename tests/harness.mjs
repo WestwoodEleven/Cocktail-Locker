@@ -28,7 +28,9 @@ export const sample = () => ({
   standard_recipes: [{ slug: "daiquiri", name: "Daiquiri", aliases: [], data: { name: "Daiquiri", method: "Shaken", type: "Sour", base: "Rum", glass: "Coupe",
     ingredients: [{ amount: 2, unit: "oz", name: "White rum" }, { amount: 1, unit: "oz", name: "Lime juice" }, { amount: 0.75, unit: "oz", name: "Simple syrup" }], about: "Cuban classic." } }],
   collections: [], collection_items: [], follows: [],
-  bottles: [{ slug: "cointreau", name: "Cointreau", product: "Cointreau Triple Sec", ingredient: "Orange liqueur", category: "liqueur", producer: "Rémy Cointreau", origin: "Angers, France", abv: 40, age: "", description: "A clear orange liqueur.", aliases: [] }],
+  bottles: [{ slug: "cointreau", name: "Cointreau", product: "Cointreau Triple Sec", ingredient: "Orange liqueur", category: "liqueur", producer: "Rémy Cointreau", origin: "Angers, France", abv: 40, age: "", description: "A clear orange liqueur.", aliases: [] },
+    { slug: "orgeat", name: "Small Hand Orgeat", product: "Small Hand Foods Orgeat", ingredient: "Orgeat", category: "syrup", abv: null, description: "Almond syrup.", aliases: [] },
+    { slug: "seedlip", name: "Seedlip Garden 108", product: "Seedlip Garden 108", ingredient: "Non-alcoholic spirit", category: "other", abv: 0, description: "Zero-proof.", aliases: [] }],
   bottle_photos: [], bottle_reviews: [{ slug: "cointreau", user_id: "u2", stars: 5, comment: "Essential for Margaritas." }], bottle_reports: [], site_admins: []
 });
 

@@ -90,6 +90,12 @@ check("generic spirit gets a product suggestion", st === 422 && body.error === "
 claudeReply = ok({ found: true, name: "Odd", abv: 250, category: "nonsense" });
 [st, body] = await call({ mode: "bottle", query: "odd stuff" });
 check("bad ABV and category cleaned up", body.bottle.abv === null && body.bottle.category === "other");
+claudeReply = ok({ found: true, name: "Fever-Tree Tonic", category: "mixer", non_alcoholic: true });
+[st, body] = await call({ mode: "bottle", query: "fever tree tonic" });
+check("non-alcoholic bottles saved as 0% ABV", body.bottle.abv === 0);
+claudeReply = ok({ found: true, name: "Mystery Rum", category: "rum", abv: 0 });
+[st, body] = await call({ mode: "bottle", query: "mystery rum" });
+check("unsure ABV on a spirit left blank, not 0", body.bottle.abv === null);
 
 scansToday = 25;
 check("daily allowance enforced", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[0] === 429);

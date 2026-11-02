@@ -272,7 +272,8 @@ const BOTTLE_INFO_TOOL = {
       category: { type: "string", enum: BOTTLE_CATEGORIES },
       producer: { type: "string" },
       origin: { type: "string", description: "Country and region." },
-      abv: { type: "number", description: "Typical alcohol by volume in percent; 0 if unsure or non-alcoholic." },
+      abv: { type: "number", description: "Typical alcohol by volume in percent. Use 0 only for non-alcoholic products; leave it out if unsure." },
+      non_alcoholic: { type: "boolean", description: "True for non-alcoholic products such as syrups, mixers and zero-proof spirits." },
       age: { type: "string", description: "Age statement if any, else empty." },
       description: { type: "string", description: "3 to 4 sentences: a little history, how it tastes, and how bartenders use it in cocktails." },
       did_you_mean: { type: "string", description: "If not found, the closest real product, else empty." },
@@ -400,11 +401,11 @@ Deno.serve(async (req) => {
       }
       return reply(200, { bottle: existing });
     }
-    const abv = Number(input.abv);
+    const abv = input.non_alcoholic === true ? 0 : Number(input.abv);
     const row = {
       slug: canon, name: clean(input.name, 80), product: clean(input.product, 120), ingredient: clean(input.ingredient, 60),
       category: BOTTLE_CATEGORIES.includes(String(input.category)) ? input.category : "other",
-      producer: clean(input.producer, 80), origin: clean(input.origin, 80), abv: abv > 0 && abv < 100 ? Math.round(abv * 10) / 10 : null,
+      producer: clean(input.producer, 80), origin: clean(input.origin, 80), abv: abv === 0 && (input.non_alcoholic === true || ["syrup", "mixer"].includes(String(input.category))) ? 0 : abv > 0 && abv < 100 ? Math.round(abv * 10) / 10 : null,
       age: clean(input.age, 40), description: clean(input.description, 1200), aliases: canon !== q ? [q] : [], created_by: userId,
     };
     const { error: insErr } = await admin.from("bottles").insert(row);

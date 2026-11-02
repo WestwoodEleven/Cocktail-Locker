@@ -36,7 +36,9 @@ export default async function () {
   check("photo added to the page", (await p.evaluate("window.__MOCK.tables.bottle_photos.length")) === 1 && await p.isVisible(".bottle-photo img"));
   // look up a new bottle from the guide
   await p.click("#guide-btn"); await p.waitForTimeout(100);
-  check("guide lists known bottles", (await p.text("#main")).includes("Cointreau"));
+  const g = await p.text("#main");
+  check("guide lists known bottles with ABV", g.includes("Cointreau") && g.includes("Orange liqueur · 40% ABV"), g);
+  check("non-alcoholic shown as 0.0% NA", g.includes("Orgeat · 0.0% NA") && g.includes("Non-alcoholic spirit · 0.0% NA"));
   await p.fill("#gd-search", "Buffalo Trace Bourbon"); await p.click("#gd-go"); await p.waitForTimeout(60);
   check("new bottle shows looking-up state", (await p.text("#main")).includes("Looking up"));
   await p.waitForTimeout(300);

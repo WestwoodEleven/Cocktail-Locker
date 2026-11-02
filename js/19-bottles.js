@@ -20,6 +20,12 @@ async function loadBottles() {
   S.bottleReviews = {}; (r.data || []).forEach(x => (S.bottleReviews[x.slug] = S.bottleReviews[x.slug] || []).push(x));
   if (uid()) { const a = await sb.from("site_admins").select("user_id").eq("user_id", uid()); S.isAdmin = !a.error && (a.data || []).length > 0; } else S.isAdmin = false;
 }
+// Strength label: "40% ABV", or "0.0% NA" for non-alcoholic bottles (syrups and mixers count as NA when no ABV is stored).
+function abvText(b) {
+  const v = b.abv == null || b.abv === "" ? null : Number(b.abv);
+  if (v === 0 || (v == null && ["syrup", "mixer"].includes(b.category))) return "0.0% NA";
+  return v > 0 ? `${+v.toFixed(1)}% ABV` : "";
+}
 const bottleFor = name => { const k = slugify(name); return k ? S.bottles.find(b => b.slug === k || b.aliases.includes(k)) : null; };
 const bottleRating = slug => { const rs = S.bottleReviews[slug] || []; return { count: rs.length, avg: rs.length ? rs.reduce((s, r) => s + r.stars, 0) / rs.length : 0, mine: (rs.find(r => r.user_id === uid()) || {}) }; };
 const bottlePhoto = slug => { const ps = (S.bottlePhotos[slug] || []).slice().sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))); return ps[0] || null; };
@@ -79,7 +85,7 @@ VIEWS.bottle = function renderBottle() {
   const r = bottleRating(b.slug);
   const reviews = (S.bottleReviews[b.slug] || []).filter(x => x.comment && x.comment.trim()).sort((a, c) => String(c.updated_at).localeCompare(String(a.updated_at)));
   const uses = drinksUsing(b);
-  const facts = [["Type", b.ingredient], ["Producer", b.producer], ["From", b.origin], ["Strength", b.abv ? `${b.abv}% ABV` : ""], ["Age", b.age]].filter(f => f[1]);
+  const facts = [["Type", b.ingredient], ["Producer", b.producer], ["From", b.origin], ["Strength", abvText(b)], ["Age", b.age]].filter(f => f[1]);
   const inBar = barHas(b);
   const mine = r.mine.stars || 0;
   m.innerHTML = `
@@ -182,14 +188,14 @@ async function editBottle(b) {
   sheet("Edit " + b.name, `
     ${fixes.length ? `<div class="scan-banner"><span><b>Suggested fixes</b></span>${fixes.map(x => `<span>• ${esc(x.message)}</span>`).join("")}</div>` : ""}
     ${f("eb-name", "Name", b.name)}${f("eb-product", "Full product name", b.product)}${f("eb-ingredient", "Type (what recipes call it)", b.ingredient)}
-    <div class="row2">${f("eb-producer", "Producer", b.producer)}${f("eb-origin", "From", b.origin)}${f("eb-abv", "ABV %", b.abv, "number")}${f("eb-age", "Age", b.age)}</div>
+    <div class="row2">${f("eb-producer", "Producer", b.producer)}${f("eb-origin", "From", b.origin)}${f("eb-abv", "ABV % (0 for non-alcoholic, blank if unknown)", b.abv, "number")}${f("eb-age", "Age", b.age)}</div>
     <div class="field"><label for="eb-category">Category</label><select id="eb-category">${Object.entries(CATEGORY_LABEL).map(([k, l]) => `<option value="${k}" ${b.category === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="field"><label for="eb-desc">Description</label><textarea id="eb-desc" rows="5">${esc(b.description || "")}</textarea></div>
     <div class="panel-actions" style="justify-content:flex-start"><button class="btn primary small" type="button" id="eb-save">Save</button>${fixes.length ? `<button class="btn small" type="button" id="eb-clear">Save and clear suggestions</button>` : ""}</div>`);
   const save = async clear => {
-    const abv = Number($("eb-abv").value);
+    const abvRaw = $("eb-abv").value.trim(), abv = Number(abvRaw);
     const patch = { name: $("eb-name").value.trim() || b.name, product: $("eb-product").value.trim(), ingredient: $("eb-ingredient").value.trim(), producer: $("eb-producer").value.trim(),
-      origin: $("eb-origin").value.trim(), abv: abv > 0 && abv < 100 ? abv : null, age: $("eb-age").value.trim(), category: $("eb-category").value, description: $("eb-desc").value.trim(), updated_at: new Date().toISOString() };
+      origin: $("eb-origin").value.trim(), abv: abvRaw === "" || !(abv >= 0 && abv < 100) ? null : abv, age: $("eb-age").value.trim(), category: $("eb-category").value, description: $("eb-desc").value.trim(), updated_at: new Date().toISOString() };
     const { error } = await sb.from("bottles").update(patch).eq("slug", b.slug);
     if (error) { toast("Couldn't save. Make sure you're set up as an admin."); return; }
     Object.assign(b, patch);
@@ -229,7 +235,7 @@ VIEWS.guide = function renderGuide() {
   list.forEach(b => (groups[CATEGORY_LABEL[b.category] || "Other"] = groups[CATEGORY_LABEL[b.category] || "Other"] || []).push(b));
   const row = b => { const r = bottleRating(b.slug), ph = bottlePhoto(b.slug);
     return `<li><button type="button" class="prow" data-bottle="${esc(b.name)}">${ph ? `<img class="thumb" src="${esc(photoUrl(ph.path))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc(b.name.charAt(0))}</span>`}
-      <span class="txt"><span class="nm">${esc(b.name)}</span><span class="sub">${esc([b.ingredient, r.count ? `★ ${r.avg.toFixed(1)}` : ""].filter(Boolean).join(" · "))}</span></span></button></li>`; };
+      <span class="txt"><span class="nm">${esc(b.name)}</span><span class="sub">${esc([b.ingredient, abvText(b), r.count ? `★ ${r.avg.toFixed(1)}` : ""].filter(Boolean).join(" · "))}</span></span></button></li>`; };
   m.innerHTML = `
     <div class="make">
       <div class="editor-top"><div><span class="label">Bottle guide</span><h2 class="make-title">Bottles</h2></div><button class="btn small" type="button" id="gd-back">Back to drinks</button></div>
