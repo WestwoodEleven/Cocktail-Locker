@@ -75,11 +75,11 @@ function renderProfile() {
       ${profileSocialHtml()}
 
       <section class="make-sec" id="prof-bar">
-        <div class="sec-head"><h3>My bottles</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bottles can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></div>
-        <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock.</p>
+        <div class="sec-head"><h3>My bottles</h3>
+          <div class="panel-actions"><button class="btn small" type="button" data-stock-open>Add from photos</button><button class="btn primary small" type="button" id="prof-make">Make me a drink</button></div></div>
+        <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock. <span id="bar-saved">${S.barOff ? "Your bottles can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></p>
         ${outSummary()}
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
-        <div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-stock-open>Add bottles from photos</button><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bottles</button></div>
       </section>
 
       ${adminHtml()}
