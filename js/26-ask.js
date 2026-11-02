@@ -126,7 +126,9 @@ async function askSend(text, isRetry) {
   if (data && (data.answer || (data.drinks || []).length)) {
     A.msgs.push({ role: "bartender", text: data.answer || "", drinks: data.drinks || [] });
   } else {
-    A.error = (code === "daily_limit" ? "You've used today's 25 AI requests. Try again tomorrow." : SCAN_ERR[code]) || "The bartender couldn't answer just now. Try again.";
+    // An older read-recipe function doesn't know "ask" and treats it as a photo scan (bad_image).
+    A.error = code === "bad_image" ? "Ask the bartender isn't switched on yet. The site owner needs to redeploy the read-recipe function in Supabase."
+      : (code === "daily_limit" ? "You've used today's 25 AI requests. Try again tomorrow." : SCAN_ERR[code]) || "The bartender couldn't answer just now. Try again.";
     A.retry = A.msgs[A.msgs.length - 1] && A.msgs[A.msgs.length - 1].role === "user" ? A.msgs[A.msgs.length - 1].text : null;
   }
   if (S.view !== "ask") return;
