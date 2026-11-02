@@ -55,6 +55,12 @@ Search covers every locker. Versions of the same drink are grouped together and 
 
 If you ran `setup.sql` before these existed, run [`supabase/social-setup.sql`](supabase/social-setup.sql) and redeploy the `read-recipe` function.
 
+### Bottle guide
+
+Every bottle gets a shared page: details and a short description (written by the AI the first time anyone looks the bottle up, then saved for everyone), people's own photos of the bottle, 1–5 star ratings with comments, the recipes that name it as their recommended brand, and an **Add to my bar** button. Open one by tapping a recommended brand on a recipe, a bottle in your bar, a bottle in search results, or from **Bottle guide** in Tools (links look like `#bottle-buffalo-trace`).
+
+Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admins can **Edit details**, read suggested fixes and remove bad photos or reviews. To make yourself an admin, sign in once, put your email in [`supabase/make-me-admin.sql`](supabase/make-me-admin.sql) and run it. If you ran `setup.sql` before this existed, run [`supabase/bottles-setup.sql`](supabase/bottles-setup.sql) and redeploy `read-recipe`.
+
 ### Claiming the first recipes
 
 Recipes from before lockers existed don't belong to anyone. Sign in on the site once, then edit the email in [`supabase/claim-recipes.sql`](supabase/claim-recipes.sql) to yours and run it. Those recipes move into your locker.
@@ -82,6 +88,7 @@ After editing anything in `js/` or `styles.css`, run `node tools/stamp.mjs`. It 
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
+- `supabase/bottles-setup.sql`: adds the bottle guide to an existing project; `supabase/make-me-admin.sql`: makes you a site admin
 - `supabase/social-setup.sql`: adds lists, rating notes and following to an existing project
 - `supabase/standard-setup.sql`: adds the shared standard recipe library to an existing project
 - `supabase/favorites-setup.sql`: adds favorites to an existing project

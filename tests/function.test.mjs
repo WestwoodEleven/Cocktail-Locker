@@ -14,15 +14,15 @@ const dir = mkdtempSync(path.join(tmpdir(), "fn-"));
 writeFileSync(path.join(dir, "fn.ts"), src);
 
 let handler, sent, claudeReply, scansToday = 0;
-const rows = { standard_recipes: [], recipe_scans: [] };
+const rows = { standard_recipes: [], recipe_scans: [], bottles: [] };
 globalThis.Deno = { env: { get: k => ({ ANTHROPIC_API_KEY: " 'sk-ant-test' ", SUPABASE_URL: "x", SUPABASE_SERVICE_ROLE_KEY: "y" })[k] }, serve: h => { handler = h; } };
 globalThis.__cc = () => ({
   auth: { getUser: async t => t === "good" ? { data: { user: { id: "u1" } } } : { error: "no" } },
   from: t => ({
     select: () => ({ eq: () => ({ gte: async () => ({ count: scansToday }) }),
-      or: f => ({ limit: async () => { const m = f.match(/slug\.eq\.([^,]+),aliases\.cs\.\{([^}]+)\}/); return { data: rows.standard_recipes.filter(r => r.slug === m[1] || r.aliases.includes(m[2])).map(r => structuredClone(r)) }; } }) }),
+      or: f => ({ limit: async () => { const m = f.match(/slug\.eq\.([^,]+),aliases\.cs\.\{([^}]+)\}/); return { data: rows[t].filter(r => r.slug === m[1] || r.aliases.includes(m[2])).map(r => structuredClone(r)) }; } }) }),
     insert: async r => { rows[t].push(structuredClone(r)); return {}; },
-    update: v => ({ eq: async (_, slug) => { Object.assign(rows.standard_recipes.find(r => r.slug === slug), v); return {}; } })
+    update: v => ({ eq: async (_, slug) => { Object.assign(rows[t].find(r => r.slug === slug), v); return {}; } })
   })
 });
 let claudeCalls = 0;
@@ -75,6 +75,21 @@ check("bottles identified, blanks dropped", st === 200 && body.bottles.length ==
 check("unknown confidence normalized", body.bottles[1].confidence === "medium");
 check("bottle request sends the photo", sent.messages[0].content[0].type === "image" && sent.tools[0].name === "save_bottles");
 check("bottle photo must be an image", (await call({ mode: "bottles", image: "abc", mediaType: "application/pdf" }))[0] === 400);
+
+claudeReply = ok({ found: true, name: "Buffalo Trace", product: "Buffalo Trace Kentucky Straight Bourbon Whiskey", ingredient: "Bourbon", category: "whiskey", producer: "Buffalo Trace Distillery", origin: "Kentucky, USA", abv: 45, age: "", description: "A classic bourbon." });
+claudeCalls = 0;
+[st, body] = await call({ mode: "bottle", query: "buffalo trace bourbon" });
+check("bottle looked up and saved", st === 200 && body.bottle.slug === "buffalo-trace" && rows.bottles.length === 1 && body.bottle.abv === 45, JSON.stringify(body));
+check("search wording saved as an alias", rows.bottles[0].aliases.includes("buffalo-trace-bourbon"));
+await call({ mode: "bottle", query: "Buffalo Trace Bourbon" });
+await call({ mode: "bottle", query: "Buffalo Trace" });
+check("repeat bottle lookups are free", claudeCalls === 1);
+claudeReply = ok({ found: false, name: "gin", did_you_mean: "Tanqueray London Dry" });
+[st, body] = await call({ mode: "bottle", query: "gin" });
+check("generic spirit gets a product suggestion", st === 422 && body.error === "not_a_bottle" && body.did_you_mean === "Tanqueray London Dry");
+claudeReply = ok({ found: true, name: "Odd", abv: 250, category: "nonsense" });
+[st, body] = await call({ mode: "bottle", query: "odd stuff" });
+check("bad ABV and category cleaned up", body.bottle.abv === null && body.bottle.category === "other");
 
 scansToday = 25;
 check("daily allowance enforced", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[0] === 429);

@@ -88,14 +88,21 @@ function renderList() {
       : !total ? "No drinks yet." + (S.canWrite ? " Add the first one." : " Sign in to add the first one.")
       : S.f.owner === "mine" && !S.drinks.some(isMine) ? "Your locker is empty. Tap + New drink to add one."
       : "No drinks match. Try fewer filters.";
-    ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + lookupRow(); wireLookup(); return;
+    ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + bottleRows() + lookupRow(); wireLookup(); return;
   }
   // Group versions of the same drink; groups keep the order of their best member.
   const groups = new Map();
   items.forEach(d => { const k = slugify(d.name) || d.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(d); });
   ul.innerHTML = [...groups.values()].map(g => g.length === 1 ? rowHtml(g[0], false)
-    : `<li class="ghead">${esc(g[0].name)}<span>${g.length} versions${S.sort === "rated" ? ", best rated first" : ""}</span></li>` + g.map(d => rowHtml(d, true)).join("")).join("") + lookupRow();
+    : `<li class="ghead">${esc(g[0].name)}<span>${g.length} versions${S.sort === "rated" ? ", best rated first" : ""}</span></li>` + g.map(d => rowHtml(d, true)).join("")).join("") + bottleRows() + lookupRow();
   wireLookup();
+}
+// Bottles matching the search, shown under the drinks.
+function bottleRows() {
+  const q = S.query.trim().toLowerCase();
+  if (q.length < 2 || !S.bottles || !S.bottles.length) return "";
+  const hits = S.bottles.filter(b => [b.name, b.product, b.producer].join(" ").toLowerCase().includes(q)).slice(0, 5);
+  return hits.length ? `<li class="ghead">Bottles</li>` + hits.map(b => `<li><button type="button" data-bottle="${esc(b.name)}"><span class="thumb" aria-hidden="true">${esc(b.name.charAt(0))}</span><span class="txt"><span class="nm">${esc(b.name)}</span><span class="sub">${esc(b.ingredient || "Bottle")}</span></span></button></li>`).join("") : "";
 }
 function wireLookup() { if ($("lookup-btn")) $("lookup-btn").onclick = () => lookupStandard(S.query); }
 $("sort").addEventListener("change", e => { S.sort = e.target.value; try { localStorage.setItem("mc-sort", S.sort); } catch (er) {} renderList(); });

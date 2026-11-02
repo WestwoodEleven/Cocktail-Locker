@@ -5,7 +5,8 @@
   M.tables = M.tables || {};
   M.writes = [];
   const keyOf = { drinks: ["id"], profiles: ["id"], ratings: ["drink_id", "user_id"], favorites: ["user_id", "drink_id"], bars: ["user_id"],
-    standard_recipes: ["slug"], collections: ["id"], collection_items: ["collection_id", "drink_id"], follows: ["follower", "followee"] };
+    standard_recipes: ["slug"], collections: ["id"], collection_items: ["collection_id", "drink_id"], follows: ["follower", "followee"],
+    bottles: ["slug"], bottle_reviews: ["slug", "user_id"], bottle_photos: ["id"], bottle_reports: ["id"], site_admins: ["user_id"] };
   function builder(t) {
     const rows = () => (M.tables[t] = M.tables[t] || []);
     let filters = [], op = "select", payload = null, single = false, lim = null;
@@ -18,6 +19,7 @@
         list.forEach(p => {
           const row = Object.assign({}, p);
           if (t === "collections" && !row.id) row.id = "c" + Math.random().toString(36).slice(2, 8);
+          if (["bottle_photos", "bottle_reports"].includes(t) && !row.id) row.id = Math.floor(Math.random() * 1e9);
           if (["bars", "ratings", "favorites", "collections", "follows"].includes(t)) {
             const who = M.user; const col = { bars: "user_id", ratings: "user_id", favorites: "user_id", collections: "owner", follows: "follower" }[t];
             if (!row[col]) row[col] = who;

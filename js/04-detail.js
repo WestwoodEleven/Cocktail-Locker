@@ -31,7 +31,9 @@ function renderMain() {
   const floatMl = liquidMl(d, true);
   const floats = (d.ingredients || []).filter(i => i.float);
   const totalMl = perServing * S.servings * (1 + dil);
-  const brandNote = i => i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : "";
+  const brandNote = i => !i.brand ? "" : S.backend === "supabase" && !S.bottlesOff
+    ? `<span class="note brand-note">Recommended: <button type="button" class="brand-link" data-bottle="${esc(i.brand)}">${esc(i.brand)}</button></span>`
+    : `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>`;
   const row = (i, mult, cls) => { const s = show(i, mult, S.mode);
     return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${swapBtn(d, i)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
   const rows = (d.ingredients || []).filter(i => !i.float).map(i => row(i, S.servings)).join("");
@@ -209,7 +211,7 @@ const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
 const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
 function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
 $("home-link").addEventListener("click", ev => {
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;

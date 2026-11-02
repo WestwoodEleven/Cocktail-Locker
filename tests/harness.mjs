@@ -27,7 +27,9 @@ export const sample = () => ({
   bars: [{ user_id: "u1", items: { liquors: ["Gin", "Campari", "Sweet vermouth", "Vodka", "Tequila"], syrups: ["Simple syrup"], bitters: ["Angostura bitters"] } }],
   standard_recipes: [{ slug: "daiquiri", name: "Daiquiri", aliases: [], data: { name: "Daiquiri", method: "Shaken", type: "Sour", base: "Rum", glass: "Coupe",
     ingredients: [{ amount: 2, unit: "oz", name: "White rum" }, { amount: 1, unit: "oz", name: "Lime juice" }, { amount: 0.75, unit: "oz", name: "Simple syrup" }], about: "Cuban classic." } }],
-  collections: [], collection_items: [], follows: []
+  collections: [], collection_items: [], follows: [],
+  bottles: [{ slug: "cointreau", name: "Cointreau", product: "Cointreau Triple Sec", ingredient: "Orange liqueur", category: "liqueur", producer: "Rémy Cointreau", origin: "Angers, France", abv: 40, age: "", description: "A clear orange liqueur.", aliases: [] }],
+  bottle_photos: [], bottle_reviews: [{ slug: "cointreau", user_id: "u2", stars: 5, comment: "Essential for Margaritas." }], bottle_reports: [], site_admins: []
 });
 
 export async function open({ user = "u1", tables = sample(), invoke = null, width = 1200, hash = "" } = {}) {

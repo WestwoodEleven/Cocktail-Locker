@@ -64,6 +64,7 @@ function editItem(key, idx) {
   const body = sheet("Edit " + it.name, `
     <div class="field"><label for="bi-name">Name</label><input id="bi-name" type="text" maxlength="60" value="${esc(it.name)}"></div>
     <div class="field"><label for="bi-brand">Brand</label><input id="bi-brand" type="text" maxlength="60" value="${esc(it.brand)}" placeholder="Brand (optional)"></div>
+    ${it.brand && S.backend === "supabase" && !S.bottlesOff ? `<button type="button" class="linkish" data-bottle="${esc(it.brand)}">Open the ${esc(it.brand)} bottle page</button>` : ""}
     <label class="check" for="bi-out"><input type="checkbox" id="bi-out" ${it.out ? "checked" : ""}><span>Out of stock<br><span class="hint">Kept on your list, but left out of What can I make? and the AI tools until you restock.</span></span></label>
     <div class="panel-actions" style="justify-content:flex-start"><button class="btn primary small" type="button" id="bi-save">Save</button><button class="btn small danger ghost" type="button" id="bi-rm">Remove from bar</button></div>`);
   $("bi-save").onclick = () => {

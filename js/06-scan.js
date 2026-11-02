@@ -12,9 +12,9 @@ const SCAN_ERR = {
   no_credit: "The AI account is out of credit. The site owner needs to add credit.",
   bad_model: "The AI model name isn't recognized. The site owner should remove or fix the RECIPE_MODEL secret in Supabase.",
   busy: "The AI service is busy right now. Try again in a minute.",
-  not_deployed: "Recipe scanning isn't set up yet: Supabase has no function named read-recipe.",
-  unreachable: "Couldn't reach the recipe scanner. In Supabase, check that read-recipe has Verify JWT turned off, then try again.",
-  crashed: "The recipe scanner hit an error. Check read-recipe's Logs in Supabase."
+  not_deployed: "This feature isn't set up yet: Supabase has no function named read-recipe.",
+  unreachable: "Couldn't reach the AI helper. Check your connection; if it keeps happening, the site owner should check that read-recipe has Verify JWT turned off.",
+  crashed: "The AI helper hit an error. The site owner can check read-recipe's Logs in Supabase."
 };
 async function shrinkForScan(file) {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
