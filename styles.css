@@ -421,3 +421,14 @@ html:not(.age-ok) body { overflow: hidden; }
 .signin .signin-age { flex: 1 1 100%; font-size: 13px; font-weight: 400; order: 0; }
 .signin .signin-age input { flex: none; padding: 0; width: 18px; height: 18px; min-width: 18px; margin-top: 1px; }
 .signin a { color: var(--green); }
+
+/* Reports */
+.report-link { font-size: 12px; color: var(--muted); }
+.report-line { margin: 4px 0 0; text-align: right; }
+.rnotes .report-link { margin-left: 6px; }
+.bottle-photo .report-link { display: block; margin-top: 6px; }
+.rp-reasons { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.rp-reasons legend { margin-bottom: 6px; }
+.rp-thumb { display: block; max-width: 160px; max-height: 160px; border-radius: 8px; margin-top: 8px; object-fit: cover; }
+.rp-snap { margin: 0; font-style: italic; }
+.rp-reasons-list { margin: 0; padding-left: 20px; font-size: 14px; }

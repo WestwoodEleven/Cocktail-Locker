@@ -66,6 +66,10 @@ Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admi
 
 On a device's first visit, a welcome screen asks whether the visitor is 21 or older (remembered on that device; "No" can't get in). Signing in also needs a ticked "I'm 21 or older and agree to the privacy policy" box, and the time it was ticked is saved on new accounts (Supabase **Authentication > Users**, in the user's metadata as `confirmed_21_at`).
 
+### Reports and terms
+
+Next to other people's drinks, rating notes, bottle comments, bottle photos and carts there's a small **Report** link (reason plus optional details). Only site admins can read reports: admins get **Review reports** on My cart (or `#reports`), grouped by what was reported, with buttons to remove a drink's photo, delete the drink, remove a note or comment, delete a bottle photo, reset a cart name, or dismiss. Run [`supabase/reports-setup.sql`](supabase/reports-setup.sql) once (it's also in `setup.sql`). The rules people agree to are in [`terms.html`](terms.html), linked from the footer, the age check and sign-in.
+
 ### Deleting an account
 
 People can delete their own account from the bottom of **My cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
@@ -93,11 +97,12 @@ After editing anything in `js/` or `styles.css`, run `node tools/stamp.mjs`. It 
 ## Files
 
 - `index.html`: the page; `styles.css`: its styles; `js/`: its code, loaded in numbered order and sharing one scope
-- `privacy.html`: the privacy policy (linked from the footer and the sign-in form; contact privacy@mycocktailcart.com). Update it when the site starts collecting something new or uses a new service.
+- `terms.html`: the terms of use; `privacy.html`: the privacy policy (linked from the footer and the sign-in form; contact privacy@mycocktailcart.com). Update it when the site starts collecting something new or uses a new service.
 - `manifest.webmanifest`, `sw.js`, `icons/`: installing as an app and opening offline
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules
 - `supabase/claim-recipes.sql`: moves unowned recipes into one person's locker
+- `supabase/reports-setup.sql`: adds reporting and admin moderation
 - `supabase/bottles-setup.sql`: adds the bottle guide to an existing project; `supabase/make-me-admin.sql`: makes you a site admin
 - `supabase/social-setup.sql`: adds lists, rating notes and following to an existing project
 - `supabase/standard-setup.sql`: adds the shared standard recipe library to an existing project

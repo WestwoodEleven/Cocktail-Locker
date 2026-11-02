@@ -1,7 +1,7 @@
 // The Cocktail Locker service worker: lets the site install as an app and open without a connection.
 // Pages and code load fresh from the network when online and fall back to the saved copy offline.
 // Recipes, sign-in and photos always come from Supabase and are never cached here.
-const VERSION = "v7";
+const VERSION = "v8";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./config.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png",
@@ -26,6 +26,7 @@ const SHELL = [
   "./js/20-mocktail.js",
   "./js/21-account.js",
   "./js/22-age.js",
+  "./js/23-reports.js",
   "./js/99-start.js",
 ];
 const CDN = "https://cdn.jsdelivr.net/";

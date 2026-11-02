@@ -19,6 +19,7 @@ async function loadBottles() {
   S.bottlePhotos = {}; (p.data || []).forEach(x => (S.bottlePhotos[x.slug] = S.bottlePhotos[x.slug] || []).push(x));
   S.bottleReviews = {}; (r.data || []).forEach(x => (S.bottleReviews[x.slug] = S.bottleReviews[x.slug] || []).push(x));
   if (uid()) { const a = await sb.from("site_admins").select("user_id").eq("user_id", uid()); S.isAdmin = !a.error && (a.data || []).length > 0; } else S.isAdmin = false;
+  await loadReports();
 }
 // Strength label: "40% ABV", or "0.0% NA" for non-alcoholic bottles (syrups and mixers count as NA when no ABV is stored).
 function abvText(b) {
@@ -97,7 +98,7 @@ VIEWS.bottle = function renderBottle() {
       <div class="bottle-top">
         <figure class="bottle-photo">${photo ? `<img src="${esc(photoUrl(photo.path))}" alt="${esc(b.name)} bottle">` : `<div class="bottle-ph" aria-hidden="true">${esc(b.name.charAt(0))}</div>`}
           ${uid() && !S.bottlesOff ? `<button class="btn small" type="button" id="bt-photo">${photo ? "Add another photo" : "Add a photo of your bottle"}</button>` : ""}
-          ${photo && (photo.user_id === uid() || S.isAdmin) ? `<button type="button" class="linkish" id="bt-photo-rm">Remove this photo</button>` : ""}</figure>
+          ${photo && (photo.user_id === uid() || S.isAdmin) ? `<button type="button" class="linkish" id="bt-photo-rm">Remove this photo</button>` : photo ? reportBtn("bottle_photo", String(photo.id), photo.user_id, b.name + " photo", "Report this photo") : ""}</figure>
         <div class="bottle-info">
           ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
           ${b.description ? `<p class="bottle-desc">${esc(b.description)}</p>` : ""}
@@ -112,7 +113,7 @@ VIEWS.bottle = function renderBottle() {
           ${mine ? `<button type="button" class="linkish" id="bt-rate-clear">Remove</button>` : ""}</div>
           ${mine ? `<div class="note-form"><label class="label" for="bt-comment">${r.mine.comment ? "Your comment" : "Add a comment"}</label><div class="chip-add"><input id="bt-comment" type="text" maxlength="500" value="${esc(r.mine.comment || "")}" placeholder="Add a comment"><button class="btn small" type="button" id="bt-comment-save">Save</button></div></div>` : ""}`
           : `<p class="hint" style="margin:0">Sign in to rate this bottle.</p>`}
-        ${reviews.length ? `<ul class="rnotes">${reviews.map(x => `<li><span class="stars">${starText(x.stars)}</span> <b>${x.user_id === uid() ? "You" : `<button type="button" class="linkish who" data-locker="${esc(x.user_id)}">${esc(lockerName(x.user_id))}</button>`}</b>${S.isAdmin && x.user_id !== uid() ? ` <button type="button" class="linkish" data-rmreview="${esc(x.user_id)}">Remove</button>` : ""}<p>${esc(x.comment)}</p></li>`).join("")}</ul>` : ""}
+        ${reviews.length ? `<ul class="rnotes">${reviews.map(x => `<li><span class="stars">${starText(x.stars)}</span> <b>${x.user_id === uid() ? "You" : `<button type="button" class="linkish who" data-locker="${esc(x.user_id)}">${esc(lockerName(x.user_id))}</button>`}</b>${S.isAdmin && x.user_id !== uid() ? ` <button type="button" class="linkish" data-rmreview="${esc(x.user_id)}">Remove</button>` : ` ${reportBtn("comment", b.slug + "|" + x.user_id, x.user_id, x.comment)}`}<p>${esc(x.comment)}</p></li>`).join("")}</ul>` : ""}
       </section>
       <section class="make-sec">
         <div class="sec-head"><h3>Recipes that call for it <span class="count">${uses.length}</span></h3></div>

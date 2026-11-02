@@ -46,6 +46,7 @@ function notesBlock(d) {
   if (!rows.length) return "";
   return `<div><div class="label notes-label">What people say</div><ul class="rnotes">${rows.slice(0, 20).map(r => `<li>
     <span class="stars">${starText(r.stars)}</span> <b>${r.user_id === uid() ? "You" : `<button type="button" class="linkish who" data-locker="${esc(r.user_id)}">${esc(lockerName(r.user_id))}</button>`}</b>
+    ${reportBtn("note", d.id + "|" + r.user_id, r.user_id, r.note)}
     <p>${esc(r.note)}</p></li>`).join("")}</ul></div>`;
 }
 
@@ -176,6 +177,7 @@ VIEWS.locker = function renderLocker() {
       <section class="make-sec"><div class="sec-head"><h3>Drinks</h3><span class="hint">Best rated first</span></div>
         ${ds.length ? `<ul class="plist">${ds.map(d => drinkRow(d, false)).join("")}</ul>` : `<p class="hint" style="margin:0">No drinks yet.</p>`}</section>
       ${lists.length ? `<section class="make-sec"><div class="sec-head"><h3>Lists</h3></div>${listsHtml(lists, false)}</section>` : ""}
+      ${known && id !== uid() ? `<p class="report-line">${reportBtn("cart", id, id, lockerName(id), "Report this cart")}</p>` : ""}
     </div>`;
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => selectDrink(b.dataset.open));
   if ($("lk-follow")) $("lk-follow").onclick = () => toggleFollow(id);
