@@ -716,3 +716,5 @@ body.on-home .grid > aside { display: none; }
 }
 .home-top.signed { align-items: center; }
 .home-top.signed .home-hero { justify-content: center; gap: 28px; }
+/* Signed-in welcome: the cart name is a greeting, not a headline */
+.home-top.signed .home-title { font-size: clamp(38px, 5vw, 60px); line-height: .95; }
