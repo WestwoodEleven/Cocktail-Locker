@@ -35,8 +35,8 @@ function renderFilters() {
     const ids = [...new Set(S.drinks.map(d => d.owner || ""))];
     const counts = {}; S.drinks.filter(d => passesFilters(d, "owner")).forEach(d => counts[d.owner || ""] = (counts[d.owner || ""] || 0) + 1);
     const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
-    $("flt-owner").innerHTML = `<option value="">Everyone's lockers</option>` +
-      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My locker (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+    $("flt-owner").innerHTML = `<option value="">Everyone's carts</option>` +
+      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My cart (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
       (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
       (uid() && !S.followsOff && followingIds().length ? `<option value="following" ${S.f.owner === "following" ? "selected" : ""}>People I follow (${S.drinks.filter(d => passesFilters(d, "owner") && followingIds().includes(d.owner)).length})</option>` : "") +
       (uid() ? myLists().map(c => `<option value="col:${esc(c.id)}" ${S.f.owner === "col:" + c.id ? "selected" : ""}>List: ${esc(c.name)} (${allDrinks().filter(d => passesFilters(d, "owner") && S.colItems[c.id] && S.colItems[c.id].has(d.id)).length})</option>`).join("") : "") +
@@ -65,7 +65,7 @@ function refreshView() {
 
 function rowHtml(d, ver) {
   const multi = S.backend === "supabase";
-  const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your locker" : lockerName(d.owner)) : baseOf(d));
+  const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your cart" : lockerName(d.owner)) : baseOf(d));
   return `<li${ver ? ' class="ver"' : ""}><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
     ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
     <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
@@ -86,7 +86,7 @@ function renderList() {
   if (!items.length) {
     const msg = S.query.trim() ? "Nobody has this one yet."
       : !total ? "No drinks yet." + (S.canWrite ? " Add the first one." : " Sign in to add the first one.")
-      : S.f.owner === "mine" && !S.drinks.some(isMine) ? "Your locker is empty. Tap + New drink to add one."
+      : S.f.owner === "mine" && !S.drinks.some(isMine) ? "Your cart is empty. Tap + New drink to add one."
       : "No drinks match. Try fewer filters.";
     ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + bottleRows() + lookupRow(); wireLookup(); return;
   }

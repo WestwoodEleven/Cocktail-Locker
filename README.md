@@ -32,9 +32,9 @@ To switch these on:
 
 Optional secrets: `RECIPE_DAILY_LIMIT` (default 25) and `RECIPE_MODEL` (default `claude-sonnet-5-5`).
 
-### My locker and favorites
+### My cart and favorites
 
-Signed-in people get a **My locker** page (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
+Signed-in people get a **My cart** page (called a locker in the code and database) (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
 
 ### Search and standard recipes
 

@@ -20,7 +20,7 @@ const photoUrl = p => sb && p ? sb.storage.from(BUCKET).getPublicUrl(p).data.pub
 
 const uid = () => S.session && S.session.user ? S.session.user.id : null;
 const isMine = d => S.backend === "local" || (!!uid() && d.owner === uid());
-const lockerName = id => !id ? "Unclaimed" : (S.profiles[id] && S.profiles[id].display_name) || "Unnamed locker";
+const lockerName = id => !id ? "Unclaimed" : (S.profiles[id] && S.profiles[id].display_name) || "Unnamed cart";
 const myProfile = () => uid() ? S.profiles[uid()] : null;
 
 function refreshAuthUI() {
@@ -36,9 +36,9 @@ function refreshAuthUI() {
   $("tools-hint").hidden = S.canWrite;
   const me = myProfile();
   $("locker-btn").hidden = !S.session;
-  $("locker-btn").textContent = me && me.display_name ? "My locker" : "Name your locker";
-  $("locker-btn").title = "Open my locker";
-  $("locker-btn").setAttribute("aria-label", "My locker: " + $("locker-btn").textContent);
+  $("locker-btn").textContent = me && me.display_name ? "My cart" : "Name your cart";
+  $("locker-btn").title = "Open my cart";
+  $("locker-btn").setAttribute("aria-label", "My cart: " + $("locker-btn").textContent);
   if (S.session) $("signin").hidden = true;
   setStatus(S.session ? "ok" : "", S.session ? "Signed in" : "Browsing");
 }
@@ -100,7 +100,7 @@ async function saveDrink(d) {
     const body = JSON.parse(JSON.stringify(d)); delete body.id; delete body.owner;
     const owner = d.owner || uid();
     const { error } = await sb.from("drinks").upsert({ id: d.id, owner, name: d.name, data: body, updated_at: new Date().toISOString() });
-    if (error) { toast(owner !== uid() ? "You can only change drinks in your own locker." : "Couldn't save. Try again."); return false; }
+    if (error) { toast(owner !== uid() ? "You can only change drinks in your own cart." : "Couldn't save. Try again."); return false; }
     upsertMem(Object.assign({}, d, { owner })); return true;
   }
   upsertMem(d); localSave(); return true;
@@ -117,7 +117,7 @@ async function removeDrink(id) {
 
 $("auth-btn").onclick = async () => {
   if (S.session) { await sb.auth.signOut(); toast("Signed out"); return; }
-  $("signin").hidden = false; $("signin-msg").textContent = "New here? The link creates your locker."; $("signin-email").focus();
+  $("signin").hidden = false; $("signin-msg").textContent = "New here? The link creates your cart."; $("signin-email").focus();
 };
 $("signin-cancel").onclick = () => { $("signin").hidden = true; };
 $("signin").onsubmit = async ev => {
@@ -135,7 +135,7 @@ function openNameForm(first) {
   const me = myProfile();
   $("name-form").hidden = false;
   $("locker-name").value = me && me.display_name ? me.display_name : "";
-  $("name-msg").textContent = first ? "Welcome. Pick a name for your locker; everyone sees it on your drinks." : "Everyone sees this name on your drinks.";
+  $("name-msg").textContent = first ? "Welcome. Pick a name for your cart; everyone sees it on your drinks." : "Everyone sees this name on your drinks.";
   $("name-cancel").hidden = !!first && !(me && me.display_name);
   $("locker-name").focus();
 }
@@ -150,7 +150,7 @@ $("name-form").onsubmit = async ev => {
   if (error) { $("name-msg").textContent = "Couldn't save the name. Try again."; return; }
   S.profiles[uid()] = { id: uid(), display_name: name };
   $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
-  toast("Locker named " + name);
+  toast("Cart named " + name);
 };
 
 const byName = (a, b) => (a.name || "").localeCompare(b.name || "");

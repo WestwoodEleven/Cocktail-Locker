@@ -98,9 +98,9 @@ function openListsFor(d) {
 function listsHtml(lists, editable) {
   if (!lists.length) return "";
   return lists.map(c => { const ds = listDrinks(c); return `<details class="listbox">
-    <summary><b>${esc(c.name)}</b> <span class="hint">${ds.length} drink${ds.length === 1 ? "" : "s"}${editable ? (c.is_public ? " · shown on your locker page" : " · private") : ""}</span></summary>
+    <summary><b>${esc(c.name)}</b> <span class="hint">${ds.length} drink${ds.length === 1 ? "" : "s"}${editable ? (c.is_public ? " · shown on your cart page" : " · private") : ""}</span></summary>
     ${ds.length ? `<ul class="plist">${ds.map(d => drinkRow(d, true)).join("")}</ul>` : `<p class="hint" style="margin:0">Empty. Use "Add to list" on any drink.</p>`}
-    ${editable ? `<div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-colpub="${esc(c.id)}">${c.is_public ? "Make private" : "Show on my locker page"}</button><button class="btn small" type="button" data-colfilter="${esc(c.id)}">Show in drink list</button><button class="btn small danger ghost" type="button" data-coldel="${esc(c.id)}">Delete list</button></div>` : ""}
+    ${editable ? `<div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-colpub="${esc(c.id)}">${c.is_public ? "Make private" : "Show on my cart page"}</button><button class="btn small" type="button" data-colfilter="${esc(c.id)}">Show in drink list</button><button class="btn small danger ghost" type="button" data-coldel="${esc(c.id)}">Delete list</button></div>` : ""}
   </details>`; }).join("");
 }
 function wireLists(m) {
@@ -108,7 +108,7 @@ function wireLists(m) {
     const c = S.collections.find(x => x.id === b.dataset.colpub); if (!c) return;
     const { error } = await sb.from("collections").update({ is_public: !c.is_public }).eq("id", c.id);
     if (error) { toast("Couldn't change the list. Try again."); return; }
-    c.is_public = !c.is_public; toast(c.is_public ? "List shown on your locker page" : "List is now private"); renderMain();
+    c.is_public = !c.is_public; toast(c.is_public ? "List shown on your cart page" : "List is now private"); renderMain();
   });
   m.querySelectorAll("[data-colfilter]").forEach(b => b.onclick = () => { S.f = { owner: "col:" + b.dataset.colfilter, type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; refreshView(); $("filters").open = true; $("list").scrollIntoView({ behavior: "smooth", block: "start" }); });
   m.querySelectorAll("[data-coldel]").forEach(b => b.onclick = () => {
@@ -139,7 +139,7 @@ const iFollow = id => !!uid() && S.follows.some(f => f.follower === uid() && f.f
 const followersOf = id => S.follows.filter(f => f.followee === id).length;
 const followingIds = () => S.follows.filter(f => f.follower === uid()).map(f => f.followee);
 async function toggleFollow(id) {
-  if (!uid()) { toast("Sign in to follow lockers."); return; }
+  if (!uid()) { toast("Sign in to follow carts."); return; }
   if (S.followsOff) { toast("Following isn't switched on yet. The site owner needs to run social-setup.sql."); return; }
   const on = !iFollow(id);
   const { error } = on ? await sb.from("follows").upsert({ follower: uid(), followee: id }) : await sb.from("follows").delete().eq("follower", uid()).eq("followee", id);
@@ -169,20 +169,20 @@ VIEWS.locker = function renderLocker() {
   const known = !!S.profiles[id] || ds.length;
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">Locker</span><h2 class="make-title">${esc(lockerName(id))}</h2>
+      <div class="editor-top"><div><span class="label">Cart</span><h2 class="make-title">${esc(lockerName(id))}</h2>
         <div class="hint">${ds.length} drink${ds.length === 1 ? "" : "s"}${S.followsOff ? "" : ` · ${followersOf(id)} follower${followersOf(id) === 1 ? "" : "s"}`}</div></div>
         <div class="panel-actions">${uid() && !S.followsOff ? `<button class="btn small${iFollow(id) ? "" : " primary"}" type="button" id="lk-follow">${iFollow(id) ? "Following ✓" : "Follow"}</button>` : ""}<button class="btn small" type="button" id="lk-link">Copy link</button></div></div>
-      ${!known ? `<p class="hint">This locker doesn't exist or has no drinks yet.</p>` : ""}
+      ${!known ? `<p class="hint">This cart doesn't exist or has no drinks yet.</p>` : ""}
       <section class="make-sec"><div class="sec-head"><h3>Drinks</h3><span class="hint">Best rated first</span></div>
         ${ds.length ? `<ul class="plist">${ds.map(d => drinkRow(d, false)).join("")}</ul>` : `<p class="hint" style="margin:0">No drinks yet.</p>`}</section>
       ${lists.length ? `<section class="make-sec"><div class="sec-head"><h3>Lists</h3></div>${listsHtml(lists, false)}</section>` : ""}
     </div>`;
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => selectDrink(b.dataset.open));
   if ($("lk-follow")) $("lk-follow").onclick = () => toggleFollow(id);
-  $("lk-link").onclick = () => copyText(lockerLink(id), "Locker link copied");
+  $("lk-link").onclick = () => copyText(lockerLink(id), "Cart link copied");
 };
 
-// Extra sections for My locker
+// Extra sections for My cart
 function profileSocialHtml() {
   const lists = myLists();
   const following = followingIds();
@@ -193,14 +193,14 @@ function profileSocialHtml() {
         : lists.length ? listsHtml(lists, true) : `<p class="hint" style="margin:0">No lists yet. Open any drink and tap Add to list to start one, like "Thanksgiving" or "Summer patio".</p>`}
     </section>
     ${S.followsOff ? "" : `<section class="make-sec" id="prof-following">
-      <div class="sec-head"><h3>Following</h3><span class="hint">${followersOf(uid())} follower${followersOf(uid()) === 1 ? "" : "s"} · <button type="button" class="linkish" id="prof-link">Copy my locker link</button></span></div>
+      <div class="sec-head"><h3>Following</h3><span class="hint">${followersOf(uid())} follower${followersOf(uid()) === 1 ? "" : "s"} · <button type="button" class="linkish" id="prof-link">Copy my cart link</button></span></div>
       ${following.length ? `<div class="chips">${following.map(f => `<button type="button" class="chip-item lockerchip" data-locker="${esc(f)}">${esc(lockerName(f))}</button>`).join("")}</div>`
-        : `<p class="hint" style="margin:0">You're not following anyone yet. Tap a locker name on any drink to visit it and follow.</p>`}
+        : `<p class="hint" style="margin:0">You're not following anyone yet. Tap a cart name on any drink to visit it and follow.</p>`}
     </section>`}`;
 }
 function wireProfileSocial(m) {
   wireLists(m);
-  if ($("prof-link")) $("prof-link").onclick = () => copyText(lockerLink(uid()), "Your locker link is copied");
+  if ($("prof-link")) $("prof-link").onclick = () => copyText(lockerLink(uid()), "Your cart link is copied");
 }
 // Any [data-locker] button anywhere opens that locker page.
 document.addEventListener("click", e => { const b = e.target.closest("[data-locker]"); if (b) { e.preventDefault(); closeSheet(); openLocker(b.dataset.locker); } });

@@ -39,7 +39,7 @@ function renderEditor(errMsg) {
     </div>`).join("");
   m.innerHTML = `
     <form class="form" id="form" novalidate>
-      <div class="editor-top"><h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your locker" : "New drink"}</h2>
+      <div class="editor-top"><h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your cart" : "New drink"}</h2>
         ${!e.id && !S.isCopy && S.backend === "supabase" ? `<button class="btn small" type="button" id="fill-photo">Fill from a photo</button>` : ""}</div>
       ${S.scanNote ? `<div class="scan-banner"><span><b>${esc(S.scanNote.title || "Read from your photo.")}</b> ${esc(S.scanNote.body || "Check the amounts and names before saving.")}</span>${S.scanNote.warning ? `<span>${esc(S.scanNote.warning)}</span>` : ""}</div>` : ""}
       <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Drink name" autocomplete="off"></div>
@@ -63,7 +63,7 @@ function renderEditor(errMsg) {
       </div>
       <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Notes">${esc(e.notes)}</textarea></div>
       ${errMsg ? `<div class="err" role="alert">${esc(errMsg)}</div>` : ""}
-      <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to my locker"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
+      <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to my cart"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
     </form>`;
   const refreshAuto = () => {
     readForm();

@@ -40,7 +40,7 @@ export default async function () {
   check("brand filled on existing Gin", bar.liquors.some(x => x.name === "Gin" && x.brand === "Tanqueray") && bar.liquors.filter(x => (x.name || x) === "Gin").length === 1);
   check("bitters brand filled", bar.bitters.some(x => x.name === "Angostura bitters" && x.brand === "Angostura"));
   check("mixer went to fresh today", await p.evaluate("JSON.parse(localStorage.getItem('mc-fresh')).includes('Tonic water')"));
-  check("lands on My locker after adding", (await p.evaluate("location.hash")) === "#my-locker");
+  check("lands on My cart after adding", (await p.evaluate("location.hash")) === "#my-locker");
   await p.setViewportSize({ width: 390, height: 844 });
   await p.click("#stock-btn"); await p.setInputFiles("#stock-file", [fx("shelf1.jpg")]); await p.waitForTimeout(700);
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);

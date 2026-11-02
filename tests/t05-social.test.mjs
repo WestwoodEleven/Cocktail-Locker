@@ -36,7 +36,7 @@ export default async function () {
   check("People I follow filter offered", (await p.text("#flt-owner")).includes("People I follow (1)"));
   await p.click("#locker-btn"); await p.waitForTimeout(100);
   const prof = await p.text("#main");
-  check("My locker shows lists and following", prof.includes("My lists") && prof.includes("Thanksgiving") && prof.includes("Jo's Cart"), prof.slice(0, 900));
+  check("My cart shows lists and following", prof.includes("My lists") && prof.includes("Thanksgiving") && prof.includes("Jo's Cart"), prof.slice(0, 900));
   await p.click("#prof-lists summary"); await p.click("[data-colpub]"); await p.waitForTimeout(100);
   check("list can be made private", (await p.evaluate("window.__MOCK.tables.collections[0].is_public")) === false);
   await p.click("#prof-lists summary").catch(() => {});

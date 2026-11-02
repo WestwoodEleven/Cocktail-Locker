@@ -22,9 +22,9 @@ async function toggleFav(d) {
   renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
 }
 
-// ---------- my locker page ----------
+// ---------- my cart page ----------
 function openProfile() {
-  if (!uid()) { toast("Sign in to see your locker."); return; }
+  if (!uid()) { toast("Sign in to see your cart."); return; }
   S.view = "profile"; S.confirmDelete = false; setHash("my-locker");
   $("name-form").hidden = true;
   renderList(); renderProfile();
@@ -48,7 +48,7 @@ function renderProfile() {
   m.innerHTML = `
     <div class="make">
       <div class="editor-top">
-        <div><span class="label">My locker</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed locker")}</h2>
+        <div><span class="label">My cart</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed cart")}</h2>
           ${email ? `<div class="hint">Signed in as ${esc(email)}</div>` : ""}</div>
         <button class="btn small" type="button" id="prof-rename">Rename</button>
       </div>
@@ -62,7 +62,7 @@ function renderProfile() {
         <div class="sec-head"><h3>My drinks</h3>
           <div class="panel-actions"><button class="btn small" type="button" id="prof-scan">Scan a recipe</button><button class="btn primary small" type="button" id="prof-new">+ New drink</button></div></div>
         ${mine.length ? `<ul class="plist">${mine.map(d => drinkRow(d, false)).join("")}</ul>`
-          : `<p class="hint" style="margin:0">Your locker has no drinks yet. Add one, scan a recipe, or copy someone else's drink.</p>`}
+          : `<p class="hint" style="margin:0">Your cart has no drinks yet. Add one, scan a recipe, or copy someone else's drink.</p>`}
       </section>
 
       <section class="make-sec" id="prof-favs">
