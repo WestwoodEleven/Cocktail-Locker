@@ -76,6 +76,12 @@ check("unknown confidence normalized", body.bottles[1].confidence === "medium");
 check("bottle request sends the photo", sent.messages[0].content[0].type === "image" && sent.tools[0].name === "save_bottles");
 check("bottle photo must be an image", (await call({ mode: "bottles", image: "abc", mediaType: "application/pdf" }))[0] === 400);
 
+claudeReply = ok({ name: "Faux Negroni", method: "Stirred", ingredients: [{ amount: 1, unit: "oz", name: "Non-alcoholic aperitivo", have: false }], swaps: [{ from: "Gin", to: "Juniper tea" }], notes: "Stir." });
+[st, body] = await call({ mode: "mocktail", drink: { name: "Negroni", method: "Stirred", ingredients: [{ amount: 1, unit: "oz", name: "Gin" }, { amount: 1, unit: "oz", name: "Campari" }] }, bar: { liquors: ["Gin"] }, fresh: ["Oranges"] });
+check("mocktail returned", st === 200 && body.mocktail.name === "Faux Negroni");
+check("mocktail prompt lists the drink and the bar", sent.messages[0].content[0].text.includes("1 oz Campari") && sent.messages[0].content[0].text.includes("Gin, Oranges") && sent.tools[0].name === "save_mocktail");
+check("mocktail needs a drink", (await call({ mode: "mocktail", drink: {} }))[0] === 400);
+
 claudeReply = ok({ found: true, name: "Buffalo Trace", product: "Buffalo Trace Kentucky Straight Bourbon Whiskey", ingredient: "Bourbon", category: "whiskey", producer: "Buffalo Trace Distillery", origin: "Kentucky, USA", abv: 45, age: "", description: "A classic bourbon." });
 claudeCalls = 0;
 [st, body] = await call({ mode: "bottle", query: "buffalo trace bourbon" });

@@ -394,3 +394,8 @@ body.no-scroll { overflow: hidden; }
 .facts dt { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .facts dd { margin: 2px 0 0; font-weight: 600; }
 .bottle-desc { margin: 0; max-width: 65ch; line-height: 1.6; }
+.mk-name { margin: 0; font-family: var(--f-display); font-size: 24px; }
+.mk-swaps { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mk-swaps s { color: var(--muted); }
+.need-tag { font-size: 11px; padding: 1px 7px; margin-left: 4px; vertical-align: 2px; }
+#gen-body, #swap-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }

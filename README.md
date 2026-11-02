@@ -46,6 +46,7 @@ Search covers every locker. Versions of the same drink are grouped together and 
 - **Plan a party**: pick drinks and a guest count for batches, one combined shopping list (bottles, citrus, cans, ice) and a printable menu. Saved on the device.
 - **Stock my bar**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bar. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
 - **Swap**: next to each ingredient, Claude suggests substitutes (from your bar first) and can start your own version with the swap.
+- **Make it a mocktail**: on any drink, the AI makes a zero-proof version that keeps the drink's own non-alcoholic ingredients and uses your bar first, shows each swap and anything you'd need to buy, and can be saved to your cart or made step by step. One AI request.
 - **Make it**: a big, step-by-step checklist that keeps the screen on while you mix.
 - **Lists**: your own named lists (Thanksgiving, Summer patio). Public lists show on your locker page; you can make any list private.
 - **Notes with ratings**: add a short note when you rate; everyone sees them under "What people say".
