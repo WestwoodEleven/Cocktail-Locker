@@ -15,11 +15,11 @@ writeFileSync(path.join(dir, "fn.ts"), src);
 
 let handler, sent, claudeReply, scansToday = 0;
 const rows = { standard_recipes: [], recipe_scans: [], bottles: [] };
-globalThis.Deno = { env: { get: k => ({ ANTHROPIC_API_KEY: " 'sk-ant-test' ", SUPABASE_URL: "x", SUPABASE_SERVICE_ROLE_KEY: "y" })[k] }, serve: h => { handler = h; } };
+globalThis.Deno = { env: { get: k => ({ ANTHROPIC_API_KEY: " 'sk-ant-test' ", SUPABASE_URL: "x", SUPABASE_SERVICE_ROLE_KEY: "y", UNLIMITED_EMAILS: "someone@x.com, listed@example.com" })[k] }, serve: h => { handler = h; } };
 globalThis.__cc = () => ({
-  auth: { getUser: async t => t === "good" ? { data: { user: { id: "u1" } } } : { error: "no" } },
+  auth: { getUser: async t => t === "good" ? { data: { user: { id: "u1", email: "u1@example.com" } } } : t === "boss" ? { data: { user: { id: "admin1", email: "Boss@Example.com" } } } : t === "listed" ? { data: { user: { id: "u9", email: "Listed@Example.com" } } } : { error: "no" } },
   from: t => ({
-    select: () => ({ eq: () => ({ gte: async () => ({ count: scansToday }) }),
+    select: () => ({ eq: (c, v) => ({ gte: async () => ({ count: scansToday }), limit: async () => ({ data: t === "site_admins" && v === "admin1" ? [{ user_id: "admin1" }] : [] }) }),
       or: f => ({ limit: async () => { const m = f.match(/slug\.eq\.([^,]+),aliases\.cs\.\{([^}]+)\}/); return { data: rows[t].filter(r => r.slug === m[1] || r.aliases.includes(m[2])).map(r => structuredClone(r)) }; } }) }),
     insert: async r => { rows[t].push(structuredClone(r)); return {}; },
     update: v => ({ eq: async (_, slug) => { Object.assign(rows[t].find(r => r.slug === slug), v); return {}; } })
@@ -99,6 +99,9 @@ check("unsure ABV on a spirit left blank, not 0", body.bottle.abv === null);
 
 scansToday = 25;
 check("daily allowance enforced", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[0] === 429);
+claudeReply = ok({ drinks: [{ name: "Gin Sour", ingredients: [{ amount: 2, unit: "oz", name: "Gin" }] }] });
+check("emails in UNLIMITED_EMAILS have no daily limit", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }, "listed"))[0] === 200);
+check("site admins have no daily limit", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }, "boss"))[0] === 200);
 check("library hits still free over the allowance", (await call({ mode: "standard", query: "last word" }))[0] === 200);
 scansToday = 0;
 

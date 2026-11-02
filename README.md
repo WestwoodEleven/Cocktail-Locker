@@ -30,7 +30,7 @@ To switch these on:
 3. In Supabase, open **Edge Functions > Deploy a new function > Via Editor**. Name it `read-recipe`, replace the sample code with [`supabase/functions/read-recipe/index.ts`](supabase/functions/read-recipe/index.ts), and deploy. In the function's **Details** tab, turn off **Verify JWT** (the function checks sign-in itself).
 4. Under **Edge Functions > Secrets**, add `ANTHROPIC_API_KEY` with your key.
 
-Optional secrets: `RECIPE_DAILY_LIMIT` (default 25) and `RECIPE_MODEL` (default `claude-sonnet-5-5`).
+Optional secrets: `RECIPE_DAILY_LIMIT` (default 25), `RECIPE_MODEL` (default `claude-sonnet-5-5`) and `UNLIMITED_EMAILS` (comma-separated emails with no daily limit). Site admins (see Bottle guide below) also have no daily limit.
 
 ### My cart and favorites
 

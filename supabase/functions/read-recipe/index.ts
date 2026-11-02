@@ -11,6 +11,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const MODEL = Deno.env.get("RECIPE_MODEL") || "claude-sonnet-5-5";
 const DAILY_LIMIT = Number(Deno.env.get("RECIPE_DAILY_LIMIT") || 25);
+// No daily limit for site admins, or for emails listed in the UNLIMITED_EMAILS secret (comma-separated).
+const UNLIMITED_EMAILS = (Deno.env.get("UNLIMITED_EMAILS") || "").toLowerCase().split(/[\s,]+/).filter(Boolean);
 
 const UNITS = ["oz", "ml", "cl", "barspoon", "tsp", "tbsp", "dash", "each"];
 const METHODS = ["Stirred", "Shaken", "Built", "Blended", "Thrown"];
@@ -334,7 +336,16 @@ Deno.serve(async (req) => {
   if (authErr || !who?.user) return reply(401, { error: "signed_out" });
   const userId = who.user.id;
 
+  let unlimited: boolean | null = null;
+  const isUnlimited = async () => {
+    if (unlimited !== null) return unlimited;
+    const email = String(who.user.email || "").toLowerCase();
+    if (email && UNLIMITED_EMAILS.includes(email)) return (unlimited = true);
+    const { data, error: adminErr } = await admin.from("site_admins").select("user_id").eq("user_id", userId).limit(1);
+    return (unlimited = !adminErr && !!data && data.length > 0);
+  };
   const overLimit = async () => {
+    if (await isUnlimited()) return false;
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const { count } = await admin.from("recipe_scans").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", since);
     return (count ?? 0) >= DAILY_LIMIT;
