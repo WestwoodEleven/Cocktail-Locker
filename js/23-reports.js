@@ -21,7 +21,7 @@ function reportBtn(kind, target, owner, snap, label) {
 function openReport(kind, target, owner, snap) {
   const what = REPORT_KINDS[kind] || "post";
   if (!uid()) {
-    sheet(`Report this ${what}`, `<p style="margin:0">Sign in to report something, or email <a href="mailto:privacy@mycocktailcart.com">privacy@mycocktailcart.com</a> and tell us what's wrong.</p>
+    sheet(`Report this ${what}`, `<p style="margin:0">Sign in to report something, or email <a href="mailto:support@mycocktailcart.com">support@mycocktailcart.com</a> and tell us what's wrong.</p>
       <div class="share-actions"><button class="btn primary" type="button" id="rp-signin">Sign in</button><button class="btn" type="button" id="rp-cancel">Cancel</button></div>`);
     $("rp-cancel").onclick = closeSheet;
     $("rp-signin").onclick = () => { closeSheet(); $("auth-btn").click(); };
@@ -45,7 +45,7 @@ function openReport(kind, target, owner, snap) {
     if (error) {
       $("rp-send").disabled = false;
       $("rp-msg").textContent = /relation|does not exist|schema cache/i.test(error.message || "")
-        ? "Reporting isn't switched on yet. Email privacy@mycocktailcart.com instead."
+        ? "Reporting isn't switched on yet. Email support@mycocktailcart.com instead."
         : "Couldn't send the report. Try again.";
       return;
     }
