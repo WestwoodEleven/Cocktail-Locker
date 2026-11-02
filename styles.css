@@ -722,3 +722,25 @@ body.on-home .grid > aside { display: none; }
 .home-title, .drink-name, .make-title { font-size: clamp(38px, 5vw, 60px); line-height: .95; }
 @media (max-width: 560px) { .drink-name, .make-title { font-size: 40px; } }
 @media (max-width: 600px) { .home-title { font-size: 40px; } }
+
+/* Signed-in welcome: a one-line greeting, two big tiles and one Add button */
+.home-hello { margin: 0; font-size: 18px; color: var(--muted); }
+.home-hello b { color: var(--ink); font-weight: 700; }
+.home-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.home-tile { display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px; min-height: 64px; border: 2px solid var(--ink); border-radius: 6px; background: var(--raised); color: var(--ink); font: inherit; cursor: pointer; }
+.home-tile:hover { border-color: var(--accent); }
+.home-tile svg { flex: none; width: 28px; height: 28px; color: var(--accent); }
+.home-tile > span { display: flex; flex-direction: column; min-width: 0; }
+.home-tile b { font-size: 16px; line-height: 1.2; }
+.home-tile span span { font-size: 13px; color: var(--muted); }
+.home-add { align-self: flex-start; }
+.home-top.signed .home-hero { gap: 14px; justify-content: center; }
+@media (max-width: 600px) {
+  .home-tile { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+  .home-top.signed { gap: 18px; padding-bottom: 22px; }
+}
+.add-menu { display: flex; flex-direction: column; gap: 8px; }
+.add-menu button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 14px 16px; min-height: 56px; border: 1.5px solid var(--rule); border-radius: 6px; background: var(--raised); color: var(--ink); font: inherit; cursor: pointer; }
+.add-menu button:hover { border-color: var(--ink); }
+.add-menu b { font-size: 16px; }
+.add-menu span { font-size: 13.5px; color: var(--muted); }

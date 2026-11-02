@@ -34,8 +34,15 @@ export default async function () {
   const t2 = await q.text("#main");
   check("signed in: welcome back with quick actions", /welcome back/i.test(t2) && t2.includes("What can I make?") && !/sign in or join/i.test(t2), t2.slice(0, 200));
   check("drinks without photos get a glass drawing", await q.evaluate("!!document.querySelector('.tile .glassbox svg')"));
-  await q.click("[data-home=cart]"); await q.waitForTimeout(100);
-  check("My cart quick action works", /my drinks/i.test(await q.text("#main")));
+  check("signed-in welcome is compact: two tiles and one Add button", (await q.evaluate("document.querySelectorAll('.home-tile').length")) === 2 && await q.isVisible(".home-add") && !(await q.evaluate("!!document.querySelector('.home-top.signed .home-title')")));
+  await q.click(".home-add"); await q.waitForTimeout(100);
+  const menu = await q.text("#gen-body");
+  check("Add menu offers the three ways to add", /type a recipe/i.test(menu) && /scan a recipe photo/i.test(menu) && /photograph my bottles/i.test(menu), menu);
+  await q.click("[data-add-how=new]"); await q.waitForTimeout(100);
+  check("Type a recipe opens a new drink", await q.isVisible("#f-name") && !(await q.isVisible("#gen-modal")));
+  await q.click(".topnav [data-nav=home]"); await q.waitForTimeout(100);
+  await q.click("[data-home=canmake]"); await q.waitForTimeout(100);
+  check("What can I make? tile works", /what can I make/i.test(await q.text("#main")) && (await q.evaluate("S.view")) === "canmake");
   await q.click(".topnav [data-nav=guide]"); await q.waitForTimeout(100);
   check("top nav opens the bottle guide and marks it", (await q.getAttribute(".topnav [data-nav=guide]", "aria-current")) === "page");
   await q.close();

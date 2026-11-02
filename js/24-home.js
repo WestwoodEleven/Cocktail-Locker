@@ -47,18 +47,18 @@ VIEWS.home = function renderHome() {
       <div class="home-top${signedIn ? " signed" : ""}">
         <section class="home-hero">
           ${signedIn ? `
-            <div>
-              <span class="label">Welcome back</span>
-              <h2 class="home-title">${esc(me && me.display_name ? me.display_name : "Your cart")}</h2>
+            <p class="home-hello">Welcome back, <b>${esc(me && me.display_name ? me.display_name : "your cart")}</b></p>
+            <div class="home-tiles">
+              <button class="home-tile" type="button" data-home="canmake">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2 H15 V6 Q18 8 18 12 V22 H6 V12 Q6 8 9 6 Z M6 14 H18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 18 L11.5 20 L15 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span><b>What can I make?</b><span>From your bottles</span></span>
+              </button>
+              <button class="home-tile" type="button" data-home="make">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5 H21 L12 14 Z M12 14 V21 M7.5 21 H16.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 1.5 L18.8 3.2 L20.5 4 L18.8 4.8 L18 6.5 L17.2 4.8 L15.5 4 L17.2 3.2 Z" fill="currentColor"/></svg>
+                <span><b>Make me a drink</b><span>AI ideas from what you have</span></span>
+              </button>
             </div>
-            <div class="panel-actions home-ctas home-quick">
-              <button class="btn primary" type="button" data-home="cart">My cart</button>
-              <button class="btn" type="button" data-home="canmake">What can I make?</button>
-              <button class="btn" type="button" data-home="make">Make me a drink</button>
-              <button class="btn" type="button" data-home="scan">Scan a recipe</button>
-              <button class="btn" type="button" data-home="stock">Stock my bottles</button>
-              <button class="btn" type="button" data-home="new">+ New drink</button>
-            </div>` : `
+            <button class="btn home-add" type="button" data-home="add" aria-haspopup="dialog">+ Add</button>` : `
             <h2 class="home-title">House specs,<br>scaled to<br><em>the crowd.</em></h2>
             <div style="display:flex;flex-direction:column;gap:18px">
               <p class="home-lede">Real recipes from people who make drinks at home. Batch any of them from one glass to a punch bowl${accounts ? ", and keep your own in a free cart" : ""}.</p>
@@ -117,6 +117,7 @@ VIEWS.home = function renderHome() {
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { selectDrink(b.dataset.open); window.scrollTo({ top: 0, behavior: "smooth" }); });
   const go = {
     cart: () => openProfile(),
+    add: () => openAddMenu(),
     canmake: () => openCanMake(),
     make: () => openMake(),
     new: () => openEditor(null),
@@ -147,4 +148,19 @@ function showList(sort, keepFocus) {
   const narrow = window.matchMedia && window.matchMedia("(max-width: 780px)").matches;
   const target = narrow ? $("list") : $("main");
   if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// One "+ Add" menu for the three ways to add something.
+function openAddMenu() {
+  sheet("Add", `<div class="add-menu">
+    <button type="button" data-add-how="new"><b>Type a recipe</b><span>Add a drink with its spec</span></button>
+    <button type="button" data-add-how="scan"><b>Scan a recipe photo</b><span>A card, a book page or a screenshot</span></button>
+    <button type="button" data-add-how="stock"><b>Photograph my bottles</b><span>We add every bottle we can see</span></button>
+  </div>`);
+  document.querySelectorAll("[data-add-how]").forEach(b => b.onclick = () => {
+    const how = b.dataset.addHow; closeSheet();
+    if (how === "new") openEditor(null);
+    else if (how === "scan") $("scan-file").click();
+    else openStock();
+  });
 }
