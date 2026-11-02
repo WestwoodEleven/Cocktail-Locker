@@ -403,3 +403,5 @@ body.no-scroll { overflow: hidden; }
 .site-foot { text-align: center; color: var(--muted); font-size: 13px; padding: 28px 16px 8px; }
 .site-foot a { color: var(--muted); }
 @media print { .site-foot { display: none; } }
+.hint a { color: var(--green); }
+.btn.danger-solid:not(:disabled) { background: var(--danger); border-color: var(--danger); color: var(--raised); }

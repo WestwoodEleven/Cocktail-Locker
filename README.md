@@ -62,6 +62,10 @@ Every bottle gets a shared page: details and a short description (written by the
 
 Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admins can **Edit details**, read suggested fixes and remove bad photos or reviews. To make yourself an admin, sign in once, put your email in [`supabase/make-me-admin.sql`](supabase/make-me-admin.sql) and run it. If you ran `setup.sql` before this existed, run [`supabase/bottles-setup.sql`](supabase/bottles-setup.sql) and redeploy `read-recipe`.
 
+### Deleting an account
+
+People can delete their own account from the bottom of **My cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
+
 ### Claiming the first recipes
 
 Recipes from before lockers existed don't belong to anyone. Sign in on the site once, then edit the email in [`supabase/claim-recipes.sql`](supabase/claim-recipes.sql) to yours and run it. Those recipes move into your locker.

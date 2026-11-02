@@ -14,16 +14,28 @@ const dir = mkdtempSync(path.join(tmpdir(), "fn-"));
 writeFileSync(path.join(dir, "fn.ts"), src);
 
 let handler, sent, claudeReply, scansToday = 0;
-const rows = { standard_recipes: [], recipe_scans: [], bottles: [] };
+const U1 = "11111111-1111-1111-1111-111111111111", U2 = "22222222-2222-2222-2222-222222222222";
+const rows = { standard_recipes: [], recipe_scans: [], bottles: [],
+  drinks: [{ id: "d1", owner: "u1", data: { photo: "u1/d1/1.jpg" } }, { id: "d-old", owner: "u1", data: { photo: "old-photo.jpg" } }, { id: "d2", owner: "u2", data: { photo: U2 + "/d2/1.jpg" } }],
+  collection_items: [{ collection_id: "c9", drink_id: "d1" }, { collection_id: "c9", drink_id: "d2" }] };
+let files = ["u1/d1/1.jpg", "u1/bottles/buffalo-trace/2.jpg", "old-photo.jpg", U2 + "/d2/1.jpg", "u2/x.jpg"];
+const deletedUsers = [];
 globalThis.Deno = { env: { get: k => ({ ANTHROPIC_API_KEY: " 'sk-ant-test' ", SUPABASE_URL: "x", SUPABASE_SERVICE_ROLE_KEY: "y", UNLIMITED_EMAILS: "someone@x.com, listed@example.com" })[k] }, serve: h => { handler = h; } };
 globalThis.__cc = () => ({
-  auth: { getUser: async t => t === "good" ? { data: { user: { id: "u1", email: "u1@example.com" } } } : t === "boss" ? { data: { user: { id: "admin1", email: "Boss@Example.com" } } } : t === "listed" ? { data: { user: { id: "u9", email: "Listed@Example.com" } } } : { error: "no" } },
+  auth: globalThis.__auth = globalThis.__auth || { getUser: async t => t === "good" ? { data: { user: { id: "u1", email: "u1@example.com" } } } : t === "boss" ? { data: { user: { id: "admin1", email: "Boss@Example.com" } } } : t === "listed" ? { data: { user: { id: "u9", email: "Listed@Example.com" } } } : { error: "no" } },
   from: t => ({
-    select: () => ({ eq: (c, v) => ({ gte: async () => ({ count: scansToday }), limit: async () => ({ data: t === "site_admins" && v === "admin1" ? [{ user_id: "admin1" }] : [] }) }),
+    select: () => ({ eq: (c, v) => ({ gte: async () => ({ count: scansToday }), limit: async () => ({ data: t === "site_admins" && v === "admin1" ? [{ user_id: "admin1" }] : [] }),
+        then: (res, rej) => Promise.resolve({ data: (rows[t] || []).filter(r => r[c] === v).map(r => structuredClone(r)) }).then(res, rej) }),
       or: f => ({ limit: async () => { const m = f.match(/slug\.eq\.([^,]+),aliases\.cs\.\{([^}]+)\}/); return { data: rows[t].filter(r => r.slug === m[1] || r.aliases.includes(m[2])).map(r => structuredClone(r)) }; } }) }),
     insert: async r => { rows[t].push(structuredClone(r)); return {}; },
-    update: v => ({ eq: async (_, slug) => { Object.assign(rows[t].find(r => r.slug === slug), v); return {}; } })
-  })
+    update: v => ({ eq: async (_, slug) => { Object.assign(rows[t].find(r => r.slug === slug), v); return {}; } }),
+    delete: () => ({ in: async (c, vals) => { rows[t] = rows[t].filter(r => !vals.includes(r[c])); return {}; } })
+  }),
+  storage: { from: () => ({
+    list: async prefix => { const kids = new Map(); for (const f of files) if (f.startsWith(prefix + "/")) { const rest = f.slice(prefix.length + 1); const name = rest.split("/")[0]; kids.set(name, rest.includes("/") ? null : "file-id"); } return { data: [...kids].map(([name, id]) => ({ name, id })) }; },
+    remove: async paths => { files = files.filter(f => !paths.includes(f)); return {}; }
+  }) },
+  auth: Object.assign(globalThis.__auth, { admin: { deleteUser: async id => { deletedUsers.push(id); return {}; } } })
 });
 let claudeCalls = 0;
 globalThis.fetch = async (u, o) => { claudeCalls++; sent = JSON.parse(o.body); sent._key = o.headers["x-api-key"]; return claudeReply(sent); };
@@ -115,6 +127,17 @@ claudeReply = () => new Response(JSON.stringify({ error: { message: "Your credit
 check("no credit reported clearly", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[1].error === "no_credit");
 claudeReply = () => new Response("{}", { status: 401 });
 check("bad key reported clearly", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[1].error === "bad_key");
+
+[st, body] = await call({ mode: "delete_account" });
+check("account deletion needs confirming", st === 400 && !deletedUsers.length);
+check("signed out can't delete an account", (await call({ mode: "delete_account", confirm: "DELETE" }, "bad"))[0] === 401 && !deletedUsers.length);
+const callsBefore = claudeCalls;
+[st, body] = await call({ mode: "delete_account", confirm: "DELETE" });
+check("account deleted", st === 200 && body.deleted === true && deletedUsers.join() === "u1", JSON.stringify(body));
+check("their photos deleted, including older ones", !files.some(f => f.startsWith("u1/")) && !files.includes("old-photo.jpg"), files.join());
+check("other people's photos kept", files.includes(U2 + "/d2/1.jpg") && files.includes("u2/x.jpg"));
+check("their drinks taken out of other people's lists", rows.collection_items.length === 1 && rows.collection_items[0].drink_id === "d2");
+check("deleting an account uses no AI", claudeCalls === callsBefore);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail) process.exitCode = 1;

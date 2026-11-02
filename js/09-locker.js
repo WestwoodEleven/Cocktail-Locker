@@ -81,6 +81,8 @@ function renderProfile() {
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
         <div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-stock-open>Add bottles from photos</button><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bar</button></div>
       </section>
+
+      ${accountHtml()}
     </div>`;
   wireGroups(GROUPS.filter(g => g.saved));
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
@@ -94,4 +96,5 @@ function renderProfile() {
   $("prof-new").onclick = () => openEditor(null);
   $("prof-scan").onclick = () => $("scan-file").click();
   $("prof-make").onclick = openMake;
+  wireAccount();
 }

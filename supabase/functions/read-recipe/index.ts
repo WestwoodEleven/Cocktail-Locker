@@ -6,6 +6,8 @@
 //   - Bottles ({ mode: "bottles", image, mediaType }): every bottle visible in a photo of someone's bar.
 //   - Bottle ({ mode: "bottle", query }): details and a description for one bottle, saved to the shared bottle guide.
 //   - Mocktail ({ mode: "mocktail", drink, bar, fresh }): a zero-proof version of a drink.
+//   - Delete account ({ mode: "delete_account", confirm: "DELETE" }): removes the signed-in person's account
+//     and everything in it. No AI involved.
 // Deploy in Supabase: Edge Functions > Deploy a new function > Via Editor, name it "read-recipe",
 // paste this file, and add the secret ANTHROPIC_API_KEY under Edge Functions > Secrets.
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -370,6 +372,44 @@ async function callClaude(apiKey: string, content: unknown[], tool: unknown, max
   return { input };
 }
 
+// Deletes someone's account for good: their photos, then the sign-in account itself. Every table that
+// belongs to a person (drinks, ratings, favorites, bar, lists, follows, bottle photos and reviews) is
+// removed by the database when the account goes. Shared library entries they started stay, unattributed.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
+// deno-lint-ignore no-explicit-any
+async function deleteAccount(admin: any, userId: string): Promise<string> {
+  const store = admin.storage.from("photos");
+  const paths = new Set<string>();
+  const walk = async (prefix: string, depth: number) => {
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await store.list(prefix, { limit: 1000, offset });
+      if (error || !data || !data.length) return;
+      for (const f of data) {
+        const p = `${prefix}/${f.name}`;
+        if (f.id) paths.add(p); else if (depth < 4) await walk(p, depth + 1);
+      }
+      if (data.length < 1000) return;
+    }
+  };
+  await walk(userId, 0);
+  const { data: drinks } = await admin.from("drinks").select("id, data").eq("owner", userId);
+  const ids = (drinks || []).map((d: { id: string }) => d.id);
+  // Photos from before carts existed were stored outside anyone's folder; take the ones on this person's drinks.
+  for (const d of drinks || []) {
+    const p = d.data && typeof d.data.photo === "string" ? d.data.photo : "";
+    if (p && !UUID.test(p)) paths.add(p);
+  }
+  const list = [...paths];
+  for (let i = 0; i < list.length; i += 100) {
+    const { error } = await store.remove(list.slice(i, i + 100));
+    if (error) console.error("delete photos", error.message || error);
+  }
+  // Their drinks also leave other people's lists.
+  if (ids.length) await admin.from("collection_items").delete().in("drink_id", ids);
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  return error ? String(error.message || error) : "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     // Allow whatever headers the browser asks for, so newer Supabase client versions aren't blocked.
@@ -379,7 +419,6 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return reply(405, { error: "method" });
 
   const apiKey = (Deno.env.get("ANTHROPIC_API_KEY") || "").trim().replace(/^["']|["']$/g, "");
-  if (!apiKey) return reply(500, { error: "not_configured" });
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -405,6 +444,15 @@ Deno.serve(async (req) => {
 
   let body: { image?: string; mediaType?: string; mode?: string; [k: string]: unknown };
   try { body = await req.json(); } catch { return reply(400, { error: "bad_request" }); }
+
+  if (body.mode === "delete_account") {
+    if (body.confirm !== "DELETE") return reply(400, { error: "bad_request" });
+    const problem = await deleteAccount(admin, userId);
+    if (problem) { console.error("delete account", userId, problem); return reply(500, { error: "delete_failed" }); }
+    return reply(200, { deleted: true });
+  }
+
+  if (!apiKey) return reply(500, { error: "not_configured" });
 
   if (body.mode === "standard") {
     const q = slugify(clean(body.query, 80));
