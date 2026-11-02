@@ -79,7 +79,7 @@ function renderProfile() {
         <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock.</p>
         ${outSummary()}
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
-        <div><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bar</button></div>
+        <div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-stock-open>Add bottles from photos</button><button class="btn primary small" type="button" id="prof-make">Make me a drink from my bar</button></div>
       </section>
     </div>`;
   wireGroups(GROUPS.filter(g => g.saved));

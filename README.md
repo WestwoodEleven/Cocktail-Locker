@@ -44,6 +44,7 @@ Search covers every locker. Versions of the same drink are grouped together and 
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.
 - **Plan a party**: pick drinks and a guest count for batches, one combined shopping list (bottles, citrus, cans, ice) and a printable menu. Saved on the device.
+- **Stock my bar**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bar. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
 - **Swap**: next to each ingredient, Claude suggests substitutes (from your bar first) and can start your own version with the swap.
 - **Make it**: a big, step-by-step checklist that keeps the screen on while you mix.
 - **Lists**: your own named lists (Thanksgiving, Summer patio). Public lists show on your locker page; you can make any list private.
@@ -85,4 +86,4 @@ After editing anything in `js/` or `styles.css`, run `node tools/stamp.mjs`. It 
 - `supabase/standard-setup.sql`: adds the shared standard recipe library to an existing project
 - `supabase/favorites-setup.sql`: adds favorites to an existing project
 - `supabase/bartender-setup.sql`: adds saved bars, ratings and the AI allowance to an existing project
-- `supabase/functions/read-recipe/index.ts`: reads recipe photos, suggests drinks and looks up standard recipes with Claude
+- `supabase/functions/read-recipe/index.ts`: reads recipe and bottle photos, suggests drinks and swaps, and looks up standard recipes with Claude

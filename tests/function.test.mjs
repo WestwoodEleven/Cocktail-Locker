@@ -69,6 +69,13 @@ claudeReply = ok({ found: false, name: "gin", did_you_mean: "Gin Rickey" });
 [st, body] = await call({ mode: "standard", query: "gin" });
 check("non-cocktail gets a suggestion", st === 422 && body.did_you_mean === "Gin Rickey");
 
+claudeReply = ok({ bottles: [{ name: "Bourbon", brand: "Buffalo Trace", category: "liquor", confidence: "high", count: 2 }, { name: "", category: "other", confidence: "low" }, { name: "Campari", brand: "", category: "liqueur", confidence: "weird" }], note: "" });
+[st, body] = await call({ mode: "bottles", image: "abc", mediaType: "image/jpeg" });
+check("bottles identified, blanks dropped", st === 200 && body.bottles.length === 2 && body.bottles[0].brand === "Buffalo Trace" && body.bottles[0].count === 2, JSON.stringify(body));
+check("unknown confidence normalized", body.bottles[1].confidence === "medium");
+check("bottle request sends the photo", sent.messages[0].content[0].type === "image" && sent.tools[0].name === "save_bottles");
+check("bottle photo must be an image", (await call({ mode: "bottles", image: "abc", mediaType: "application/pdf" }))[0] === 400);
+
 scansToday = 25;
 check("daily allowance enforced", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[0] === 429);
 check("library hits still free over the allowance", (await call({ mode: "standard", query: "last word" }))[0] === 200);

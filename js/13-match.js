@@ -141,7 +141,7 @@ VIEWS.canmake = function renderCanMake() {
         ${GROUPS.filter(g => !g.saved).map(chipGroupHtml).join("")}
       </section>
       <section class="make-sec">
-        <div class="sec-head"><h3>My bar</h3><span class="hint" id="bar-saved">Changes save automatically.</span></div>
+        <div class="sec-head"><h3>My bar</h3><span class="hint"><span id="bar-saved">Changes save automatically.</span> · <button type="button" class="linkish" data-stock-open>Add bottles from photos</button></span></div>
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
       </section>
     </div>`;

@@ -80,7 +80,7 @@ function afterItems(key) {
   if (key === "fresh") saveFresh(); else saveBarSoon();
   renderChips(key);
   const g = GROUPS.find(x => x.key === key);
-  $("dl-" + key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
+  const dl = $("dl-" + key); if (dl) dl.innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
   if ($("make-go")) $("make-go").disabled = !totalItems();
   if (VIEWS[S.view] && S.view === "canmake") { clearTimeout(afterItems.t); afterItems.t = setTimeout(() => { const a = document.activeElement && document.activeElement.id; renderMain(); if (a && $(a)) $(a).focus(); }, 300); }
   if (S.view === "profile") { const st = document.querySelectorAll(".stat b")[2]; if (st) st.textContent = inStock(savedItems()).length; const o = $("bar-out"); if (o) o.outerHTML = outSummary(); }
@@ -141,7 +141,7 @@ function renderMake() {
       <div class="editor-top"><h2 class="make-title">Make me a drink</h2><button class="btn small" type="button" id="make-close">Back to drinks</button></div>
       <p class="hint" style="margin:0">List what you have and Claude suggests 3 cocktails you can make right now. It may add ice, water and sugar, nothing else.</p>
       <section class="make-sec">
-        <div class="sec-head"><h3>Your bar</h3><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your locker for next time."}</span></div>
+        <div class="sec-head"><h3>Your bar</h3><button type="button" class="linkish" data-stock-open>Add bottles from photos</button><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your locker for next time."}</span></div>
         ${GROUPS.filter(g => g.saved).map(group).join("")}
       </section>
       <section class="make-sec">

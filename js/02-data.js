@@ -24,7 +24,7 @@ const lockerName = id => !id ? "Unclaimed" : (S.profiles[id] && S.profiles[id].d
 const myProfile = () => uid() ? S.profiles[uid()] : null;
 
 function refreshAuthUI() {
-  if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; $("make-btn").hidden = true; $("canmake-btn").hidden = true; $("tools-hint").hidden = true; S.canWrite = true; return; }
+  if (S.backend !== "supabase") { $("auth-btn").hidden = true; $("locker-btn").hidden = true; $("new-btn").hidden = false; $("scan-btn").hidden = true; $("make-btn").hidden = true; $("canmake-btn").hidden = true; $("stock-btn").hidden = true; $("tools-hint").hidden = true; S.canWrite = true; return; }
   S.canWrite = !!S.session;
   $("auth-btn").hidden = false;
   $("auth-btn").textContent = S.session ? "Sign out" : "Sign in or join";
@@ -32,6 +32,7 @@ function refreshAuthUI() {
   $("scan-btn").hidden = !S.canWrite;
   $("make-btn").hidden = !S.canWrite;
   $("canmake-btn").hidden = !S.canWrite;
+  $("stock-btn").hidden = !S.canWrite;
   $("tools-hint").hidden = S.canWrite;
   const me = myProfile();
   $("locker-btn").hidden = !S.session;
