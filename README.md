@@ -42,7 +42,7 @@ Search covers every locker. Versions of the same drink are grouped together and 
 
 ### Look and feel
 
-The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box; on phones a tab bar (Drinks, My bar, Party, Bottles) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
+The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box; on phones a tab bar (Home, My drinks, My bar) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
 
 ### Home page
 

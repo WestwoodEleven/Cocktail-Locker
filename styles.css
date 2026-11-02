@@ -683,7 +683,7 @@ body.on-home .grid > aside { display: none; }
 .tabbar { display: none; }
 @media (max-width: 780px) {
   body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
-  .tabbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+  .tabbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
     background: var(--bar-bg); border-top: 1px solid var(--bar-line); padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)); }
   .tabbar button { border: 0; background: none; color: var(--bar-muted); font-size: 12px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; min-height: 48px; cursor: pointer; }
   .tabbar svg { width: 22px; height: 22px; }

@@ -71,6 +71,14 @@ function navGo(where) {
   if (where === "guide") return openGuide();
   if (where === "party") return openParty();
   if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bar and see what you can make."); return openCanMake(); }
+  if (where === "mine") {
+    if (!uid()) return needSignIn("Sign in to keep your own drinks.");
+    S.f = { owner: "mine", type: "", base: "", method: "", kind: "", rating: "" };
+    S.query = ""; $("search").value = "";
+    if (!S.drinks.some(d => isMine(d))) { openProfile(); return; } // My cart explains how to add the first one
+    renderFilters(); showList(null);
+    return;
+  }
   if (where === "bar") {
     if (!uid()) return needSignIn("Sign in to keep your bar.");
     openProfile();
@@ -81,7 +89,7 @@ document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click",
 // Mark where you are.
 const NAV_OF_VIEW = { home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
 function markNav() {
-  const here = NAV_OF_VIEW[S.view] || "";
+  const here = S.view === "detail" && S.f.owner === "mine" ? "mine" : NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
 
