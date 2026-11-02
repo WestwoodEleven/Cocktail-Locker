@@ -6,7 +6,7 @@ Anyone can browse every drink, filter by locker, cocktail type, base spirit, met
 
 It's a static site on GitHub Pages, with recipes, lockers and photos in a free Supabase project.
 
-Live site: https://westwoodeleven.github.io/Cocktail-Locker/
+Live site: https://www.mycocktailcart.com (the old https://westwoodeleven.github.io/Cocktail-Locker/ address redirects there)
 
 ## Setup
 
@@ -14,7 +14,7 @@ Live site: https://westwoodeleven.github.io/Cocktail-Locker/
 
 1. Open **SQL Editor**, paste the whole of [`supabase/setup.sql`](supabase/setup.sql), and click **Run**. It creates the lockers, recipes and photo storage with the access rules. Running it again is safe and keeps existing recipes.
 2. Under **Authentication**, make sure new sign-ups are **allowed**, since anyone can create a locker.
-3. Under **Authentication > URL Configuration**, set **Site URL** to `https://westwoodeleven.github.io/Cocktail-Locker/` and add the same address to **Redirect URLs**.
+3. Under **Authentication > URL Configuration**, set **Site URL** to `https://www.mycocktailcart.com` and add `https://www.mycocktailcart.com/**` and `https://mycocktailcart.com/**` to **Redirect URLs**.
 4. Put the Project URL and publishable key in [`config.js`](config.js) (already done for this site).
 
 ### AI features: recipe scanning and the AI bartender
@@ -68,7 +68,7 @@ Recipes from before lockers existed don't belong to anyone. Sign in on the site 
 
 ### GitHub Pages
 
-**Settings > Pages**, deploy from branch `main`, folder `/ (root)`.
+**Settings > Pages**, deploy from branch `main`, folder `/ (root)`. Custom domain: `www.mycocktailcart.com` (the `CNAME` file), with **Enforce HTTPS** on. DNS: a CNAME record `www` → `westwoodeleven.github.io`, and A records for the bare domain → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
 
 ## Sign-in emails
 
