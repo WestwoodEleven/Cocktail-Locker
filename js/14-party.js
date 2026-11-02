@@ -78,7 +78,7 @@ function batchCard({ item, d }, n) {
   const dil = S.party.dilute && batch.length ? (DILUTION[d.method] ?? 0) : 0;
   const batchMl = batch.reduce((s, i) => s + ingMl(i), 0) * sv;
   const mode = S.party.units === "ml" ? "ml" : "oz";
-  const row = (i, mult) => { const x = show(i, mult, mode); return `<tr><td class="q">${esc(x.q)}</td><td class="u">${esc(x.u)}</td><td class="n">${esc(i.name)}${i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : ""}</td></tr>`; };
+  const row = (i, mult) => { const x = show(i, mult, mode); return `<tr><td class="q">${qHtml(x.q)}</td><td class="u">${esc(x.u)}</td><td class="n">${esc(i.name)}${i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : ""}</td></tr>`; };
   return `<article class="idea party-drink">
     <div class="idea-head"><h3>${esc(d.name)}</h3>
       <div class="stepper small-step"><button type="button" data-sv="${esc(d.id)}" data-d="-1" aria-label="Fewer">−</button><span class="sv">${sv}</span><button type="button" data-sv="${esc(d.id)}" data-d="1" aria-label="More">+</button></div></div>

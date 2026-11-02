@@ -210,7 +210,7 @@ function ideasHtml() {
       <div class="idea-head"><h3>${esc(x.name || "Untitled")}</h3><span class="chip amber">${x.classic ? "Classic: " + esc(x.classic) : "Original"}</span></div>
       <div class="meta">${[x.type, x.base, x.method, x.glass].filter(Boolean).map(v => `<span class="chip">${esc(v)}</span>`).join("")}</div>
       <table class="spec-table"><tbody>${(x.ingredients || []).map(i => { const s = show({ amount: Number(i.amount) || 0, unit: i.unit }, 1, "spec");
-        return `<tr${i.float ? ' class="float"' : ""}><td class="q">${esc(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${i.float ? ' <span class="chip amber float-tag">Float</span>' : ""}${i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : ""}</td></tr>`; }).join("")}</tbody></table>
+        return `<tr${i.float ? ' class="float"' : ""}><td class="q">${qHtml(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${i.float ? ' <span class="chip amber float-tag">Float</span>' : ""}${i.brand ? `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>` : ""}</td></tr>`; }).join("")}</tbody></table>
       ${x.garnish ? `<p class="idea-line"><b>Garnish:</b> ${esc(x.garnish)}</p>` : ""}
       ${x.notes ? `<p class="idea-line">${esc(x.notes)}</p>` : ""}
       ${x.why ? `<p class="idea-line hint">${esc(x.why)}</p>` : ""}

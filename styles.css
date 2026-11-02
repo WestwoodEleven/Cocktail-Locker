@@ -744,3 +744,9 @@ body.on-home .grid > aside { display: none; }
 .add-menu button:hover { border-color: var(--ink); }
 .add-menu b { font-size: 16px; }
 .add-menu span { font-size: 13.5px; color: var(--muted); }
+
+/* Readable fractions in amounts: raised top number, slash, bottom number, each at a legible size */
+.fr { white-space: nowrap; margin-left: .06em; }
+.fr .fn { font-size: .78em; vertical-align: .32em; }
+.fr .fs { font-size: .85em; margin: 0 .03em; }
+.fr .fd { font-size: .78em; }

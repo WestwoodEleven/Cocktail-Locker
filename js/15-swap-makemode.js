@@ -91,7 +91,7 @@ function openMakeMode(d) {
     <div class="mm-top"><div><span class="label">Make mode${sv !== 1 ? ` · ${fmtCount(sv)} drinks` : ""}</span><h2 class="mm-title">${esc(d.name)}</h2></div>
       <button class="x mm-x" type="button" id="mm-close" aria-label="Close make mode">×</button></div>
     <p class="hint mm-hint">Tap each ingredient as you pour. The screen stays on while this is open.</p>
-    <ul class="mm-list">${ings.map((i, k) => { const x = show(i, sv, mode); return `<li><button type="button" class="mm-ing" data-k="${k}" aria-pressed="false"><span class="mm-q">${esc(x.q)} <small>${esc(x.u)}</small></span><span class="mm-n">${esc(i.name)}${i.float ? " <small>(float, last)</small>" : ""}${i.brand ? `<small>${esc(i.brand)}</small>` : ""}</span></button></li>`; }).join("")}</ul>
+    <ul class="mm-list">${ings.map((i, k) => { const x = show(i, sv, mode); return `<li><button type="button" class="mm-ing" data-k="${k}" aria-pressed="false"><span class="mm-q">${qHtml(x.q)} <small>${esc(x.u)}</small></span><span class="mm-n">${esc(i.name)}${i.float ? " <small>(float, last)</small>" : ""}${i.brand ? `<small>${esc(i.brand)}</small>` : ""}</span></button></li>`; }).join("")}</ul>
     <ol class="mm-steps">${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
     <div class="mm-progress" id="mm-progress">0 of ${ings.length} poured</div>
     <button class="btn primary mm-done" type="button" id="mm-done">Done${uid() && S.backend === "supabase" ? " · rate it" : ""}</button>

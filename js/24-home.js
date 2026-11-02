@@ -74,7 +74,7 @@ VIEWS.home = function renderHome() {
           ${feat.photo ? `<img src="${esc(photoUrl(feat.photo))}" alt="" loading="lazy">` : drinkPicture(feat)}
           <span class="home-day-body">
             <span><span class="home-feat-name">${esc(feat.name)}</span><br><span class="hint">${esc(sub(feat))}${ratingOf(feat).count ? ` · ★ ${avgOf(feat).toFixed(1)}` : ""}</span></span>
-            <span class="home-day-ings">${(feat.ingredients || []).filter(i => !i.float && i.name).slice(0, 5).map(i => `<span><b>${esc(amt(i))}</b> ${esc(i.name)}</span>`).join("")}</span>
+            <span class="home-day-ings">${(feat.ingredients || []).filter(i => !i.float && i.name).slice(0, 5).map(i => `<span><b>${qHtml(amt(i))}</b> ${esc(i.name)}</span>`).join("")}</span>
             <span class="home-feat-go">See the spec →</span>
           </span>
         </button>` : ""}
