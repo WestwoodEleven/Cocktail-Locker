@@ -1,6 +1,6 @@
 {
-  "name": "The Cocktail Locker",
-  "short_name": "Cocktails",
+  "name": "My Cocktail Cart",
+  "short_name": "Cocktail Cart",
   "description": "Everyone's house cocktail specs, scaled for one glass or the whole party.",
   "start_url": "./",
   "scope": "./",

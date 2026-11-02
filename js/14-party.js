@@ -128,7 +128,7 @@ VIEWS.party = function renderParty() {
       <section class="make-sec">
         <div class="sec-head"><h3>Menu card</h3><button class="btn small" type="button" id="pp-print-menu">Print menu</button></div>
         <div class="menu-card" id="menu-card">
-          <div class="menu-kicker">The Cocktail Locker</div>
+          <div class="menu-kicker">My Cocktail Cart</div>
           <h3 class="menu-title">${esc(P.name)}</h3>
           ${list.map(({ d }) => `<div class="menu-item"><div class="menu-name">${esc(d.name)}</div><div class="menu-desc">${esc((d.ingredients || []).filter(i => !/^(ice|water)$/i.test(i.name)).map(i => i.name.toLowerCase()).join(", "))}${d.garnish ? esc(", " + d.garnish.toLowerCase()) : ""}</div></div>`).join("")}
         </div>

@@ -1,4 +1,4 @@
-# The Cocktail Locker
+# My Cocktail Cart
 
 Everyone's house cocktail specs, scaled for one glass or the whole party.
 

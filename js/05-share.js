@@ -45,7 +45,7 @@ async function buildCard(d, withPhoto) {
     }
     y += 64;
     ctx.font = `700 24px ${body}`;
-    if (draw) { ctx.fillStyle = CARD.accent; ctx.letterSpacing = "4px"; ctx.fillText("THE COCKTAIL LOCKER", P, y); ctx.letterSpacing = "0px"; }
+    if (draw) { ctx.fillStyle = CARD.accent; ctx.letterSpacing = "4px"; ctx.fillText("MY COCKTAIL CART", P, y); ctx.letterSpacing = "0px"; }
     y += 30;
     ctx.font = `700 84px ${disp}`;
     for (const ln of wrap(ctx, d.name, inner)) { y += 92; if (draw) { ctx.fillStyle = CARD.ink; ctx.fillText(ln, P, y); } }
@@ -146,7 +146,7 @@ $("share-modal").addEventListener("click", e => { if (e.target === $("share-moda
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("share-modal").hidden) closeShare(); });
 $("share-native").onclick = async () => {
   const { d, file } = shareState;
-  try { await navigator.share({ files: [file], title: d.name, text: `${d.name} from The Cocktail Locker\n${drinkLink(d.id)}` }); }
+  try { await navigator.share({ files: [file], title: d.name, text: `${d.name} from My Cocktail Cart\n${drinkLink(d.id)}` }); }
   catch (e) { if (e && e.name !== "AbortError") toast("Couldn't open sharing. Try Save image instead."); }
 };
 $("share-copy").onclick = async () => {
