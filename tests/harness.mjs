@@ -34,7 +34,7 @@ export const sample = () => ({
   bottle_photos: [], bottle_reviews: [{ slug: "cointreau", user_id: "u2", stars: 5, comment: "Essential for Margaritas." }], bottle_reports: [], site_admins: []
 });
 
-export async function open({ user = "u1", tables = sample(), invoke = null, width = 1200, hash = "" } = {}) {
+export async function open({ user = "u1", tables = sample(), invoke = null, width = 1200, hash = "", adult = true } = {}) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
@@ -49,6 +49,7 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   t.drinks = t.drinks.map(d => ({ id: d.id, owner: d.owner, data: d.data }));
   await page.addInitScript(`window.__MOCK = { user: ${JSON.stringify(user)}, tables: ${JSON.stringify(t)} };`);
   if (invoke) await page.addInitScript(`window.__MOCK.invoke = ${invoke};`);
+  if (adult) await page.addInitScript(`try { localStorage.setItem("mc-age", "21"); } catch (e) {}`);
   await page.addInitScript(mockJs);
   await page.goto(pathToFileURL(path.join(root, "index.html")).href + hash);
   await page.waitForTimeout(500);

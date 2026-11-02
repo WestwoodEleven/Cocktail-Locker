@@ -123,8 +123,9 @@ $("signin-cancel").onclick = () => { $("signin").hidden = true; };
 $("signin").onsubmit = async ev => {
   ev.preventDefault();
   const email = $("signin-email").value.trim(); if (!email) return;
+  if (!$("signin-age").checked) { $("signin-msg").textContent = "Please confirm you're 21 or older."; return; }
   $("signin-msg").textContent = "Sending…";
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname } });
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname, data: { confirmed_21_at: new Date().toISOString() } } });
   $("signin-msg").textContent = !error ? "Check your email and tap the link to sign in."
     : /rate|seconds|too many/i.test(error.message || "") ? "Too many sign-in emails just now. Wait a few minutes and try again."
     : /signup|not allowed/i.test(error.message || "") ? "New sign-ups are turned off for this site."

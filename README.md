@@ -62,6 +62,10 @@ Every bottle gets a shared page: details and a short description (written by the
 
 Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admins can **Edit details**, read suggested fixes and remove bad photos or reviews. To make yourself an admin, sign in once, put your email in [`supabase/make-me-admin.sql`](supabase/make-me-admin.sql) and run it. If you ran `setup.sql` before this existed, run [`supabase/bottles-setup.sql`](supabase/bottles-setup.sql) and redeploy `read-recipe`.
 
+### Age check
+
+On a device's first visit, a welcome screen asks whether the visitor is 21 or older (remembered on that device; "No" can't get in). Signing in also needs a ticked "I'm 21 or older and agree to the privacy policy" box, and the time it was ticked is saved on new accounts (Supabase **Authentication > Users**, in the user's metadata as `confirmed_21_at`).
+
 ### Deleting an account
 
 People can delete their own account from the bottom of **My cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.

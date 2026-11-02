@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500..700;1,7..72,500..600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=1777277789">
+<link rel="stylesheet" href="styles.css?v=41fa8106af">
+<script>try { if (localStorage.getItem("mc-age") === "21") document.documentElement.classList.add("age-ok"); } catch (e) {}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#18261F">
 <link rel="icon" type="image/png" href="icons/favicon-64.png">
@@ -19,6 +20,21 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
+<div class="age-gate" id="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-title">
+  <div class="age-card">
+    <div class="age-brand">My Cocktail <em>Cart</em></div>
+    <div id="age-ask">
+      <h2 id="age-title">Are you of legal drinking age?</h2>
+      <p>This site is about alcoholic drinks. You need to be 21 or older (or of legal drinking age where you live) to come in.</p>
+      <div class="age-actions"><button class="btn primary" type="button" id="age-yes">Yes, I'm 21 or older</button><button class="btn" type="button" id="age-no">No</button></div>
+      <p class="hint">By entering you agree to our <a href="privacy.html">privacy policy</a>. Please drink responsibly.</p>
+    </div>
+    <div id="age-sorry" hidden>
+      <h2>Sorry, not yet</h2>
+      <p>My Cocktail Cart is only for people of legal drinking age. Please come back when you're 21.</p>
+    </div>
+  </div>
+</div>
 <div class="wrap">
   <header class="mast">
     <div>
@@ -35,10 +51,10 @@
   <form class="signin" id="signin" hidden>
     <label for="signin-email">Email</label>
     <input id="signin-email" type="email" autocomplete="email" required placeholder="you@example.com">
+    <label class="check signin-age"><input type="checkbox" id="signin-age" required><span>I'm 21 or older and agree to the <a href="privacy.html">privacy policy</a>. Your email is never shown.</span></label>
     <button class="btn primary small" type="submit">Email me a sign-in link</button>
     <button class="btn small ghost" type="button" id="signin-cancel">Cancel</button>
     <span class="hint" id="signin-msg" role="status"></span>
-    <span class="hint signin-privacy">Your email is never shown. <a href="privacy.html">Privacy policy</a></span>
   </form>
   <form class="signin" id="name-form" hidden>
     <label for="locker-name">Name your cart</label>
@@ -116,7 +132,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="config.js?v=5832b205fc"></script>
 <script src="js/01-core.js?v=d76c8a3ab7"></script>
-<script src="js/02-data.js?v=962893109f"></script>
+<script src="js/02-data.js?v=acd2b8350c"></script>
 <script src="js/03-list.js?v=a337de353a"></script>
 <script src="js/04-detail.js?v=8073fc6a59"></script>
 <script src="js/05-share.js?v=6bf8973515"></script>
@@ -135,6 +151,7 @@
 <script src="js/19-bottles.js?v=f6dab15492"></script>
 <script src="js/20-mocktail.js?v=7b9c3278e9"></script>
 <script src="js/21-account.js?v=715703e5fa"></script>
+<script src="js/22-age.js?v=d071c5de27"></script>
 <script src="js/99-start.js?v=70f9625266"></script>
 
 </body>
