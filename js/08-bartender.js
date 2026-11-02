@@ -91,14 +91,42 @@ function outSummary() {
   const out = savedItems().filter(x => typeof x !== "string" && x.out);
   return `<p class="hint" id="bar-out" style="margin:0">${out.length ? `<b>Out of stock:</b> ${esc(out.map(itemLabel).join(", "))}` : ""}</p>`;
 }
+// Liquors are shown in shelves by type. The bottle guide decides when it knows the bottle; otherwise the name and brand do.
+const BAR_SHELVES = ["Whiskey", "Gin", "Vodka", "Rum", "Tequila & mezcal", "Brandy", "Other spirits", "Liqueurs & amari", "Vermouth & wine", "Other"];
+const SHELF_OF_CATEGORY = { whiskey: "Whiskey", gin: "Gin", vodka: "Vodka", rum: "Rum", tequila: "Tequila & mezcal", mezcal: "Tequila & mezcal", brandy: "Brandy",
+  liqueur: "Liqueurs & amari", amaro: "Liqueurs & amari", vermouth: "Vermouth & wine", wine: "Vermouth & wine" };
+const SHELF_OF_BASE = { Whiskey: "Whiskey", Gin: "Gin", Vodka: "Vodka", Rum: "Rum", Tequila: "Tequila & mezcal", Mezcal: "Tequila & mezcal", Brandy: "Brandy" };
+function barShelf(v) {
+  const known = typeof bottleFor === "function" && ((v.brand && bottleFor(v.brand)) || bottleFor(v.name));
+  if (known && SHELF_OF_CATEGORY[known.category]) return SHELF_OF_CATEGORY[known.category];
+  const text = (v.name + " " + (v.brand || "")).toLowerCase();
+  const kind = guessKind(v.name) !== "Other" ? guessKind(v.name) : guessKind(text);
+  if (kind === "Liqueur") return "Liqueurs & amari";
+  if (kind === "Vermouth & wine") return "Vermouth & wine";
+  for (const [b, re] of BASE_RULES) if (re.test(text)) return SHELF_OF_BASE[b];
+  return kind === "Spirit" ? "Other spirits" : "Other";
+}
+const barChip = (v, i) => `<span class="chip-item bar-chip${v.out ? " out" : ""}"><button type="button" class="chip-main" data-edit="${i}" title="Edit brand or stock">${esc(v.name)}${v.brand ? ` <small>${esc(v.brand)}</small>` : ""}${v.out ? ` <small class="out-tag">out</small>` : ""}</button>`
+  + `<button type="button" class="chip-stock" data-out="${i}" aria-label="${v.out ? "Mark " + esc(v.name) + " back in stock" : "Mark " + esc(v.name) + " out of stock"}" title="${v.out ? "Back in stock" : "Out of stock"}">${v.out ? "↺" : "○"}</button>`
+  + `<button type="button" data-rm="${i}" aria-label="Remove ${esc(v.name)}">×</button></span>`;
 function renderChips(key) {
   const el = $("chips-" + key); if (!el) return;
   const list = groupList(key);
-  el.innerHTML = !list.length ? `<span class="hint">Nothing yet.</span>` : key === "fresh"
-    ? list.map((v, i) => `<span class="chip-item">${esc(v)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">×</button></span>`).join("")
-    : list.map((v, i) => `<span class="chip-item bar-chip${v.out ? " out" : ""}"><button type="button" class="chip-main" data-edit="${i}" title="Edit brand or stock">${esc(v.name)}${v.brand ? ` <small>${esc(v.brand)}</small>` : ""}${v.out ? ` <small class="out-tag">out</small>` : ""}</button>`
-      + `<button type="button" class="chip-stock" data-out="${i}" aria-label="${v.out ? "Mark " + esc(v.name) + " back in stock" : "Mark " + esc(v.name) + " out of stock"}" title="${v.out ? "Back in stock" : "Out of stock"}">${v.out ? "↺" : "○"}</button>`
-      + `<button type="button" data-rm="${i}" aria-label="Remove ${esc(v.name)}">×</button></span>`).join("");
+  if (!list.length) { el.innerHTML = `<span class="hint">Nothing yet.</span>`; el.classList.remove("shelved"); return; }
+  if (key === "fresh") {
+    el.innerHTML = list.map((v, i) => `<span class="chip-item">${esc(v)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">×</button></span>`).join("");
+    return;
+  }
+  // Keep each item's position in the saved list for the edit, stock and remove buttons; show in stock first, then A–Z.
+  const items = list.map((x, i) => ({ v: barItem(x), i }))
+    .sort((a, b) => (a.v.out - b.v.out) || a.v.name.localeCompare(b.v.name, undefined, { sensitivity: "base" }));
+  if (key !== "liquors" || items.length < 6) { el.classList.remove("shelved"); el.innerHTML = items.map(x => barChip(x.v, x.i)).join(""); return; }
+  const shelves = new Map(BAR_SHELVES.map(s => [s, []]));
+  items.forEach(x => shelves.get(barShelf(x.v)).push(x));
+  el.classList.add("shelved");
+  el.innerHTML = [...shelves].filter(([, xs]) => xs.length).map(([shelf, xs]) => `<div class="shelf">
+      <div class="shelf-name">${esc(shelf)} <span class="shelf-n">${xs.length}</span></div>
+      <div class="shelf-chips">${xs.map(x => barChip(x.v, x.i)).join("")}</div></div>`).join("");
 }
 function openMake() {
   if (!S.canWrite || S.backend !== "supabase") { toast("Sign in to use the AI bartender."); return; }

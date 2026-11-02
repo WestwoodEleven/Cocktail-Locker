@@ -55,8 +55,7 @@ export default async function () {
   check("main search lists matching bottles", (await p.text("#list")).includes("BOTTLES") && (await p.evaluate("!!document.querySelector('#list [data-bottle=Cointreau]')")));
   // bar chip edit sheet links to bottle page
   await p.click("#locker-btn"); await p.waitForTimeout(100);
-  const idx = await p.evaluate("[...document.querySelectorAll('#chips-liquors [data-edit]')].findIndex(b => b.textContent.includes('Cointreau'))");
-  await p.click(`#chips-liquors [data-edit='${idx}']`); await p.waitForTimeout(50);
+  await p.click("#chips-liquors [data-edit]:has-text('Cointreau')"); await p.waitForTimeout(50);
   check("bar bottle links to its page", await p.isVisible("#gen-body [data-bottle='Cointreau']"));
   await p.click("#gen-body [data-bottle='Cointreau']"); await p.waitForTimeout(100);
   check("opens from the bar", (await p.evaluate("location.hash")) === "#bottle-cointreau");

@@ -462,3 +462,15 @@ html:not(.age-ok) body { overflow: hidden; }
   .home-feat { grid-template-columns: minmax(0, 1fr); }
   .home-feat img, .home-feat-ph { aspect-ratio: 4 / 3; }
 }
+
+/* My bar: liquors grouped into shelves by type */
+.chips.shelved { display: flex; flex-direction: column; gap: 0; }
+.shelf { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 12px; align-items: start; padding: 8px 0; border-top: 1px solid var(--rule); }
+.shelf:first-child { border-top: 0; padding-top: 2px; }
+.shelf-name { font-weight: 700; font-size: 14px; padding-top: 6px; }
+.shelf-n { color: var(--muted); font-weight: 500; font-size: 12px; margin-left: 2px; }
+.shelf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 600px) {
+  .shelf { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .shelf-name { padding-top: 0; }
+}
