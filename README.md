@@ -85,6 +85,7 @@ After editing anything in `js/` or `styles.css`, run `node tools/stamp.mjs`. It 
 ## Files
 
 - `index.html`: the page; `styles.css`: its styles; `js/`: its code, loaded in numbered order and sharing one scope
+- `privacy.html`: the privacy policy (linked from the footer and the sign-in form; contact privacy@mycocktailcart.com). Update it when the site starts collecting something new or uses a new service.
 - `manifest.webmanifest`, `sw.js`, `icons/`: installing as an app and opening offline
 - `config.js`: Supabase project URL and publishable key
 - `supabase/setup.sql`: tables, photo storage and access rules

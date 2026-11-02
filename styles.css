@@ -399,3 +399,7 @@ body.no-scroll { overflow: hidden; }
 .mk-swaps s { color: var(--muted); }
 .need-tag { font-size: 11px; padding: 1px 7px; margin-left: 4px; vertical-align: 2px; }
 #gen-body, #swap-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+.site-foot { text-align: center; color: var(--muted); font-size: 13px; padding: 28px 16px 8px; }
+.site-foot a { color: var(--muted); }
+@media print { .site-foot { display: none; } }
