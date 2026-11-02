@@ -745,8 +745,11 @@ body.on-home .grid > aside { display: none; }
 .add-menu b { font-size: 16px; }
 .add-menu span { font-size: 13.5px; color: var(--muted); }
 
-/* Readable fractions in amounts: raised top number, slash, bottom number, each at a legible size */
-.fr { white-space: nowrap; margin-left: .06em; }
-.fr .fn { font-size: .78em; vertical-align: .32em; }
-.fr .fs { font-size: .85em; margin: 0 .03em; }
-.fr .fd { font-size: .78em; }
+/* Amounts: bold proportional figures (a monospace font spaces fractions badly), with fractions drawn
+   as a raised top number, a drawn slash and a bottom number so they read the same in any font. */
+.spec-table .q, .mm-q, .home-day-ings b { font-family: var(--f-body); font-weight: 700; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.01em; }
+.spec-table .u { font-family: var(--f-body); font-weight: 500; }
+.fr { display: inline-flex; align-items: baseline; white-space: nowrap; margin-left: .04em; }
+.fr .fn, .fr .fd { font-size: .7em; line-height: 1; }
+.fr .fn { position: relative; top: -.42em; }
+.fr .fs { display: inline-block; width: .08em; min-width: 1.5px; height: .78em; background: currentColor; border-radius: 1px; transform: skewX(-22deg); margin: 0 .1em; align-self: center; position: relative; top: -.05em; }

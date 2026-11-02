@@ -9,7 +9,7 @@ const METHODS = ["Stirred","Shaken","Built","Blended","Thrown"];
 const FR8 = { 0: "", 1: "⅛", 2: "¼", 3: "⅜", 4: "½", 5: "⅝", 6: "¾", 7: "⅞" };
 // Amounts as HTML with readable fractions: "1¾" becomes 1 plus a properly sized ¾ (the ¾ character is tiny on phones).
 const FRAC_PARTS = { "⅛": [1, 8], "¼": [1, 4], "⅜": [3, 8], "½": [1, 2], "⅝": [5, 8], "¾": [3, 4], "⅞": [7, 8], "⅓": [1, 3], "⅔": [2, 3] };
-const qHtml = q => esc(q).replace(/[⅛¼⅜½⅝¾⅞⅓⅔]/g, ch => { const [n, d] = FRAC_PARTS[ch]; return `<span class="fr" aria-label="${n}/${d}"><span class="fn">${n}</span><span class="fs">⁄</span><span class="fd">${d}</span></span>`; });
+const qHtml = q => esc(q).replace(/[⅛¼⅜½⅝¾⅞⅓⅔]/g, ch => { const [n, d] = FRAC_PARTS[ch]; return `<span class="fr" role="img" aria-label="${n}/${d}"><span class="fn">${n}</span><span class="fs" aria-hidden="true"></span><span class="fd">${d}</span></span>`; });
 function fracFmt(v, denom) {
   const q = Math.round(v * denom) / denom;
   if (q === 0) return v > 0 ? (Math.round(v * 100) / 100).toString() : "0";
