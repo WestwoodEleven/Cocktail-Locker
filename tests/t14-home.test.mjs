@@ -42,10 +42,11 @@ export default async function () {
 
   const m = await open({ width: 390, home: true });
   check("phone tabs are Home, My drinks, My bottles", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "My drinks", "My bottles"]));
-  await m.click(".tabbar [data-nav=mine]"); await m.waitForTimeout(150);
-  const mine = await m.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
-  check("My drinks shows only your drinks", mine.length === 2 && mine.includes("rita") && mine.includes("neg-2"), JSON.stringify(mine));
+  await m.click(".tabbar [data-nav=mine]"); await m.waitForTimeout(400);
+  check("My drinks opens your drinks on My cart", /my drinks/i.test(await m.text("#prof-drinks")) && (await m.evaluate("Math.abs(document.getElementById('prof-drinks').getBoundingClientRect().top)")) < 60);
   check("My drinks tab marked", (await m.getAttribute(".tabbar [data-nav=mine]", "aria-current")) === "page");
+  await m.click(".tabbar [data-nav=bar]"); await m.waitForTimeout(400);
+  check("My bottles tab marked instead", (await m.getAttribute(".tabbar [data-nav=bar]", "aria-current")) === "page" && !(await m.getAttribute(".tabbar [data-nav=mine]", "aria-current")));
   await m.click(".tabbar [data-nav=home]"); await m.waitForTimeout(150);
   check("Home tab returns home and clears the filter", /welcome back/i.test(await m.text("#main")) && (await m.evaluate("S.f.owner")) === "");
   check("no errors", m.errors.length === 0, m.errors.join("; "));

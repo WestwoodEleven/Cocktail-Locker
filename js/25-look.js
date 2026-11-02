@@ -73,23 +73,23 @@ function navGo(where) {
   if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bottles and see what you can make."); return openCanMake(); }
   if (where === "mine") {
     if (!uid()) return needSignIn("Sign in to keep your own drinks.");
-    S.f = { owner: "mine", type: "", base: "", method: "", kind: "", rating: "" };
-    S.query = ""; $("search").value = "";
-    if (!S.drinks.some(d => isMine(d))) { openProfile(); return; } // My cart explains how to add the first one
-    renderFilters(); showList(null);
+    S.profTab = "mine"; openProfile();
+    setTimeout(() => { const d = $("prof-drinks"); if (d) d.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
     return;
   }
   if (where === "bar") {
     if (!uid()) return needSignIn("Sign in to keep your bottles.");
-    openProfile();
+    S.profTab = "bar"; openProfile();
     setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
   }
 }
 document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => navGo(b.dataset.nav)));
+// Page-wide state that follows the current view: full-width home, and which nav item is marked.
+function syncChrome() { document.body.classList.toggle("on-home", S.view === "home"); markNav(); }
 // Mark where you are.
 const NAV_OF_VIEW = { home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
 function markNav() {
-  const here = S.view === "detail" && S.f.owner === "mine" ? "mine" : NAV_OF_VIEW[S.view] || "";
+  const here = S.view === "profile" ? (S.profTab || "mine") : NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
 

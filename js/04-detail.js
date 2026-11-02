@@ -2,8 +2,7 @@
 // ---------- detail ----------
 function renderMain() {
   const m = $("main");
-  document.body.classList.toggle("on-home", S.view === "home");
-  if (typeof markNav === "function") markNav();
+  if (typeof syncChrome === "function") syncChrome();
   if (VIEWS[S.view]) return VIEWS[S.view]();
   if (S.view === "edit") return renderEditor();
   if (S.view === "make") return renderMake();

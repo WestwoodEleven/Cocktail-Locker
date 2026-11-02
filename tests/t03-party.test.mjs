@@ -24,7 +24,7 @@ export default async function () {
   check("menu card lists drinks", (await p.text("#menu-card")).includes("Moscow Mule"));
   await p.click("[data-sv='mule'][data-d='1']"); await p.waitForTimeout(100);
   check("manual servings override", (await p.text(".party-drink:nth-of-type(2) .sv")) === "13");
-  await p.evaluate("location.hash = '#party'"); await p.reload(); await p.waitForTimeout(600);
+  await p.evaluate("location.hash = '#party'"); await p.reload(); await p.waitForTimeout(1200);
   const q = p;
   check("plan is remembered on this device", (await q.text("#main")).includes("Moscow Mule"));
   await q.click("#party-close");

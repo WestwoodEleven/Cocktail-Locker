@@ -78,6 +78,7 @@ function lookupRow() {
     <span class="hint">${uid() ? "Saved to the shared library so everyone can use it." : "Sign in to look up recipes that aren't here yet."}</span></button></li>`;
 }
 function renderList() {
+  if (typeof syncChrome === "function") syncChrome();
   const items = filtered();
   const total = S.drinks.length, shown = items.length;
   $("count-label").textContent = !S.loaded ? "" : S.query.trim() ? `${shown} found` : shown === total ? String(total) : `${shown} of ${total}`;
