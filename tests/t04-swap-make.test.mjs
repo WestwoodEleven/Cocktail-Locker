@@ -14,7 +14,7 @@ export default async function () {
   check("swap shows loading", (await p.text("#swap-body")).includes("Finding substitutes"));
   await p.waitForTimeout(300);
   const t = await p.text("#swap-body");
-  check("swap options listed", t.includes("Aperol") && t.includes("In your bar") && t.includes("Add a dash of Angostura"), t);
+  check("swap options listed", t.includes("Aperol") && t.includes("In your bottles") && t.includes("Add a dash of Angostura"), t);
   check("request sent the right ingredient", (await p.evaluate("window.__MOCK.lastInvoke.index")) === 1);
   await p.click("#swap-body [data-use='0']"); await p.waitForTimeout(100);
   check("make my version opens editor with swap", (await p.inputValue("#f-name")) === "Negroni (with Aperol)" && (await p.inputValue("#ing-name-1")) === "Aperol");

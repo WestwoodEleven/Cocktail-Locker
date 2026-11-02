@@ -1,6 +1,6 @@
 // My Cocktail Cart: bottle guide. Scripts share one global scope and load in numbered order.
 // A shared page per bottle: details and a description (written once by the AI), people's photos, ratings and comments,
-// recipes that call for it, and a button to add it to your bar.
+// recipes that call for it, and a button to add it to your bottles.
 
 S.bottles = []; S.bottlePhotos = {}; S.bottleReviews = {}; S.isAdmin = false;
 const BOTTLE_GROUP = { bitters: "bitters", syrup: "syrups", mixer: "fresh" };
@@ -103,7 +103,7 @@ VIEWS.bottle = function renderBottle() {
           ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
           ${b.description ? `<p class="bottle-desc">${esc(b.description)}</p>` : ""}
           <p class="hint" style="margin:0">Written by AI and may contain errors. ${uid() ? `<button type="button" class="linkish" id="bt-fix">Suggest a fix</button>` : ""}${S.isAdmin ? ` · <button type="button" class="linkish" id="bt-edit">Edit details</button>` : ""}</p>
-          <div class="panel-actions" style="justify-content:flex-start">${uid() ? (inBar ? `<span class="chip">In your bar ✓</span>` : `<button class="btn primary small" type="button" id="bt-addbar">Add to my bar</button>`) : ""}<button class="btn small" type="button" id="bt-link">Copy link</button></div>
+          <div class="panel-actions" style="justify-content:flex-start">${uid() ? (inBar ? `<span class="chip">In your bottles ✓</span>` : `<button class="btn primary small" type="button" id="bt-addbar">Add to my bottles</button>`) : ""}<button class="btn small" type="button" id="bt-link">Copy link</button></div>
         </div>
       </div>
       <section class="make-sec">
@@ -126,7 +126,7 @@ VIEWS.bottle = function renderBottle() {
   if ($("bt-addbar")) $("bt-addbar").onclick = () => {
     const group = BOTTLE_GROUP[b.category] || "liquors";
     if (group === "fresh") addItem("fresh", b.ingredient || b.name); else addItem(group, b.ingredient || b.name, b.name);
-    toast(`${b.name} added to your bar`); renderMain();
+    toast(`${b.name} added to your bottles`); renderMain();
   };
   if ($("bt-photo")) $("bt-photo").onclick = () => $("bottle-file").click();
   if ($("bt-photo-rm")) $("bt-photo-rm").onclick = async () => {
@@ -240,7 +240,7 @@ VIEWS.guide = function renderGuide() {
   m.innerHTML = `
     <div class="make">
       <div class="editor-top"><div><span class="label">Bottle guide</span><h2 class="make-title">Bottles</h2></div><button class="btn small" type="button" id="gd-back">Back to drinks</button></div>
-      <p class="hint" style="margin:0">Every bottle people have looked up, best rated first. Tap a brand on any recipe or in your bar to open its page.</p>
+      <p class="hint" style="margin:0">Every bottle people have looked up, best rated first. Tap a brand on any recipe or in your bottles to open its page.</p>
       <div class="chip-add"><input id="gd-search" type="search" placeholder="Search bottles, or type one to look it up" value="${esc(S.guideQuery)}" autocomplete="off"><button class="btn small primary" type="button" id="gd-go">Look up</button></div>
       ${S.bottlesOff ? `<p class="hint">The bottle guide isn't switched on yet. The site owner needs to run bottles-setup.sql.</p>`
         : list.length ? Object.keys(groups).sort().map(g => `<section class="make-sec"><div class="sec-head"><h3>${esc(g)} <span class="count">${groups[g].length}</span></h3></div><ul class="plist">${groups[g].map(row).join("")}</ul></section>`).join("")

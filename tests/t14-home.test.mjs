@@ -41,7 +41,7 @@ export default async function () {
   await q.close();
 
   const m = await open({ width: 390, home: true });
-  check("phone tabs are Home, My drinks, My bar", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "My drinks", "My bar"]));
+  check("phone tabs are Home, My drinks, My bottles", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "My drinks", "My bottles"]));
   await m.click(".tabbar [data-nav=mine]"); await m.waitForTimeout(150);
   const mine = await m.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
   check("My drinks shows only your drinks", mine.length === 2 && mine.includes("rita") && mine.includes("neg-2"), JSON.stringify(mine));

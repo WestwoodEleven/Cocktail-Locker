@@ -28,9 +28,9 @@ async function openSwap(d, idx) {
   const render = st => {
     if (st.loading) return swapSheet(`<div class="scanning"><div class="glass dots">Finding substitutes</div><div class="hint">Checking what works in a ${esc(d.name)}.</div></div>`);
     if (st.error) return swapSheet(`<div class="scan-banner"><span><b>Couldn't get substitutes.</b> ${esc(st.error)}</span></div>`);
-    swapSheet(`<p class="hint" style="margin:0">Out of ${esc(i.name)}? Options for this ${esc(d.name)}${inStock(savedItems()).length ? ", starting with what's in your bar" : ""}:</p>
+    swapSheet(`<p class="hint" style="margin:0">Out of ${esc(i.name)}? Options for this ${esc(d.name)}${inStock(savedItems()).length ? ", starting with what's in your bottles" : ""}:</p>
       <div class="swaps">${st.options.map((o, k) => `<div class="swap-opt">
-        <div class="swap-name"><b>${esc(o.name)}</b>${o.in_bar ? ' <span class="chip">In your bar</span>' : ""}</div>
+        <div class="swap-name"><b>${esc(o.name)}</b>${o.in_bar ? ' <span class="chip">In your bottles</span>' : ""}</div>
         <div class="hint">${esc(o.amount ? `${fmtOz(Number(o.amount))} ${o.unit || "oz"}` : "")}${o.adjust ? (o.amount ? " · " : "") + esc(o.adjust) : ""}</div>
         ${o.why ? `<div class="swap-why">${esc(o.why)}</div>` : ""}
         ${S.canWrite ? `<button class="btn small" type="button" data-use="${k}">Make my version with this</button>` : ""}</div>`).join("")}</div>`);

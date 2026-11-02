@@ -1,5 +1,5 @@
-// The Cocktail Locker: stock your bar from photos. Scripts share one global scope and load in numbered order.
-// Each photo goes to Claude, which lists every bottle it can see; you review the list, then add it to your bar.
+// The Cocktail Locker: stock your bottles from photos. Scripts share one global scope and load in numbered order.
+// Each photo goes to Claude, which lists every bottle it can see; you review the list, then add it to your bottles.
 
 const STOCK_GROUPS = [["liquors", "Liquors & liqueurs"], ["syrups", "Syrups & sweeteners"], ["bitters", "Bitters"], ["fresh", "Fresh today (mixers)"]];
 const CATEGORY_GROUP = { liquor: "liquors", liqueur: "liquors", vermouth_wine: "liquors", syrup: "syrups", bitters: "bitters", mixer: "fresh", other: "fresh" };
@@ -7,7 +7,7 @@ S.stock = { photos: [], items: [] };
 let stockSeq = 0;
 
 function openStock() {
-  if (!uid()) { toast("Sign in to stock your bar from photos."); return; }
+  if (!uid()) { toast("Sign in to stock your bottles from photos."); return; }
   S.view = "stock"; S.confirmDelete = false; setHash("stock-bar");
   renderList(); renderMain();
   $("main").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -24,7 +24,7 @@ function stockStatus(it) {
   if (bk && list.some(x => ingKey(itemName(x)) === nk && !x.brand)) return "brand";
   return "new";
 }
-const STATUS_TEXT = { have: "Already in your bar", restock: "Marks it back in stock", brand: "Adds the brand to your bottle", new: "" };
+const STATUS_TEXT = { have: "Already in your bottles", restock: "Marks it back in stock", brand: "Adds the brand to your bottle", new: "" };
 
 async function thumbOf(dataUrl) {
   const img = new Image(); img.src = dataUrl; await img.decode();
@@ -121,7 +121,7 @@ VIEWS.stock = function renderStock() {
   };
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">My bar</span><h2 class="make-title">Stock my bar from photos</h2></div>
+      <div class="editor-top"><div><span class="label">My bottles</span><h2 class="make-title">Stock my bottles from photos</h2></div>
         <button class="btn small" type="button" id="stock-close">Back to drinks</button></div>
       <p class="hint" style="margin:0">Photograph your shelves, a few bottles at a time with labels facing the camera. We list every bottle we can read, and you check the list before anything is added. Each photo uses one of your daily AI requests.</p>
       <div class="panel-actions" style="justify-content:flex-start">
@@ -133,7 +133,7 @@ VIEWS.stock = function renderStock() {
       <section class="make-sec">
         <div class="sec-head"><h3>Found <span class="count">${items.length}</span></h3><span class="hint">Untick anything you don't want. Edit names or brands if a label was misread.</span></div>
         <div class="stock-list">${items.map(row).join("")}</div>
-        <div class="form-actions"><button class="btn primary" type="button" id="stock-add" ${chosen ? "" : "disabled"}>${busy ? "Still reading… " : ""}Add ${chosen} to my bar</button></div>
+        <div class="form-actions"><button class="btn primary" type="button" id="stock-add" ${chosen ? "" : "disabled"}>${busy ? "Still reading… " : ""}Add ${chosen} to my bottles</button></div>
       </section>` : st.photos.length && !busy ? `<p class="hint">No bottles found yet. Try a closer photo with the labels facing the camera.</p>` : ""}
     </div>`;
   $("stock-close").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
@@ -167,7 +167,7 @@ function applyStock() {
   });
   touched.forEach(k => afterItems(k));
   const parts = [added && `${added} added`, branded && `${branded} brand${branded === 1 ? "" : "s"} filled in`, restocked && `${restocked} back in stock`].filter(Boolean);
-  toast(parts.length ? "Your bar: " + parts.join(", ") : "Everything was already in your bar");
+  toast(parts.length ? "Your bottles: " + parts.join(", ") : "Everything was already in your bottles");
   S.stock = { photos: [], items: [] };
   openProfile();
   setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);

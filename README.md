@@ -42,7 +42,7 @@ Search covers every locker. Versions of the same drink are grouped together and 
 
 ### Look and feel
 
-The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box; on phones a tab bar (Home, My drinks, My bar) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
+The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box; on phones a tab bar (Home, My drinks, My bottles) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
 
 ### Home page
 
@@ -52,9 +52,9 @@ Visitors who arrive without a link to something specific (and anyone who taps th
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.
 - **Plan a party**: pick drinks and a guest count for batches, one combined shopping list (bottles, citrus, cans, ice) and a printable menu. Saved on the device.
-- **Stock my bar**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bar. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
-- **Swap**: next to each ingredient, Claude suggests substitutes (from your bar first) and can start your own version with the swap.
-- **Make it a mocktail**: on any drink, the AI makes a zero-proof version that keeps the drink's own non-alcoholic ingredients and uses your bar first, shows each swap and anything you'd need to buy, and can be saved to your cart or made step by step. One AI request.
+- **Stock my bottles**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bottles. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
+- **Swap**: next to each ingredient, Claude suggests substitutes (from your bottles first) and can start your own version with the swap.
+- **Make it a mocktail**: on any drink, the AI makes a zero-proof version that keeps the drink's own non-alcoholic ingredients and uses your bottles first, shows each swap and anything you'd need to buy, and can be saved to your cart or made step by step. One AI request.
 - **Make it**: a big, step-by-step checklist that keeps the screen on while you mix.
 - **Lists**: your own named lists (Thanksgiving, Summer patio). Public lists show on your locker page; you can make any list private.
 - **Notes with ratings**: add a short note when you rate; everyone sees them under "What people say".
@@ -66,7 +66,7 @@ If you ran `setup.sql` before these existed, run [`supabase/social-setup.sql`](s
 
 ### Bottle guide
 
-Every bottle gets a shared page: details and a short description (written by the AI the first time anyone looks the bottle up, then saved for everyone), people's own photos of the bottle, 1–5 star ratings with comments, the recipes that name it as their recommended brand, and an **Add to my bar** button. Open one by tapping a recommended brand on a recipe, a bottle in your bar, a bottle in search results, or from **Bottle guide** in Tools (links look like `#bottle-buffalo-trace`).
+Every bottle gets a shared page: details and a short description (written by the AI the first time anyone looks the bottle up, then saved for everyone), people's own photos of the bottle, 1–5 star ratings with comments, the recipes that name it as their recommended brand, and an **Add to my bottles** button. Open one by tapping a recommended brand on a recipe, a bottle in your bottles, a bottle in search results, or from **Bottle guide** in Tools (links look like `#bottle-buffalo-trace`).
 
 Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admins can **Edit details**, read suggested fixes and remove bad photos or reviews. To make yourself an admin, sign in once, put your email in [`supabase/make-me-admin.sql`](supabase/make-me-admin.sql) and run it. If you ran `setup.sql` before this existed, run [`supabase/bottles-setup.sql`](supabase/bottles-setup.sql) and redeploy `read-recipe`.
 

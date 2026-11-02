@@ -105,7 +105,7 @@ function canMakeResults() {
 }
 $("canmake-btn").onclick = () => openCanMake();
 function openCanMake() {
-  if (!uid()) { toast("Sign in to save your bar and see what you can make."); return; }
+  if (!uid()) { toast("Sign in to save your bottles and see what you can make."); return; }
   S.view = "canmake"; S.confirmDelete = false; setHash("can-make");
   renderList(); renderMain();
   $("main").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -122,10 +122,10 @@ VIEWS.canmake = function renderCanMake() {
   })();
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">From your bar</span><h2 class="make-title">What can I make?</h2></div>
+      <div class="editor-top"><div><span class="label">From your bottles</span><h2 class="make-title">What can I make?</h2></div>
         <button class="btn small" type="button" id="cm-close">Back to drinks</button></div>
-      <p class="hint" style="margin:0">Matches your bar and today's fresh ingredients against every recipe on the site. Ice, water and sugar are assumed.</p>
-      ${!r.keys.length ? `<div class="scan-banner"><span><b>Your bar is empty.</b> Add your bottles below to see what you can make.</span></div>` : ""}
+      <p class="hint" style="margin:0">Matches your bottles and today's fresh ingredients against every recipe on the site. Ice, water and sugar are assumed.</p>
+      ${!r.keys.length ? `<div class="scan-banner"><span><b>No bottles yet.</b> Add your bottles below to see what you can make.</span></div>` : ""}
       <section class="make-sec">
         <div class="sec-head"><h3>Ready to make <span class="count">${r.ready.length}</span></h3></div>
         ${r.ready.length ? `<ul class="plist">${r.ready.map(d => drinkRow(d, true)).join("")}</ul>` : `<p class="hint" style="margin:0">Nothing yet. Add citrus and mixers under Fresh today, or check the near misses below.</p>`}
@@ -141,7 +141,7 @@ VIEWS.canmake = function renderCanMake() {
         ${GROUPS.filter(g => !g.saved).map(chipGroupHtml).join("")}
       </section>
       <section class="make-sec">
-        <div class="sec-head"><h3>My bar</h3><span class="hint"><span id="bar-saved">Changes save automatically.</span> · <button type="button" class="linkish" data-stock-open>Add bottles from photos</button></span></div>
+        <div class="sec-head"><h3>My bottles</h3><span class="hint"><span id="bar-saved">Changes save automatically.</span> · <button type="button" class="linkish" data-stock-open>Add bottles from photos</button></span></div>
         ${GROUPS.filter(g => g.saved).map(chipGroupHtml).join("")}
       </section>
     </div>`;

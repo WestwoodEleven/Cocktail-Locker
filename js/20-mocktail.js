@@ -1,5 +1,5 @@
 // My Cocktail Cart: "Make it a mocktail". Scripts share one global scope and load in numbered order.
-// Asks the AI for a zero-proof version of a drink, using its own non-alcoholic ingredients and your bar first.
+// Asks the AI for a zero-proof version of a drink, using its own non-alcoholic ingredients and your bottles first.
 
 S.mockCache = {};
 function mockBtn(d) {
@@ -15,7 +15,7 @@ function mockToDrink(d, x) {
 async function openMocktail(d, fresh) {
   const key = d.id;
   const draw = st => {
-    if (st.loading) { sheet(`Mocktail ${d.name}`, `<div class="scanning"><div class="glass dots">Making it zero-proof</div><div class="hint">Working from the ${esc(d.name)} spec and your bar.</div></div>`); return; }
+    if (st.loading) { sheet(`Mocktail ${d.name}`, `<div class="scanning"><div class="glass dots">Making it zero-proof</div><div class="hint">Working from the ${esc(d.name)} spec and your bottles.</div></div>`); return; }
     if (st.error) { sheet(`Mocktail ${d.name}`, `<div class="scan-banner"><span><b>Couldn't make a mocktail.</b> ${esc(st.error)}</span></div><div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" id="mk-retry">Try again</button></div>`); $("mk-retry").onclick = () => openMocktail(d, true); return; }
     const x = st.mocktail;
     const rows = (x.ingredients || []).map(i => { const s = show({ amount: Number(i.amount) || 0, unit: i.unit }, 1, S.mode);

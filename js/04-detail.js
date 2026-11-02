@@ -74,7 +74,7 @@ function renderMain() {
     </figure>` : `<figure class="photo glassfig" aria-hidden="true">${drinkPicture(d)}</figure>`}
     </div>
     <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" hidden>
-    ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your bar?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
+    ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your cart?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
 
     <section class="batch" aria-label="Batch size">
       <div class="ctl">

@@ -70,7 +70,7 @@ function navGo(where) {
   if (where === "home") return openHome();
   if (where === "guide") return openGuide();
   if (where === "party") return openParty();
-  if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bar and see what you can make."); return openCanMake(); }
+  if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bottles and see what you can make."); return openCanMake(); }
   if (where === "mine") {
     if (!uid()) return needSignIn("Sign in to keep your own drinks.");
     S.f = { owner: "mine", type: "", base: "", method: "", kind: "", rating: "" };
@@ -80,7 +80,7 @@ function navGo(where) {
     return;
   }
   if (where === "bar") {
-    if (!uid()) return needSignIn("Sign in to keep your bar.");
+    if (!uid()) return needSignIn("Sign in to keep your bottles.");
     openProfile();
     setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
   }

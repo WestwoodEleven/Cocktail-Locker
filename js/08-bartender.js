@@ -38,7 +38,7 @@ function saveBarSoon() {
   barTimer = setTimeout(async () => {
     if (!sb || !uid()) return;
     const { error } = await sb.from("bars").upsert({ user_id: uid(), items: S.bar, updated_at: new Date().toISOString() });
-    const el = $("bar-saved"); if (el) el.textContent = error ? "Couldn't save your bar just now." : "Saved to your cart.";
+    const el = $("bar-saved"); if (el) el.textContent = error ? "Couldn't save your bottles just now." : "Saved to your cart.";
   }, 700);
 }
 function saveFresh() { try { localStorage.setItem("mc-fresh", JSON.stringify(S.fresh)); } catch (e) {} }
@@ -170,7 +170,7 @@ function renderMake() {
       <div class="editor-top"><h2 class="make-title">Make me a drink</h2><button class="btn small" type="button" id="make-close">Back to drinks</button></div>
       <p class="hint" style="margin:0">List what you have and we'll suggest 3 cocktails you can make right now. It may add ice, water and sugar, nothing else.</p>
       <section class="make-sec">
-        <div class="sec-head"><h3>Your bar</h3><button type="button" class="linkish" data-stock-open>Add bottles from photos</button><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your cart for next time."}</span></div>
+        <div class="sec-head"><h3>Your bottles</h3><button type="button" class="linkish" data-stock-open>Add bottles from photos</button><span class="hint" id="bar-saved">${S.barOff ? "Your bottles can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your cart for next time."}</span></div>
         ${GROUPS.filter(g => g.saved).map(group).join("")}
       </section>
       <section class="make-sec">

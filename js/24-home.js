@@ -56,7 +56,7 @@ VIEWS.home = function renderHome() {
               <button class="btn" type="button" data-home="canmake">What can I make?</button>
               <button class="btn" type="button" data-home="make">Make me a drink</button>
               <button class="btn" type="button" data-home="scan">Scan a recipe</button>
-              <button class="btn" type="button" data-home="stock">Stock my bar</button>
+              <button class="btn" type="button" data-home="stock">Stock my bottles</button>
               <button class="btn" type="button" data-home="new">+ New drink</button>
             </div>` : `
             <h2 class="home-title">House specs,<br>scaled to<br><em>the crowd.</em></h2>
@@ -100,7 +100,7 @@ VIEWS.home = function renderHome() {
           <ul class="menu-list">${fresh.map(d => `<li><button type="button" data-open="${esc(d.id)}"><span class="mn">${esc(d.name)}</span><span class="lead" aria-hidden="true"></span><span class="ms">${esc([baseOf(d), accounts ? (isMine(d) && signedIn ? "Your cart" : lockerName(d.owner)) : ""].filter(Boolean).join(" · "))}</span></button></li>`).join("")}</ul>
         </section>` : ""}
         ${signedIn || !accounts ? "" : `<aside class="home-promo" aria-label="What you can do with a free cart">
-          <h3>Your bar,<br>working for you</h3>
+          <h3>Your bottles,<br>working for you</h3>
           <ul>
             <li><b>What can I make?</b> Save your bottles and see every drink you can pour right now.</li>
             <li><b>Snap a recipe.</b> Photograph a recipe card, or your shelf, and we fill it in.</li>

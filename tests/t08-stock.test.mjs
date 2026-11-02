@@ -29,8 +29,8 @@ export default async function () {
   const list = await p.text(".stock-list");
   check("duplicate bourbon merged", (await p.evaluate("document.querySelectorAll('.stock-row').length")) === 5 && list.includes("×2"), list);
   const states = await p.evaluate("[...document.querySelectorAll('.stock-row')].map(r => r.querySelector('[data-nm]').value + ':' + r.querySelector('[data-inc]').checked + ':' + (r.querySelector('.stock-meta').textContent.trim()))");
-  check("statuses: new, have, brand fill, mixer", states.some(s => s.startsWith("Campari:false") && s.includes("Already in your bar")) && states.some(s => s.startsWith("Gin:true:Adds the brand")) && states.some(s => s.startsWith("Tonic water:true") && s.includes("Guess")), JSON.stringify(states));
-  check("button counts what will be added", (await p.text("#stock-add")) === "Add 4 to my bar");
+  check("statuses: new, have, brand fill, mixer", states.some(s => s.startsWith("Campari:false") && s.includes("Already in your bottles")) && states.some(s => s.startsWith("Gin:true:Adds the brand")) && states.some(s => s.startsWith("Tonic water:true") && s.includes("Guess")), JSON.stringify(states));
+  check("button counts what will be added", (await p.text("#stock-add")) === "Add 4 to my bottles");
   // fix a misread brand before adding
   const tonic = await p.evaluate("[...document.querySelectorAll('[data-nm]')].find(x => x.value === 'Tonic water').dataset.nm");
   await p.fill(`#bd-${tonic}`, "Fever-Tree Indian"); await p.dispatchEvent(`#bd-${tonic}`, "change");

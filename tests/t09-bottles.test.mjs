@@ -30,7 +30,7 @@ export default async function () {
   check("fix suggestion sent", (await p.evaluate("window.__MOCK.tables.bottle_reports.length")) === 1);
   // add to bar
   await p.click("#bt-addbar"); await p.waitForTimeout(900);
-  check("add to bar uses type + brand", (await p.evaluate("window.__MOCK.tables.bars[0].items.liquors.some(x => x.name === 'Orange liqueur' && x.brand === 'Cointreau')")) && (await p.text("#main")).includes("In your bar ✓"));
+  check("add to bar uses type + brand", (await p.evaluate("window.__MOCK.tables.bars[0].items.liquors.some(x => x.name === 'Orange liqueur' && x.brand === 'Cointreau')")) && (await p.text("#main")).includes("In your bottles ✓"));
   // photo
   await p.setInputFiles("#bottle-file", fx("shelf1.jpg")); await p.waitForTimeout(600);
   check("photo added to the page", (await p.evaluate("window.__MOCK.tables.bottle_photos.length")) === 1 && await p.isVisible(".bottle-photo img"));
