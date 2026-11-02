@@ -10,7 +10,7 @@ export default async function () {
   const want = ["Whiskey: Bourbon, Rye whiskey", "Gin: Gin", "Rum: Dark rum", "Tequila & mezcal: Mezcal, Blanco tequila", "Liqueurs: Campari, Triple sec", "Vermouth & wine: Sweet vermouth", "Other: Mystery bottle"];
   check("liquors grouped into shelves in a set order", JSON.stringify(shelves) === JSON.stringify(want), JSON.stringify(shelves));
   check("out of stock sorted last on its shelf", shelves[3].endsWith("Blanco tequila"));
-  check("shelf counts shown", (await p.text("#chips-liquors")).includes("Whiskey 2") || /Whiskey\s*\|?\s*2/.test(await p.text("#chips-liquors")));
+  check("shelf counts shown", /whiskey\s*\|?\s*2/i.test(await p.text("#chips-liquors")));
   const before = await p.evaluate("JSON.stringify(window.__MOCK.tables.bars[0].items.liquors)");
   await p.evaluate("document.querySelector('#chips-liquors .chip-main[data-edit=\"4\"]').parentElement.querySelector('[data-out]').click()"); await p.waitForTimeout(900);
   const after = await p.evaluate("window.__MOCK.tables.bars[0].items.liquors");

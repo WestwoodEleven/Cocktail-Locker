@@ -40,6 +40,10 @@ Signed-in people get a **My cart** page (called a locker in the code and databas
 
 Search covers every locker. Versions of the same drink are grouped together and sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
 
+### Look and feel
+
+The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box; on phones a tab bar (Drinks, My bar, Party, Bottles) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
+
 ### Home page
 
 Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My cart, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.

@@ -34,7 +34,7 @@ function drinkRow(d, showFrom) {
   const r = ratingOf(d);
   const sub = [typeOf(d), showFrom && !isMine(d) ? (d.standard ? "Standard recipe" : lockerName(d.owner)) : "", r.count ? `★ ${avgOf(d).toFixed(1)}` : ""].filter(Boolean).join(" · ");
   return `<li><button type="button" class="prow" data-open="${esc(d.id)}">
-    ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
+    ${drinkThumb(d)}
     <span class="txt"><span class="nm">${esc(d.name)}</span><span class="sub">${esc(sub)}</span></span>
     ${isFav(d) ? `<span class="fav-mark" aria-label="Favorite">♥</span>` : ""}</button></li>`;
 }

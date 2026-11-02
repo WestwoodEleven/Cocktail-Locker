@@ -67,7 +67,7 @@ function rowHtml(d, ver) {
   const multi = S.backend === "supabase";
   const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your cart" : lockerName(d.owner)) : baseOf(d));
   return `<li${ver ? ' class="ver"' : ""}><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
-    ${d.photo ? `<img class="thumb" src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : `<span class="thumb" aria-hidden="true">${esc((d.name || "?").trim().charAt(0).toUpperCase())}</span>`}
+    ${drinkThumb(d)}
     <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
 }
 function lookupRow() {

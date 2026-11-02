@@ -7,40 +7,40 @@
 <meta name="description" content="What My Cocktail Cart collects, who can see it, and how to have it deleted.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500..700;1,7..72,500..600&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <meta name="theme-color" content="#18261F">
 <link rel="icon" type="image/png" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 :root {
   color-scheme: light;
-  --bg: #E9EEEA; --surface: #F7F9F6; --ink: #18261F; --muted: #5B6B63; --rule: #C9D3CC;
-  --accent: #9A5B0A; --green: #22513C; --focus: #2F6FB0;
-  --f-display: "Literata", Georgia, "Times New Roman", serif;
-  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #F5F5F2; --surface: #FFFFFF; --ink: #121418; --muted: #5E626B; --rule: #D9DAD4;
+  --accent: #B3122E; --green: #121418; --focus: #1F5F8B;
+  --f-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0E1612; --surface: #15201B; --ink: #E5ECE7; --muted: #92A299; --rule: #2B3B34;
-    --accent: #E3A643; --green: #86C9A5; --focus: #7FB2E8; color-scheme: dark;
+    --bg: #121418; --surface: #1C1F25; --ink: #EDEDE8; --muted: #A3A7AF; --rule: #2E323A;
+    --accent: #FF5A6E; --green: #EDEDE8; --focus: #7FB2E8; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0E1612; --surface: #15201B; --ink: #E5ECE7; --muted: #92A299; --rule: #2B3B34;
-  --accent: #E3A643; --green: #86C9A5; --focus: #7FB2E8; color-scheme: dark;
+  --bg: #121418; --surface: #1C1F25; --ink: #EDEDE8; --muted: #A3A7AF; --rule: #2E323A;
+  --accent: #FF5A6E; --green: #EDEDE8; --focus: #7FB2E8; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; }
 .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
-.brand { font-family: var(--f-display); font-weight: 700; font-size: 22px; margin: 0 0 20px; }
+.brand { font-family: var(--f-display); font-weight: 900; font-size: 26px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 20px; }
 .brand a { color: inherit; text-decoration: none; }
-.brand em { color: var(--accent); }
-article { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 24px 20px; }
+.brand em { color: inherit; font-style: normal; }
+article { background: var(--surface); border: 2px solid var(--ink); border-radius: 4px; padding: 24px 20px; }
 @media (min-width: 640px) { article { padding: 36px 40px; } }
-h1 { font-family: var(--f-display); font-size: 30px; line-height: 1.2; margin: 0 0 6px; }
+h1 { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 48px; line-height: 1.2; margin: 0 0 6px; }
 .date { color: var(--muted); margin: 0 0 24px; }
-h2 { font-family: var(--f-display); font-size: 20px; margin: 32px 0 8px; padding-top: 20px; border-top: 1px solid var(--rule); }
+h2 { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 26px; margin: 32px 0 8px; padding-top: 20px; border-top: 1px solid var(--rule); }
 p, li { max-width: 68ch; }
 ul { padding-left: 22px; }
 li { margin: 4px 0; }

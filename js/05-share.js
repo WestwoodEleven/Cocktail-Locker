@@ -1,6 +1,6 @@
 // The Cocktail Locker: share. Scripts share one global scope and load in numbered order.
 // ---------- share card ----------
-const CARD = { bg: "#F7F9F6", band: "#18261F", ink: "#18261F", muted: "#5B6B63", rule: "#C9D3CC", accent: "#9A5B0A", soft: "#F3E6CF", green: "#22513C" };
+const CARD = { bg: "#F5F5F2", band: "#121418", ink: "#121418", muted: "#5E626B", rule: "#D9DAD4", accent: "#B3122E", soft: "#F7E1E4", green: "#121418" };
 function wrap(ctx, text, maxW) {
   const words = String(text || "").split(/\s+/).filter(Boolean), lines = [];
   let line = "";
@@ -15,11 +15,11 @@ function loadImg(src) {
   return new Promise((res, rej) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = rej; im.src = src; });
 }
 async function buildCard(d, withPhoto) {
-  try { await Promise.all(["700 80px Literata", "600 36px Figtree", "400 30px Figtree", "600 40px 'JetBrains Mono'"].map(f => document.fonts.load(f))); } catch (e) {}
+  try { await Promise.all(["900 80px 'Big Shoulders Display'", "600 36px 'Instrument Sans'", "400 30px 'Instrument Sans'", "600 40px 'IBM Plex Mono'"].map(f => document.fonts.load(f))); } catch (e) {}
   let photo = null;
   if (withPhoto && d.photo) { try { photo = await loadImg(photoUrl(d.photo)); } catch (e) { photo = null; } }
   const W = 1080, P = 72, inner = W - P * 2;
-  const disp = "Literata, Georgia, serif", body = "Figtree, Helvetica, Arial, sans-serif", mono = "'JetBrains Mono', Menlo, monospace";
+  const disp = "'Big Shoulders Display', 'Arial Narrow', sans-serif", body = "'Instrument Sans', Helvetica, Arial, sans-serif", mono = "'IBM Plex Mono', Menlo, monospace";
   const many = S.servings !== 1;
   const dil = S.prebatch ? (DILUTION[d.method] ?? 0) : 0;
   const per = liquidMl(d);
@@ -47,8 +47,8 @@ async function buildCard(d, withPhoto) {
     ctx.font = `700 24px ${body}`;
     if (draw) { ctx.fillStyle = CARD.accent; ctx.letterSpacing = "4px"; ctx.fillText("MY COCKTAIL CART", P, y); ctx.letterSpacing = "0px"; }
     y += 30;
-    ctx.font = `700 84px ${disp}`;
-    for (const ln of wrap(ctx, d.name, inner)) { y += 92; if (draw) { ctx.fillStyle = CARD.ink; ctx.fillText(ln, P, y); } }
+    ctx.font = `900 104px ${disp}`;
+    for (const ln of wrap(ctx, String(d.name || "").toUpperCase(), inner)) { y += 92; if (draw) { ctx.fillStyle = CARD.ink; ctx.fillText(ln, P, y); } }
     if (from) { ctx.font = `600 32px ${body}`; y += 52; if (draw) { ctx.fillStyle = CARD.green; ctx.fillText(from, P, y); } }
     if (meta) { ctx.font = `500 30px ${body}`; for (const ln of wrap(ctx, meta, inner)) { y += 46; if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText(ln, P, y); } } }
     if (many) {

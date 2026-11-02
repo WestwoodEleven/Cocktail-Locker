@@ -3,6 +3,7 @@
 function renderMain() {
   const m = $("main");
   document.body.classList.toggle("on-home", S.view === "home");
+  if (typeof markNav === "function") markNav();
   if (VIEWS[S.view]) return VIEWS[S.view]();
   if (S.view === "edit") return renderEditor();
   if (S.view === "make") return renderMake();
@@ -60,7 +61,7 @@ function renderMain() {
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
-    <div class="hero${d.photo ? "" : " no-photo"}">
+    <div class="hero">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
       <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small" type="button" id="list-add">Add to list</button>` : ""}<button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my cart" : "Copy to my cart"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
@@ -70,7 +71,7 @@ function renderMain() {
       ${canPhoto ? (S.confirmPhoto
         ? `<div class="photo-tools"><span class="hint">Remove this photo?</span><button class="btn small danger" type="button" id="photo-rm-yes">Remove</button><button class="btn small" type="button" id="photo-rm-no">Keep</button></div>`
         : `<div class="photo-tools"><button class="btn small" type="button" id="photo-change" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Change photo"}</button><button class="btn small ghost" type="button" id="photo-rm" ${busy ? "disabled" : ""}>Remove</button></div>`) : ""}
-    </figure>` : ""}
+    </figure>` : `<figure class="photo glassfig" aria-hidden="true">${drinkPicture(d)}</figure>`}
     </div>
     <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" hidden>
     ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your bar?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}

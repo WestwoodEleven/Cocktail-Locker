@@ -34,7 +34,7 @@ export const sample = () => ({
   bottle_photos: [], bottle_reviews: [{ slug: "cointreau", user_id: "u2", stars: 5, comment: "Essential for Margaritas." }], bottle_reports: [], site_admins: []
 });
 
-export async function open({ user = "u1", tables = sample(), invoke = null, width = 1200, hash = "", adult = true } = {}) {
+export async function open({ user = "u1", tables = sample(), invoke = null, width = 1200, hash = "", adult = true, home = false } = {}) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
@@ -53,6 +53,10 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   await page.addInitScript(mockJs);
   await page.goto(pathToFileURL(path.join(root, "index.html")).href + hash);
   await page.waitForTimeout(500);
+  // The display type is all caps; tests read the words as written.
+  await page.addStyleTag({ content: "* { text-transform: none !important; }" });
+  // Most tests start from the drink list; the home page has its own tests.
+  if (!home) await page.evaluate("S.view === 'home' && showList(null, true)");
   page.errors = errors;
   page.text = async sel => (await page.innerText(sel)).replace(/\s*[\n\t]\s*/g, " | ");
   return page;

@@ -52,7 +52,7 @@ export default async function () {
   check("generic spirit suggests a product", t.includes("That isn't a specific bottle") && t.includes("Look up Tanqueray London Dry"));
   // search shows bottles
   await p.fill("#search", "cointreau"); await p.waitForTimeout(100);
-  check("main search lists matching bottles", (await p.text("#list")).includes("BOTTLES") && (await p.evaluate("!!document.querySelector('#list [data-bottle=Cointreau]')")));
+  check("main search lists matching bottles", /bottles/i.test(await p.text("#list")) && (await p.evaluate("!!document.querySelector('#list [data-bottle=Cointreau]')")));
   // bar chip edit sheet links to bottle page
   await p.click("#locker-btn"); await p.waitForTimeout(100);
   await p.click("#chips-liquors [data-edit]:has-text('Cointreau')"); await p.waitForTimeout(50);
