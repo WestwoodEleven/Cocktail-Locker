@@ -17,6 +17,7 @@ export default async function () {
   await p.click(".tabbar [data-nav=ask]"); await p.waitForTimeout(100);
   check("Ask page opens with quick starts", /ask the bartender/i.test(await p.text("#main")) && (await p.evaluate("document.querySelectorAll('[data-ask-start]').length")) === 5 && (await p.evaluate("location.hash")) === "#ask");
   check("Bartender tab marked", (await p.getAttribute(".tabbar [data-nav=ask]", "aria-current")) === "page");
+  check("no drink list, filters or tools on the Ask page", !(await p.isVisible("#list")) && !(await p.isVisible("#find-title")) && !(await p.isVisible("#tools-title")));
   await p.click("[data-ask-start='4']");
   check("Look up a classic fills the box to finish", (await p.inputValue("#ask-in")) === "What's the classic recipe for " && await p.evaluate("document.activeElement.id") === "ask-in");
   await p.fill("#ask-in", "Something refreshing with gin");

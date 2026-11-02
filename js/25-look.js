@@ -86,7 +86,9 @@ function navGo(where) {
 }
 document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => navGo(b.dataset.nav)));
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
-function syncChrome() { document.body.classList.toggle("on-home", S.view === "home"); markNav(); }
+// Pages that use the full width, without the drink list, filters and tools beside them.
+const FULL_WIDTH_VIEWS = ["home", "ask"];
+function syncChrome() { document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view)); markNav(); }
 // Mark where you are.
 const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
 function markNav() {
