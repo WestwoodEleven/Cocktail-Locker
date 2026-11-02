@@ -81,13 +81,13 @@ async function startStorage() {
   });
   await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles()]);
   loadBar();
-  renderFilters(); renderList(); if (S.view === "detail") renderMain();
+  renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain();
   if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
   try {
     sb.channel("drinks-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "drinks" }, () => loadDrinks())
       .on("postgres_changes", { event: "*", schema: "public", table: "standard_recipes" }, () => loadStd().then(() => renderList()))
-      .on("postgres_changes", { event: "*", schema: "public", table: "ratings" }, () => loadRatings().then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "ratings" }, () => loadRatings().then(() => { renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain(); }))
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => loadProfiles().then(() => { renderFilters(); renderList(); renderMain(); }))
       .subscribe();
   } catch (e) {}
@@ -175,5 +175,5 @@ function afterData() {
   if (HASH_VIEWS[want] && !S._hashDone && S.loaded) { S._hashDone = true; setTimeout(() => HASH_VIEWS[want](), 0); }
   if (want && !S._hashDone && allDrinks().some(d => d.id === want)) { S.selected = want; S._hashDone = true; S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; }
   if (!current() && S.view === "detail") { const s = filtered(); S.selected = s[0] ? s[0].id : (sorted()[0] || {}).id || null; }
-  renderFilters(); renderList(); if (S.view === "detail") renderMain();
+  renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain();
 }

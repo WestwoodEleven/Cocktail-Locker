@@ -432,3 +432,33 @@ html:not(.age-ok) body { overflow: hidden; }
 .rp-thumb { display: block; max-width: 160px; max-height: 160px; border-radius: 8px; margin-top: 8px; object-fit: cover; }
 .rp-snap { margin: 0; font-style: italic; }
 .rp-reasons-list { margin: 0; padding-left: 20px; font-size: 14px; }
+
+/* Home page */
+.home { display: flex; flex-direction: column; gap: 26px; }
+.home-hero { display: flex; flex-direction: column; gap: 10px; }
+.home-title { font-family: var(--f-display); font-size: 30px; line-height: 1.15; margin: 0; }
+.home-lede { margin: 0; font-size: 17px; color: var(--muted); max-width: 60ch; }
+.home-ctas { justify-content: flex-start; }
+.home-stats { margin: 0; }
+.home-search { display: flex; gap: 8px; max-width: 520px; }
+.home-search input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised); font-size: 16px; }
+.home-sec .sec-head { margin-bottom: 8px; }
+.home-feat { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 18px; align-items: center; width: 100%; text-align: left;
+  background: var(--raised); border: 1px solid var(--rule); border-radius: 12px; padding: 12px; cursor: pointer; font: inherit; color: inherit; }
+.home-feat:hover { border-color: var(--accent); }
+.home-feat img, .home-feat-ph { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+.home-feat-ph { display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); font-family: var(--f-display); font-size: 64px; }
+.home-feat-txt { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.home-feat-name { font-family: var(--f-display); font-size: 26px; font-weight: 700; line-height: 1.15; }
+.home-feat-ing { font-size: 14px; }
+.home-feat-go { color: var(--accent); font-weight: 600; margin-top: 4px; }
+.home-features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.home-features li { display: flex; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+.home-features li span { font-size: 14px; color: var(--muted); }
+.home-features .linkish { align-self: flex-start; margin-top: 2px; }
+@media (max-width: 780px) { body.on-home .grid > main { order: -1; } }
+@media (max-width: 480px) {
+  .home-title { font-size: 25px; }
+  .home-feat { grid-template-columns: minmax(0, 1fr); }
+  .home-feat img, .home-feat-ph { aspect-ratio: 4 / 3; }
+}

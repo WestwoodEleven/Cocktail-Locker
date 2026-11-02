@@ -117,7 +117,7 @@ const VIEWS = {};
 const HASH_VIEWS = {};
 const S = {
   drinks: [], selected: null, servings: 1, mode: "spec", prebatch: false,
-  view: "detail", editing: null, confirmDelete: false, query: "", loaded: false,
+  view: location.hash.length > 1 ? "detail" : "home", editing: null, confirmDelete: false, query: "", loaded: false,
   canWrite: false, backend: null, session: null, uploading: null, confirmPhoto: false,
   profiles: {}, ratings: {}, sort: (() => { try { return localStorage.getItem("mc-sort") || "rated"; } catch (e) { return "rated"; } })(), f: { owner: "", type: "", base: "", method: "", kind: "", rating: "" }
 };

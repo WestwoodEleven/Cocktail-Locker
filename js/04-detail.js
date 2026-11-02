@@ -2,6 +2,7 @@
 // ---------- detail ----------
 function renderMain() {
   const m = $("main");
+  document.body.classList.toggle("on-home", S.view === "home");
   if (VIEWS[S.view]) return VIEWS[S.view]();
   if (S.view === "edit") return renderEditor();
   if (S.view === "make") return renderMake();
@@ -213,7 +214,7 @@ const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
 const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
 function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-window.addEventListener("hashchange", () => { const id = hashId(); if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+window.addEventListener("hashchange", () => { const id = hashId(); if (id === "") { if (S.view !== "home") openHome(); return; } if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
 
 $("home-link").addEventListener("click", ev => {
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;
@@ -223,6 +224,6 @@ $("home-link").addEventListener("click", ev => {
   S.servings = 1; S._fillL = null; S.prebatch = false;
   $("signin").hidden = true; closeShare(); $("filters").open = true;
   const first = sorted()[0]; S.selected = first ? first.id : null;
-  setHash(null); renderFilters(); renderList(); renderMain();
+  S.view = "home"; setHash(null); renderFilters(); renderList(); renderMain();
   $("list").scrollTop = 0; window.scrollTo({ top: 0, behavior: "smooth" });
 });

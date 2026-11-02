@@ -40,6 +40,10 @@ Signed-in people get a **My cart** page (called a locker in the code and databas
 
 Search covers every locker. Versions of the same drink are grouped together and sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
 
+### Home page
+
+Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My cart, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.
+
 ### Tools, lists and sharing
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.
