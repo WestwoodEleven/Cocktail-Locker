@@ -277,4 +277,4 @@ async function generateIdeas() {
   if (S.view !== "make") return;
   $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = !totalItems();
 }
-$("make-btn").onclick = openMake;
+$("make-btn").onclick = () => openAsk();

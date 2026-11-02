@@ -128,6 +128,24 @@ check("no credit reported clearly", (await call({ mode: "generate", bar: { liquo
 claudeReply = () => new Response("{}", { status: 401 });
 check("bad key reported clearly", (await call({ mode: "generate", bar: { liquors: ["Gin"] } }))[1].error === "bad_key");
 
+// Ask the bartender
+claudeReply = ok({ answer: "Here are three bright gin drinks.", drinks: [
+  { name: "Gimlet", method: "Shaken", glass: "Coupe", type: "Sour", base: "Gin", ingredients: [{ amount: 2, unit: "oz", name: "Gin" }, { amount: 0.75, unit: "oz", name: "Lime juice" }], notes: "Shake.", why: "Bright.", need: ["Limes"] },
+  { name: "Broken", ingredients: [] }] });
+[st, body] = await call({ mode: "ask", messages: [{ role: "user", text: "Something refreshing with gin" }], bar: { liquors: ["Gin"] }, fresh: [], useBar: true });
+check("ask returns an answer and drink cards", st === 200 && body.answer.includes("gin") && body.drinks.length === 1 && body.drinks[0].need[0] === "Limes", JSON.stringify(body));
+check("ask prompt includes the bottles and the question", sent.messages[0].content[0].text.includes("Liquors and liqueurs: Gin") && sent.messages[0].content[0].text.includes("Guest: Something refreshing with gin"));
+[st, body] = await call({ mode: "ask", useBar: false, messages: [{ role: "user", text: "Something refreshing with gin" }, { role: "bartender", text: "Try these.", drinks: ["Gimlet", "Tom Collins"] }, { role: "user", text: "Less sweet please" }] });
+const askText = sent.messages[0].content[0].text;
+check("follow-ups carry the conversation", askText.includes("Bartender: Try these. [suggested: Gimlet, Tom Collins]") && askText.includes("Guest: Less sweet please") && askText.includes("hasn't shared their bottles"));
+claudeReply = ok({ answer: "I can only help with drinks.", drinks: [{ name: "X", ingredients: [{ amount: 1, unit: "oz", name: "Gin" }] }], off_topic: true });
+[st, body] = await call({ mode: "ask", messages: [{ role: "user", text: "Write my essay" }] });
+check("off-topic gets a polite no and no drinks", st === 200 && body.off_topic === true && body.drinks.length === 0);
+check("an empty question is refused", (await call({ mode: "ask", messages: [{ role: "user", text: "  " }] }))[0] === 400);
+scansToday = 25;
+check("ask counts toward the daily allowance", (await call({ mode: "ask", messages: [{ role: "user", text: "hi" }] }))[0] === 429);
+scansToday = 0;
+
 [st, body] = await call({ mode: "delete_account" });
 check("account deletion needs confirming", st === 400 && !deletedUsers.length);
 check("signed out can't delete an account", (await call({ mode: "delete_account", confirm: "DELETE" }, "bad"))[0] === 401 && !deletedUsers.length);

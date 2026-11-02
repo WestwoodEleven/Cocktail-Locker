@@ -53,9 +53,9 @@ VIEWS.home = function renderHome() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2 H15 V6 Q18 8 18 12 V22 H6 V12 Q6 8 9 6 Z M6 14 H18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 18 L11.5 20 L15 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span><b>What can I make?</b><span>From your bottles</span></span>
               </button>
-              <button class="home-tile" type="button" data-home="make">
+              <button class="home-tile" type="button" data-home="ask">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5 H21 L12 14 Z M12 14 V21 M7.5 21 H16.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><path d="M18 1.5 L18.8 3.2 L20.5 4 L18.8 4.8 L18 6.5 L17.2 4.8 L15.5 4 L17.2 3.2 Z" fill="currentColor"/></svg>
-                <span><b>Make me a drink</b><span>AI ideas from what you have</span></span>
+                <span><b>Ask the bartender</b><span>Ideas, swaps, mocktails, classics</span></span>
               </button>
             </div>
             <button class="btn home-add" type="button" data-home="add" aria-haspopup="dialog">+ Add</button>` : `
@@ -120,6 +120,7 @@ VIEWS.home = function renderHome() {
     add: () => openAddMenu(),
     canmake: () => openCanMake(),
     make: () => openMake(),
+    ask: () => openAsk(),
     new: () => openEditor(null),
     scan: () => $("scan-file").click(),
     stock: () => openStock(),

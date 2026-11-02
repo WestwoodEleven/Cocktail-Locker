@@ -68,6 +68,7 @@ function drinkPicture(d) {
 function navGo(where) {
   const needSignIn = msg => { toast(msg); const a = $("auth-btn"); if (a && !a.hidden) a.click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   if (where === "home") return openHome();
+  if (where === "ask") return openAsk();
   if (where === "guide") return openGuide();
   if (where === "party") return openParty();
   if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bottles and see what you can make."); return openCanMake(); }
@@ -87,7 +88,7 @@ document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click",
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 function syncChrome() { document.body.classList.toggle("on-home", S.view === "home"); markNav(); }
 // Mark where you are.
-const NAV_OF_VIEW = { home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
 function markNav() {
   const here = S.view === "profile" ? (S.profTab || "mine") : NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });

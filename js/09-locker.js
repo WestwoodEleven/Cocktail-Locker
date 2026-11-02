@@ -96,7 +96,7 @@ function renderProfile() {
   $("prof-rename").onclick = () => openNameForm(false);
   $("prof-new").onclick = () => openEditor(null);
   $("prof-scan").onclick = () => $("scan-file").click();
-  $("prof-make").onclick = openMake;
+  $("prof-make").onclick = () => openAsk("What can I make with my bottles? Give me three ideas.");
   wireAdmin();
   wireAccount();
 }

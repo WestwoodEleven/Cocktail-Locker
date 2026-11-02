@@ -48,6 +48,10 @@ The "Back bar" design: condensed all-caps display type (Big Shoulders Display), 
 
 Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My cart, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.
 
+### Ask the bartender
+
+One place for the AI (`#ask`; the Bartender tab on phones, the top bar on computers, and the home page tile). People ask in their own words or tap a quick start (Use what I have, Surprise me, Make a mocktail, Find a substitute, Look up a classic). The reply is a short answer plus up to 3 drink cards with amounts, what they'd need to buy, and **Save to my cart**, **Make it** and **Try another**. Follow-ups ("less sweet", "make it for 8") refine the last answer; the last 10 messages are sent with each question. "Use my bottles" sends their in-stock bottles and fresh items. It stays on drinks and declines anything else. Each question is one AI request (the `ask` mode of `read-recipe`, logged as kind `ask`), so redeploy the function after updating.
+
 ### Tools, lists and sharing
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.

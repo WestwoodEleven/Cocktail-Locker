@@ -34,7 +34,7 @@ export default async function () {
   // AI tools get in-stock items with brands only
   await p.click("#chips-liquors [data-out='1']"); await p.waitForTimeout(400);
   await p.evaluate("window.__MOCK.invoke = async () => ({ data: { drinks: [] }, error: null })");
-  await p.click("#make-btn"); await p.waitForTimeout(100); await p.click("#make-go"); await p.waitForTimeout(150);
+  await p.evaluate("openMake()"); await p.waitForTimeout(100); await p.click("#make-go"); await p.waitForTimeout(150);
   const sent = await p.evaluate("window.__MOCK.lastInvoke.bar.liquors");
   check("AI gets brands and skips out-of-stock bottles", sent.includes("Bourbon (Buffalo Trace)") && !sent.some(x => x.startsWith("Campari")), JSON.stringify(sent));
   await p.setViewportSize({ width: 390, height: 844 });
