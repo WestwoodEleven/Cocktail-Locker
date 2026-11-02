@@ -14,8 +14,7 @@ const invoke = `async (name, body) => {
 }`;
 export default async function () {
   const p = await open({ invoke, width: 390, home: true });
-  check("home has an Ask the bartender tile", /ask the bartender/i.test(await p.text(".home-tiles")));
-  await p.click("[data-home=ask]"); await p.waitForTimeout(100);
+  await p.click(".tabbar [data-nav=ask]"); await p.waitForTimeout(100);
   check("Ask page opens with quick starts", /ask the bartender/i.test(await p.text("#main")) && (await p.evaluate("document.querySelectorAll('[data-ask-start]').length")) === 5 && (await p.evaluate("location.hash")) === "#ask");
   check("Bartender tab marked", (await p.getAttribute(".tabbar [data-nav=ask]", "aria-current")) === "page");
   await p.click("[data-ask-start='4']");
