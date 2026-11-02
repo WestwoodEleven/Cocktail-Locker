@@ -139,7 +139,7 @@ function renderMake() {
   m.innerHTML = `
     <div class="make">
       <div class="editor-top"><h2 class="make-title">Make me a drink</h2><button class="btn small" type="button" id="make-close">Back to drinks</button></div>
-      <p class="hint" style="margin:0">List what you have and Claude suggests 3 cocktails you can make right now. It may add ice, water and sugar, nothing else.</p>
+      <p class="hint" style="margin:0">List what you have and we'll suggest 3 cocktails you can make right now. It may add ice, water and sugar, nothing else.</p>
       <section class="make-sec">
         <div class="sec-head"><h3>Your bar</h3><button type="button" class="linkish" data-stock-open>Add bottles from photos</button><span class="hint" id="bar-saved">${S.barOff ? "Your bar can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Saved to your locker for next time."}</span></div>
         ${GROUPS.filter(g => g.saved).map(group).join("")}

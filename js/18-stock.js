@@ -123,7 +123,7 @@ VIEWS.stock = function renderStock() {
     <div class="make">
       <div class="editor-top"><div><span class="label">My bar</span><h2 class="make-title">Stock my bar from photos</h2></div>
         <button class="btn small" type="button" id="stock-close">Back to drinks</button></div>
-      <p class="hint" style="margin:0">Photograph your shelves, a few bottles at a time with labels facing the camera. Claude lists every bottle it can read, and you check the list before anything is added. Each photo uses one of your daily AI requests.</p>
+      <p class="hint" style="margin:0">Photograph your shelves, a few bottles at a time with labels facing the camera. We list every bottle we can read, and you check the list before anything is added. Each photo uses one of your daily AI requests.</p>
       <div class="panel-actions" style="justify-content:flex-start">
         <button class="btn primary" type="button" id="stock-pick">${st.photos.length ? "Add more photos" : "Choose or take photos"}</button>
         ${st.photos.length ? `<button class="btn" type="button" id="stock-reset">Start over</button>` : ""}

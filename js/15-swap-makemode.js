@@ -26,7 +26,7 @@ async function openSwap(d, idx) {
   swapSheet("");
   $("swap-title").textContent = `Swap ${i.name}`;
   const render = st => {
-    if (st.loading) return swapSheet(`<div class="scanning"><div class="glass dots">Finding substitutes</div><div class="hint">Claude is checking what works in a ${esc(d.name)}.</div></div>`);
+    if (st.loading) return swapSheet(`<div class="scanning"><div class="glass dots">Finding substitutes</div><div class="hint">Checking what works in a ${esc(d.name)}.</div></div>`);
     if (st.error) return swapSheet(`<div class="scan-banner"><span><b>Couldn't get substitutes.</b> ${esc(st.error)}</span></div>`);
     swapSheet(`<p class="hint" style="margin:0">Out of ${esc(i.name)}? Options for this ${esc(d.name)}${inStock(savedItems()).length ? ", starting with what's in your bar" : ""}:</p>
       <div class="swaps">${st.options.map((o, k) => `<div class="swap-opt">
