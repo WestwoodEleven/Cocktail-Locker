@@ -7,7 +7,7 @@ export default async function () {
   const p = await open({ tables: t, width: 390 });
   await p.click("#locker-btn"); await p.waitForTimeout(200);
   const shelves = await p.evaluate("[...document.querySelectorAll('#chips-liquors .shelf')].map(s => s.querySelector('.shelf-name').firstChild.textContent.trim() + ': ' + [...s.querySelectorAll('.chip-main')].map(c => c.firstChild.textContent.trim()).join(', '))");
-  const want = ["Whiskey: Bourbon, Rye whiskey", "Gin: Gin", "Rum: Dark rum", "Tequila & mezcal: Mezcal, Blanco tequila", "Liqueurs & amari: Campari, Triple sec", "Vermouth & wine: Sweet vermouth", "Other: Mystery bottle"];
+  const want = ["Whiskey: Bourbon, Rye whiskey", "Gin: Gin", "Rum: Dark rum", "Tequila & mezcal: Mezcal, Blanco tequila", "Liqueurs: Campari, Triple sec", "Vermouth & wine: Sweet vermouth", "Other: Mystery bottle"];
   check("liquors grouped into shelves in a set order", JSON.stringify(shelves) === JSON.stringify(want), JSON.stringify(shelves));
   check("out of stock sorted last on its shelf", shelves[3].endsWith("Blanco tequila"));
   check("shelf counts shown", (await p.text("#chips-liquors")).includes("Whiskey 2") || /Whiskey\s*\|?\s*2/.test(await p.text("#chips-liquors")));

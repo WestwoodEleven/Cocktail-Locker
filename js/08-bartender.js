@@ -92,16 +92,16 @@ function outSummary() {
   return `<p class="hint" id="bar-out" style="margin:0">${out.length ? `<b>Out of stock:</b> ${esc(out.map(itemLabel).join(", "))}` : ""}</p>`;
 }
 // Liquors are shown in shelves by type. The bottle guide decides when it knows the bottle; otherwise the name and brand do.
-const BAR_SHELVES = ["Whiskey", "Gin", "Vodka", "Rum", "Tequila & mezcal", "Brandy", "Other spirits", "Liqueurs & amari", "Vermouth & wine", "Other"];
+const BAR_SHELVES = ["Whiskey", "Gin", "Vodka", "Rum", "Tequila & mezcal", "Brandy", "Other spirits", "Liqueurs", "Vermouth & wine", "Other"];
 const SHELF_OF_CATEGORY = { whiskey: "Whiskey", gin: "Gin", vodka: "Vodka", rum: "Rum", tequila: "Tequila & mezcal", mezcal: "Tequila & mezcal", brandy: "Brandy",
-  liqueur: "Liqueurs & amari", amaro: "Liqueurs & amari", vermouth: "Vermouth & wine", wine: "Vermouth & wine" };
+  liqueur: "Liqueurs", amaro: "Liqueurs", vermouth: "Vermouth & wine", wine: "Vermouth & wine" };
 const SHELF_OF_BASE = { Whiskey: "Whiskey", Gin: "Gin", Vodka: "Vodka", Rum: "Rum", Tequila: "Tequila & mezcal", Mezcal: "Tequila & mezcal", Brandy: "Brandy" };
 function barShelf(v) {
   const known = typeof bottleFor === "function" && ((v.brand && bottleFor(v.brand)) || bottleFor(v.name));
   if (known && SHELF_OF_CATEGORY[known.category]) return SHELF_OF_CATEGORY[known.category];
   const text = (v.name + " " + (v.brand || "")).toLowerCase();
   const kind = guessKind(v.name) !== "Other" ? guessKind(v.name) : guessKind(text);
-  if (kind === "Liqueur") return "Liqueurs & amari";
+  if (kind === "Liqueur") return "Liqueurs";
   if (kind === "Vermouth & wine") return "Vermouth & wine";
   for (const [b, re] of BASE_RULES) if (re.test(text)) return SHELF_OF_BASE[b];
   return kind === "Spirit" ? "Other spirits" : "Other";
