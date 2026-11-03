@@ -18,7 +18,7 @@ export default async function () {
   const p = await open({ invoke });
   await p.evaluate("$('locker-btn').click()"); await p.waitForTimeout(100);
   await p.click("#prof-bottle-add"); await p.waitForTimeout(50);
-  check("Stock from photos in My Bar's Add", await p.isVisible("#ba-photo"));
+  check("Stock from photos in My Cocktail Cart's Add", await p.isVisible("#ba-photo"));
   await p.click("#ba-photo"); await p.waitForTimeout(100);
   check("stock page link", (await p.evaluate("location.hash")) === "#stock-bar");
   await p.setInputFiles("#stock-file", [fx("shelf1.jpg"), fx("shelf2.jpg")]);

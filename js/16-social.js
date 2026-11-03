@@ -184,7 +184,7 @@ VIEWS.locker = function renderLocker() {
   $("lk-link").onclick = () => copyText(lockerLink(id), "Cart link copied");
 };
 
-// Extra sections for My Bar
+// Extra sections for My Cocktail Cart
 function profileSocialHtml() {
   const lists = myLists();
   const following = followingIds();

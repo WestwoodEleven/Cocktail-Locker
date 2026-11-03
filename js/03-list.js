@@ -38,7 +38,7 @@ function renderFilters() {
     const counts = {}; S.drinks.filter(d => passesFilters(d, "owner")).forEach(d => counts[d.owner || ""] = (counts[d.owner || ""] || 0) + 1);
     const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
     $("flt-owner").innerHTML = `<option value="">Everyone's carts</option>` +
-      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My Bar (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My Cocktail Cart (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
       (S.std.length ? `<option value="std" ${S.f.owner === "std" ? "selected" : ""}>Classics (${allDrinks().filter(d => passesFilters(d, "owner") && d.standard).length})</option>` : "") +
       (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
       (uid() && !S.followsOff && followingIds().length ? `<option value="following" ${S.f.owner === "following" ? "selected" : ""}>People I follow (${S.drinks.filter(d => passesFilters(d, "owner") && followingIds().includes(d.owner)).length})</option>` : "") +

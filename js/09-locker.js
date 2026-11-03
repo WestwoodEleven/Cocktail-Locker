@@ -22,7 +22,7 @@ async function toggleFav(d) {
   renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
 }
 
-// ---------- My Bar page ----------
+// ---------- My Cocktail Cart page ----------
 function openProfile() {
   if (!uid()) { toast("Sign in to see your cart."); return; }
   S.view = "profile"; S.confirmDelete = false; setHash("my-locker");
@@ -48,7 +48,7 @@ function renderProfile() {
   m.innerHTML = `
     <div class="make">
       <div class="editor-top">
-        <div><span class="label">My Bar</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed cart")}</h2>
+        <div><span class="label">My Cocktail Cart</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed cart")}</h2>
           ${email ? `<div class="hint">Signed in as ${esc(email)}</div>` : ""}</div>
         <button class="btn small" type="button" id="prof-rename">Rename</button>
       </div>

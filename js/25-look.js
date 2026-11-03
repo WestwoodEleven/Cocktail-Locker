@@ -134,7 +134,7 @@ $("search-toggle").onclick = () => {
 function openAccountMenu() {
   const signedIn = !!uid(), accounts = S.backend === "supabase";
   const items = [];
-  if (signedIn) items.push(["acct-cart", "My Bar", "Your drinks, bottles, lists and favorites"]);
+  if (signedIn) items.push(["acct-cart", "My Cocktail Cart", "Your drinks, bottles, lists and favorites"]);
   if (accounts && !signedIn) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
   if (signedIn) items.push(["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"]);
   items.push(["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"]);

@@ -60,7 +60,7 @@ export default async function () {
   const rs2 = await r.evaluate("window.__asks[window.__asks.length - 1]");
   check("follow-ups continue the recipe conversation", rs2.messages.length === 3 && rs2.messages[2].text === "less sweet" && (await r.text("#ra-thread")).includes("Drier Gimlet"));
   await r.click("[data-ra-save='3:0']"); await r.waitForTimeout(150);
-  check("Save to My Bar from the pop-up opens the editor", (await r.inputValue("#f-name")) === "Drier Gimlet");
+  check("Save to My Cocktail Cart from the pop-up opens the editor", (await r.inputValue("#f-name")) === "Drier Gimlet");
   check("no errors", r.errors.length === 0, r.errors.join("; "));
   await r.close();
 
