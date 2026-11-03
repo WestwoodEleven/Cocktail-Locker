@@ -818,3 +818,11 @@ body.on-browse .list { max-height: none; }
 /* Recipe page: the spec sits right under the drink's style line */
 .spec-block { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
 .spec-top > div:first-child { flex: 1 1 320px; min-width: 0; }
+
+/* Spec heading: "Spec for [−] 1 [+] drink · or batch it" */
+.spec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 4px; }
+.spec-stepper button { width: 36px; font-size: 17px; }
+.spec-stepper input { width: 52px; font-family: var(--f-body); font-weight: 700; font-size: 18px; padding: 4px 0; }
+.batch-link { font-size: 14px; font-weight: 600; color: var(--accent); padding: 4px 2px; }
+.bf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.bf-row input, .bf-row select { font-size: 16px; }
