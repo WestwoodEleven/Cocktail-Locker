@@ -93,7 +93,7 @@ document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click",
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 // Pages that use the full width, without the drink list, filters and tools beside them.
 // Recipe pages and Ask the bartender use the full width. Home shows the welcome with the drink list under it.
-const FULL_WIDTH_VIEWS = ["ask", "detail"];
+const FULL_WIDTH_VIEWS = ["ask", "detail", "stats"];
 function syncChrome() {
   const home = S.view === "home", searching = home && !!(S.query || "").trim();
   document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));
@@ -107,7 +107,7 @@ function syncChrome() {
 }
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
 function markNav() {
   const here = NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });

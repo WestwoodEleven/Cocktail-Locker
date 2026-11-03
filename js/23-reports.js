@@ -198,7 +198,7 @@ function adminHtml() {
   const n = reportGroups().length;
   return `<section class="make-sec" id="prof-admin">
     <div class="sec-head"><h3>Admin</h3></div>
-    <div class="panel-actions" style="justify-content:flex-start"><button class="btn small${n ? " primary" : ""}" type="button" id="prof-reports">Review reports${n ? ` (${n})` : ""}</button></div>
+    <div class="panel-actions" style="justify-content:flex-start"><button class="btn small${n ? " primary" : ""}" type="button" id="prof-reports">Review reports${n ? ` (${n})` : ""}</button><button class="btn small" type="button" id="prof-stats">Site stats</button></div>
   </section>`;
 }
-function wireAdmin() { const b = $("prof-reports"); if (b) b.onclick = openReports; }
+function wireAdmin() { const b = $("prof-reports"); if (b) b.onclick = openReports; const st = $("prof-stats"); if (st) st.onclick = openStats; }

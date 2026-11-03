@@ -95,6 +95,12 @@ On a device's first visit, a welcome screen asks whether the visitor is 21 or ol
 
 ### Reports and terms
 
+### Site stats and traffic
+
+Admins get **Site stats** on My Cocktail Cart (or `#stats`): members, sign-ins this week, drinks, photos, ratings, favorites and lists; bar charts of new members, drinks added and AI requests for the last 8 weeks; AI use by feature for the last 30 days (and how many people hit the daily limit); and the top-rated and most-favorited drinks. It's one database call, `admin_stats()`, that only admins can run: run [`supabase/stats-setup.sql`](supabase/stats-setup.sql) once (it also adds a `created_at` to drinks).
+
+Visitor traffic (page views, referrers, countries, devices) comes from **Cloudflare Web Analytics**, which uses no cookies. Either turn on automatic setup in Cloudflare (when the domain is proxied through Cloudflare), or paste the site token into `CF_BEACON_TOKEN` at the bottom of `js/27-stats.js`.
+
 Next to other people's drinks, rating notes, bottle comments, bottle photos and carts there's a small **Report** link (reason plus optional details). Only site admins can read reports: admins get **Review reports** on My Cocktail Cart (or `#reports`), grouped by what was reported, with buttons to remove a drink's photo, delete the drink, remove a note or comment, delete a bottle photo, reset a cart name, or dismiss. Run [`supabase/reports-setup.sql`](supabase/reports-setup.sql) once (it's also in `setup.sql`). The rules people agree to are in [`terms.html`](terms.html), linked from the footer, the age check and sign-in.
 
 ### Deleting an account

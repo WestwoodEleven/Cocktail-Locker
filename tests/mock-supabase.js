@@ -59,6 +59,7 @@
     },
     channel: () => { const c = { on: () => c, subscribe: () => c }; return c; },
     storage: { from: () => ({ getPublicUrl: p => ({ data: { publicUrl: "photo/" + p } }), upload: async () => ({ error: null }), remove: async () => ({}) }) },
+    rpc: async (name, args) => { M.lastRpc = name; return M.rpc && M.rpc[name] !== undefined ? { data: M.rpc[name], error: null } : { data: null, error: { message: "function not found", code: "PGRST202" } }; },
     functions: { invoke: async (name, opts) => { M.lastInvoke = opts.body; return M.invoke ? M.invoke(name, opts.body) : { data: null, error: { name: "FunctionsFetchError" } }; } }
   }) };
 })();

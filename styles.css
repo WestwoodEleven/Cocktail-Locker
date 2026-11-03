@@ -975,3 +975,25 @@ body.on-merged .grid > main { order: -1; }
 .riff-link { color: var(--accent); font-weight: 700; font-size: inherit; padding: 0; text-decoration: none; }
 .riff-link:hover { text-decoration: underline; }
 .brand-mark { width: 32px; height: 32px; flex: none; }
+
+/* ---------- site stats (admins) ---------- */
+.st-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.st-tile { border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; background: var(--surface); display: flex; flex-direction: column; gap: 2px; }
+.st-tile b { font-family: var(--f-display); font-size: 26px; line-height: 1.1; }
+.st-tile span { color: var(--muted); font-size: 13px; }
+.st-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.st-chart h4 { margin: 0 0 6px; font-size: 14px; }
+.st-bars { display: flex; align-items: flex-end; gap: 4px; height: 130px; padding-bottom: 18px; position: relative; }
+.st-bar { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; min-width: 0; }
+.st-fill { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+.st-v { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.st-wk { position: absolute; bottom: -18px; font-size: 10px; color: var(--muted); white-space: nowrap; }
+.st-bar:nth-child(even) .st-wk { visibility: hidden; }
+.st-table { border-collapse: collapse; width: 100%; max-width: 420px; font-size: 14px; }
+.st-table th, .st-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+.st-table td:last-child, .st-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.st-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.st-list { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.make.stats { display: flex; flex-direction: column; gap: 20px; max-width: 1000px; }
+.make.stats > .editor-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.make.stats .make-title { font-size: 34px; line-height: 1.1; }
