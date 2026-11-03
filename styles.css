@@ -788,3 +788,5 @@ body.on-home .grid > aside { display: none; }
   .ask-pic .glassbox { aspect-ratio: auto; height: 110px; }
   .ask-q { max-width: 92%; }
 }
+
+.ba-form { display: flex; flex-direction: column; gap: 12px; }

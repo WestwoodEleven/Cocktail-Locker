@@ -3,15 +3,21 @@ export default async function () {
   const p = await open();
   await p.click("#locker-btn"); await p.waitForTimeout(150);
   check("old plain-name bar still loads", (await p.text("#chips-liquors")).includes("Campari"));
-  // add a bottle with a brand
-  await p.fill("#in-liquors", "Bourbon"); await p.press("#in-liquors", "Enter");
-  check("Enter in name moves to brand when brand is empty", (await p.evaluate("document.activeElement.id")) === "br-liquors");
-  await p.fill("#br-liquors", "Buffalo Trace"); await p.press("#br-liquors", "Enter"); await p.waitForTimeout(900);
+  check("no typing boxes in My bottles", !(await p.evaluate("!!document.querySelector('#prof-bar input[type=text]')")));
+  // add a bottle with a brand through + Add, Type it in
+  await p.click("#prof-bottle-add"); await p.waitForTimeout(50);
+  check("Add offers photos or typing", /from photos/i.test(await p.text("#gen-body")) && /type it in/i.test(await p.text("#gen-body")));
+  await p.click("#ba-type"); await p.waitForTimeout(50);
+  await p.fill("#ba-name", "Bourbon"); await p.fill("#ba-brand", "Buffalo Trace"); await p.press("#ba-brand", "Enter"); await p.waitForTimeout(900);
+  check("form stays open to add another", /added bourbon/i.test(await p.text("#ba-msg")) && (await p.inputValue("#ba-name")) === "");
   check("bottle shows its brand", (await p.text("#chips-liquors")).includes("Bourbon Buffalo Trace"));
   const saved = await p.evaluate("window.__MOCK.tables.bars[0].items.liquors");
   check("brand saved with the bar", saved.some(x => x.name === "Bourbon" && x.brand === "Buffalo Trace"), JSON.stringify(saved));
   // same name, different brand allowed
-  await p.fill("#in-liquors", "Bourbon"); await p.fill("#br-liquors", "Wild Turkey"); await p.click("[data-add='liquors']"); await p.waitForTimeout(100);
+  await p.fill("#ba-name", "Bourbon"); await p.fill("#ba-brand", "Wild Turkey"); await p.click("#ba-form button[type=submit]"); await p.waitForTimeout(100);
+  await p.selectOption("#ba-kind", "bitters"); await p.fill("#ba-name", "Orange bitters"); await p.click("#ba-form button[type=submit]"); await p.waitForTimeout(100);
+  check("type picks the shelf", /orange bitters/i.test(await p.text("#chips-bitters")));
+  await p.click("#ba-done"); await p.waitForTimeout(50);
   check("two brands of the same spirit can coexist", ((await p.text("#chips-liquors")).match(/Bourbon/g) || []).length === 2);
   // edit an existing item's brand
   await p.click("#chips-liquors [data-edit='1']"); await p.waitForTimeout(50);
@@ -21,7 +27,7 @@ export default async function () {
   await p.click("#chips-liquors [data-out='1']"); await p.waitForTimeout(900);
   check("out of stock shown on the chip", (await p.evaluate("document.querySelectorAll('#chips-liquors .bar-chip.out').length")) === 1);
   check("out of stock summary", (await p.text("#bar-out")).includes("Out of stock: Campari (Campari Milano)"));
-  check("out-of-stock item not counted as a bottle", (await p.text(".stats")).includes("8 | Bottles"), await p.text(".stats"));
+  check("out-of-stock item not counted as a bottle", (await p.text(".stats")).includes("9 | Bottles"), await p.text(".stats"));
   const saved2 = await p.evaluate("window.__MOCK.tables.bars[0].items.liquors.find(x => x.name === 'Campari')");
   check("out of stock saved", saved2.out === true);
   // effect on What can I make?

@@ -141,6 +141,54 @@ const chipGroupHtml = g => `<div class="cgroup">
         ${g.saved ? `<input id="br-${g.key}" type="text" class="brand-in" placeholder="Brand (optional)" autocomplete="off" enterkeyhint="done" aria-label="Brand">` : ""}
         <button class="btn small" type="button" data-add="${g.key}">Add</button></div>
       <datalist id="dl-${g.key}"></datalist></div>`;
+// My bottles on My cart: the groups show only their bottles; adding happens through one Add button.
+const barGroupHtml = g => `<div class="cgroup"><span class="label">${esc(g.label)}</span><div class="chips" id="chips-${g.key}"></div></div>`;
+function wireBarChips(groups) {
+  groups.forEach(g => {
+    renderChips(g.key);
+    $("chips-" + g.key).addEventListener("click", e => {
+      const rm = e.target.closest("[data-rm]"), ed = e.target.closest("[data-edit]"), out = e.target.closest("[data-out]");
+      if (rm) removeItem(g.key, Number(rm.dataset.rm));
+      else if (out) toggleOut(g.key, Number(out.dataset.out));
+      else if (ed) editItem(g.key, Number(ed.dataset.edit));
+    });
+  });
+}
+// Add: from photos (the bottle scanner) or typed in.
+function openBottleAdd(typed) {
+  if (!typed) {
+    sheet("Add bottles", `<div class="add-menu">
+      <button type="button" id="ba-photo"><b>From photos</b><span>Photograph your shelf and we add every bottle we can see</span></button>
+      <button type="button" id="ba-type"><b>Type it in</b><span>Add one bottle by name, with its brand if you like</span></button>
+    </div>`);
+    $("ba-photo").onclick = () => { closeSheet(); openStock(); };
+    $("ba-type").onclick = () => openBottleAdd(true);
+    return;
+  }
+  const saved = GROUPS.filter(g => g.saved);
+  const opts = g => suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
+  sheet("Add a bottle", `<form id="ba-form" class="ba-form">
+      <div class="field"><label for="ba-kind">Type</label><select id="ba-kind">${saved.map(g => `<option value="${g.key}">${esc(g.label)}</option>`).join("")}</select></div>
+      <div class="field"><label for="ba-name">Bottle</label><input id="ba-name" type="text" list="ba-dl" maxlength="60" autocomplete="off" placeholder="${esc(saved[0].ph.replace(/^Add a bottle, /, "").replace(/^like/, "Like"))}" required></div>
+      <datalist id="ba-dl">${opts(saved[0])}</datalist>
+      <div class="field"><label for="ba-brand">Brand (optional)</label><input id="ba-brand" type="text" maxlength="60" autocomplete="off" placeholder="Like Buffalo Trace"></div>
+      <div class="share-actions"><button class="btn primary" type="submit">Add</button><button class="btn" type="button" id="ba-done">Done</button></div>
+      <p class="hint" id="ba-msg" role="status" style="margin:0"></p>
+    </form>`);
+  const kind = $("ba-kind"), name = $("ba-name"), brand = $("ba-brand");
+  const PH = { liquors: "Like bourbon or Campari", syrups: "Like honey syrup", bitters: "Like Angostura" };
+  kind.onchange = () => { const g = saved.find(x => x.key === kind.value); $("ba-dl").innerHTML = opts(g); name.placeholder = PH[g.key] || ""; name.focus(); };
+  $("ba-done").onclick = closeSheet;
+  $("ba-form").onsubmit = e => {
+    e.preventDefault();
+    const v = name.value.trim(); if (!v) { name.focus(); return; }
+    addItem(kind.value, v, brand.value);
+    $("ba-msg").textContent = `Added ${v}${brand.value.trim() ? " (" + brand.value.trim() + ")" : ""}. Add another or tap Done.`;
+    name.value = ""; brand.value = ""; name.focus();
+  };
+  name.focus();
+}
+
 function wireGroups(groups) {
   groups.forEach(g => {
     renderChips(g.key); $("dl-" + g.key).innerHTML = suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
