@@ -687,6 +687,7 @@ body.on-home .grid > aside { display: none; }
     background: var(--bar-bg); border-top: 1px solid var(--bar-line); padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)); }
   .tabbar button { border: 0; background: none; color: var(--bar-muted); font-size: 12px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; min-height: 48px; cursor: pointer; }
   .tabbar svg { width: 22px; height: 22px; }
+  .tabbar [data-nav="cart"] svg { width: 26px; height: 26px; margin: -2px 0; }
   .tabbar button[aria-current="page"] { color: var(--bar-ink); font-weight: 700; }
   .tabbar button[aria-current="page"] svg { color: var(--accent); }
   .toast { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
@@ -971,3 +972,4 @@ body.on-merged .grid > main { order: -1; }
 .riff { font-size: 15px; color: var(--muted); margin-top: 4px; }
 .riff-link { color: var(--accent); font-weight: 700; font-size: inherit; padding: 0; text-decoration: none; }
 .riff-link:hover { text-decoration: underline; }
+.brand-mark { width: 32px; height: 32px; flex: none; }
