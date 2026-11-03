@@ -1014,3 +1014,20 @@ body.on-merged .grid > main { order: -1; }
 
 .signin-code { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
 .signin-code input { flex: 0 1 160px; font-size: 20px; letter-spacing: .2em; font-variant-numeric: tabular-nums; }
+
+/* ---------- photo review (admins) ---------- */
+.pr-item { display: flex; gap: 14px; align-items: flex-start; border-top: 1px solid var(--rule); padding-top: 14px; flex-wrap: wrap; }
+.pr-item img { width: 160px; height: 160px; object-fit: cover; border-radius: 6px; border: 1px solid var(--rule); background: var(--raised); }
+.pr-body { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; min-width: 0; }
+.pr-reason { background: var(--bg); border-left: 3px solid var(--accent); padding: 6px 10px; font-size: 14px; }
+.held-note { margin: 0; }
+
+/* ---------- how-to chips and sheet ---------- */
+.howto-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--rule); }
+.howto-row .label { margin-right: 4px; }
+.howto-chip { border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.howto-chip:hover { border-color: var(--ink); }
+.howto { display: flex; flex-direction: column; gap: 10px; }
+.howto ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; line-height: 1.5; }
+.howto-tip { margin: 0; background: var(--bg); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 14px; }
+.howto .hint { margin: 0; }

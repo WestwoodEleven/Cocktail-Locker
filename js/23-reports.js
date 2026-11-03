@@ -198,7 +198,8 @@ function adminHtml() {
   const n = reportGroups().length;
   return `<section class="make-sec" id="prof-admin">
     <div class="sec-head"><h3>Admin</h3></div>
-    <div class="panel-actions" style="justify-content:flex-start"><button class="btn small${n ? " primary" : ""}" type="button" id="prof-reports">Review reports${n ? ` (${n})` : ""}</button><button class="btn small" type="button" id="prof-stats">Site stats</button></div>
+    <div class="panel-actions" style="justify-content:flex-start"><button class="btn small${n ? " primary" : ""}" type="button" id="prof-reports">Review reports${n ? ` (${n})` : ""}</button><button class="btn small" type="button" id="prof-photos">Review photos${S.held && S.held.length ? ` (${S.held.length})` : ""}</button><button class="btn small" type="button" id="prof-stats">Site stats</button></div>
   </section>`;
 }
-function wireAdmin() { const b = $("prof-reports"); if (b) b.onclick = openReports; const st = $("prof-stats"); if (st) st.onclick = openStats; }
+function wireAdmin() { const b = $("prof-reports"); if (b) b.onclick = openReports; const st = $("prof-stats"); if (st) st.onclick = openStats;
+  const ph = $("prof-photos"); if (ph) { ph.onclick = openPhotoReview; loadHeld().then(() => { const n = S.held.length; ph.textContent = "Review photos" + (n ? ` (${n})` : ""); ph.classList.toggle("primary", n > 0); }); } }

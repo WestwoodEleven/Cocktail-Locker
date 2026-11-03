@@ -110,6 +110,14 @@ On a device's first visit, a welcome screen asks whether the visitor is 21 or ol
 
 Opening someone else's drink adds one view (once per drink per visit; your own drinks don't count). Views are stored as a count per drink per day, with nothing about who viewed. Run [`supabase/views-setup.sql`](supabase/views-setup.sql) once (it's also in `setup.sql`), then re-run `stats-setup.sql` so Site stats shows views too.
 
+### How-to guides
+
+Recipe pages show a **How to** row under the spec with the techniques and house syrups that recipe uses (shake, stir, dry shake, double strain, muddle, rinse, float, express a peel, fresh citrus; simple, rich, honey, honey-ginger, demerara, agave, ginger, cinnamon and raspberry syrups, grenadine, orgeat, saline). Tapping one opens a short guide. They're matched from the ingredients, method, garnish and notes, and written once in `js/30-howto.js`.
+
+### Photo check
+
+New drink and bottle photos get a quick AI check (`photo_check` in the `read-recipe` function, about 800 px, one small request). Drink-related photos go up right away; anything that isn't about drinks or looks inappropriate is uploaded but hidden in `photo_reviews` until an admin approves or rejects it on **Review photos** (My Cocktail Cart, or `#photo-review`). The owner sees "waiting for a quick review". Photo checks don't count toward the 25-a-day AI allowance; they have their own cap (`PHOTO_DAILY_LIMIT`, default 30). Admins' own photos skip the check. If the check can't run, the photo goes up as before and the Report button still applies. The check runs in the browser before upload, so it's a filter for honest mistakes and casual misuse, not a hard security wall. Run [`supabase/photo-review-setup.sql`](supabase/photo-review-setup.sql) once and redeploy `read-recipe`.
+
 ### Site stats and traffic
 
 Admins get **Site stats** on My Cocktail Cart (or `#stats`): members, sign-ins this week, drinks, photos, ratings, favorites and lists; bar charts of new members, drinks added and AI requests for the last 8 weeks; AI use by feature for the last 30 days (and how many people hit the daily limit); and the top-rated and most-favorited drinks. It's one database call, `admin_stats()`, that only admins can run: run [`supabase/stats-setup.sql`](supabase/stats-setup.sql) once (it also adds a `created_at` to drinks).

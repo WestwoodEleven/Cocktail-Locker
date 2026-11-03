@@ -107,7 +107,7 @@ function syncChrome() {
 }
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", photoreview: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
 function markNav() {
   const here = NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });

@@ -93,6 +93,7 @@ function renderMain() {
               ? `<button type="button" class="linkish water-link" id="prebatch-off">Remove the water</button>`
               : `<button type="button" class="linkish water-link" id="prebatch-on">Add water so the batch pours ready to serve</button>`) : ""}
           </div>
+          ${typeof howtoHtml === "function" ? howtoHtml(d) : ""}
         </div>
         ${ratingSummary(d)}</div>
     </div>
@@ -103,6 +104,7 @@ function renderMain() {
         : `<div class="photo-tools"><button class="btn small" type="button" id="photo-change" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Change photo"}</button><button class="btn small ghost" type="button" id="photo-rm" ${busy ? "disabled" : ""}>Remove</button></div>`) : ""}
     </figure>` : `<figure class="photo glassfig" aria-hidden="true">${drinkPicture(d)}</figure>`}
     </div>
+    ${mine && typeof isHeld === "function" && isHeld("drink", d.id) ? `<p class="hint held-note">Your new photo is waiting for a quick review before it shows.</p>` : ""}
     <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" hidden>
     ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your cart?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
 
@@ -228,8 +230,10 @@ async function setPhoto(d, file) {
     if (!/^image\/(jpeg|png|webp|gif)$/.test(type)) throw { code: "unsupported_type" };
     const ext = { "image/png": "png", "image/webp": "webp", "image/gif": "gif" }[type] || "jpg";
     const path = `${uid()}/${d.id}/${Date.now()}.${ext}`;
+    const check = await photoVerdict(blob, "drink", d.name);
     const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: "31536000" });
     if (error) throw error;
+    if (check.verdict === "hold") { await holdPhoto("drink", d.id, d.name, path, check.reason); return; }
     const old = d.photo;
     const ok = await saveDrink(Object.assign({}, d, { photo: path }));
     if (!ok) { sb.storage.from(BUCKET).remove([path]).catch(() => {}); return; }

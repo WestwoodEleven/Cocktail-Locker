@@ -13,7 +13,7 @@ const src = readFileSync(new URL("../supabase/functions/read-recipe/index.ts", i
 const dir = mkdtempSync(path.join(tmpdir(), "fn-"));
 writeFileSync(path.join(dir, "fn.ts"), src);
 
-let handler, sent, claudeReply, scansToday = 0;
+let handler, sent, claudeReply, scansToday = 0, photoChecksToday = 0;
 const U1 = "11111111-1111-1111-1111-111111111111", U2 = "22222222-2222-2222-2222-222222222222";
 const rows = { standard_recipes: [], recipe_scans: [], bottles: [],
   drinks: [{ id: "d1", owner: "u1", data: { photo: "u1/d1/1.jpg" } }, { id: "d-old", owner: "u1", data: { photo: "old-photo.jpg" } }, { id: "d2", owner: "u2", data: { photo: U2 + "/d2/1.jpg" } }],
@@ -24,7 +24,7 @@ globalThis.Deno = { env: { get: k => ({ ANTHROPIC_API_KEY: " 'sk-ant-test' ", SU
 globalThis.__cc = () => ({
   auth: globalThis.__auth = globalThis.__auth || { getUser: async t => t === "good" ? { data: { user: { id: "u1", email: "u1@example.com" } } } : t === "boss" ? { data: { user: { id: "admin1", email: "Boss@Example.com" } } } : t === "listed" ? { data: { user: { id: "u9", email: "Listed@Example.com" } } } : { error: "no" } },
   from: t => ({
-    select: () => ({ eq: (c, v) => ({ gte: async () => ({ count: scansToday }), limit: async () => ({ data: t === "site_admins" && v === "admin1" ? [{ user_id: "admin1" }] : [] }),
+    select: () => ({ eq: (c, v) => ({ gte: () => ({ then: (res, rej) => Promise.resolve({ count: scansToday }).then(res, rej), neq: async () => ({ count: scansToday }), eq: async () => ({ count: photoChecksToday }) }), limit: async () => ({ data: t === "site_admins" && v === "admin1" ? [{ user_id: "admin1" }] : [] }),
         then: (res, rej) => Promise.resolve({ data: (rows[t] || []).filter(r => r[c] === v).map(r => structuredClone(r)) }).then(res, rej) }),
       or: f => ({ limit: async () => { const m = f.match(/slug\.eq\.([^,]+),aliases\.cs\.\{([^}]+)\}/); return { data: rows[t].filter(r => r.slug === m[1] || r.aliases.includes(m[2])).map(r => structuredClone(r)) }; } }) }),
     insert: async r => { rows[t].push(structuredClone(r)); return {}; },
@@ -145,6 +145,26 @@ check("an empty question is refused", (await call({ mode: "ask", messages: [{ ro
 scansToday = 25;
 check("ask counts toward the daily allowance", (await call({ mode: "ask", messages: [{ role: "user", text: "hi" }] }))[0] === 429);
 scansToday = 0;
+
+// photo check
+claudeReply = ok({ verdict: "ok", reason: "" });
+const scanRowsBefore = rows.recipe_scans.length;
+[st, body] = await call({ mode: "photo_check", image: "data:image/jpeg;base64,AAAA", mediaType: "image/jpeg", kind: "drink", name: "Negroni" });
+check("a drink photo passes", st === 200 && body.verdict === "ok" && sent.tools[0].name === "photo_verdict" && sent.messages[0].content[1].text.includes('"Negroni"'));
+check("photo checks are logged as their own kind", rows.recipe_scans.at(-1).kind === "photo_check" && rows.recipe_scans.length === scanRowsBefore + 1);
+claudeReply = ok({ verdict: "hold", reason: "A selfie, not a drink." });
+[st, body] = await call({ mode: "photo_check", image: "AAAA", mediaType: "image/png", kind: "bottle" });
+check("a photo that isn't a drink is held, with a reason", body.verdict === "hold" && body.reason === "A selfie, not a drink." && sent.messages[0].content[1].text.includes("a bottle in the bottle guide"));
+claudeReply = ok({ verdict: "maybe" });
+check("anything unclear is held", (await call({ mode: "photo_check", image: "AAAA" }))[1].verdict === "hold");
+check("photo check needs an image", (await call({ mode: "photo_check" }))[0] === 400);
+scansToday = 25;
+check("photo checks don't use the daily AI allowance", (await call({ mode: "photo_check", image: "AAAA" }))[0] === 200);
+scansToday = 0; photoChecksToday = 30;
+const before = claudeCalls;
+[st, body] = await call({ mode: "photo_check", image: "AAAA" });
+check("over the photo cap: held without asking the AI", body.verdict === "hold" && claudeCalls === before);
+photoChecksToday = 0;
 
 [st, body] = await call({ mode: "delete_account" });
 check("account deletion needs confirming", st === 400 && !deletedUsers.length);

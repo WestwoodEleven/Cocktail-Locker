@@ -214,8 +214,10 @@ async function uploadBottlePhoto(file) {
     const type = blob.type || "image/jpeg";
     if (!/^image\/(jpeg|png|webp|gif)$/.test(type)) { toast("Use a JPEG or PNG photo."); return; }
     const path = `${uid()}/bottles/${b.slug}/${Date.now()}.${type === "image/png" ? "png" : "jpg"}`;
+    const check = await photoVerdict(blob, "bottle", b.name);
     const up = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: "31536000" });
     if (up.error) throw up.error;
+    if (check.verdict === "hold") { await holdPhoto("bottle", b.slug, b.name, path, check.reason); return; }
     const { error } = await sb.from("bottle_photos").insert({ slug: b.slug, path, user_id: uid() });
     if (error) throw error;
     (S.bottlePhotos[b.slug] = S.bottlePhotos[b.slug] || []).push({ id: Date.now(), slug: b.slug, path, user_id: uid(), created_at: new Date().toISOString() });
