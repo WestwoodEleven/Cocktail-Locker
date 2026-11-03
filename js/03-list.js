@@ -94,9 +94,11 @@ function renderList() {
       : "No drinks match. Try fewer filters.";
     ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + bottleRows() + lookupRow(); wireLookup(); return;
   }
-  // One flat list: your own drinks first, then everyone else's, each in the chosen sort order.
+  // Browsing Home with no search or filter: My Drinks, Trending, Highest Rated and The Classics.
+  if (typeof browsing === "function" && browsing()) { ul.innerHTML = sectionsHtml(); return; }
+  // Otherwise one flat list: your own drinks first, then everyone else's, each in the chosen sort order.
   const ordered = uid() ? items.filter(isMine).concat(items.filter(d => !isMine(d))) : items;
-  ul.innerHTML = ordered.map(d => rowHtml(d, false)).join("") + bottleRows() + lookupRow();
+  ul.innerHTML = (typeof backToSectionsRow === "function" ? backToSectionsRow() : "") + ordered.map(d => rowHtml(d, false)).join("") + bottleRows() + lookupRow();
   wireLookup();
 }
 // Bottles matching the search, shown under the drinks.

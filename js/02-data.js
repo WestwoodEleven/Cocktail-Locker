@@ -79,7 +79,7 @@ async function startStorage() {
       loadProfiles(); renderFilters(); renderList(); renderMain();
     }
   });
-  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles()]);
+  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles(), loadViews()]);
   loadBar();
   renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain();
   if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
@@ -164,6 +164,7 @@ const score = d => { const r = ratingOf(d); return (2 * 3.5 + r.sum) / (2 + r.co
 function sortItems(list) {
   const k = S.sort;
   return list.sort((a, b) => k === "az" ? byName(a, b)
+    : k === "trending" ? ((viewsOf(b) - viewsOf(a)) || (score(b) - score(a)) || byName(a, b))
     : k === "new" ? (String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")) || byName(a, b))
     : (score(b) - score(a)) || (ratingOf(b).count - ratingOf(a).count) || (!!a.standard - !!b.standard) || byName(a, b));
 }

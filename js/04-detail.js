@@ -27,6 +27,7 @@ function renderMain() {
   if (!d) { m.innerHTML = `<div class="blank"><div class="glass">The shelf is empty</div><div>Add a drink with its spec for one glass. You can batch it for any crowd after.</div>${S.canWrite ? `<button class="btn primary" type="button" id="blank-new">+ Add your first drink</button>` : ""}</div>`;
     if (S.canWrite) $("blank-new").onclick = () => openEditor(null); return; }
 
+  if (typeof recordView === "function") recordView(d);
   if (S._servFor !== d.id) { S._servFor = d.id; S.servings = 1; S._fillL = null; } // every drink opens at 1
   const perServing = liquidMl(d);
   const canWater = d.method !== "Blended" && (DILUTION[d.method] ?? 0) > 0;

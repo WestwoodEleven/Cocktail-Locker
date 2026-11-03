@@ -56,7 +56,8 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   // The display type is all caps; tests read the words as written.
   await page.addStyleTag({ content: "* { text-transform: none !important; }" });
   // Most tests start from the drink list; the home page has its own tests.
-  if (!home) await page.evaluate("S.view === 'home' && showList(null, true)");
+  // (as one flat list: the home page's sections have their own tests)
+  if (!home) await page.evaluate("S.browseAll = true; S.view === 'home' && showList(null, true)");
   page.errors = errors;
   // Use a recipe action: the main ones are on the page, the rest are in the ⋯ More menu.
   page.act = async id => {
@@ -65,7 +66,7 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   };
   // Open a drink from the All drinks list (recipe pages don't show the list, so go there first).
   page.pick = async id => {
-    if (!(await page.isVisible("#list"))) await page.evaluate("showList(null, true)");
+    if (!(await page.isVisible("#list")) || !(await page.isVisible(`#list button[data-id='${id}']`))) await page.evaluate("S.browseAll = true; showList(null, true)");
     await page.click(`#list button[data-id='${id}']`);
   };
   page.text = async sel => (await page.innerText(sel)).replace(/\s*[\n\t]\s*/g, " | ");

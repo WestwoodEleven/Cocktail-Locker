@@ -4,7 +4,7 @@
 // Searching filters the list in place and hides the welcome so results come first.
 function openHome() {
   S.view = "home"; S.editing = null; S.confirmDelete = false; S.confirmPhoto = false;
-  S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; renderFilters();
+  S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; S.browseAll = false; S.secShow = {}; renderFilters();
   setHash(null); renderList(); renderMain(); window.scrollTo({ top: S._routing ? (S._homeY || 0) : 0 });
 }
 

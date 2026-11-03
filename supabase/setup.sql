@@ -469,6 +469,34 @@ insert into public.standard_recipes (slug, name, data, aliases) values
 on conflict (slug) do nothing;
 
 -------------------------------------------------------------------------------
+-- Drink view counts (same as views-setup.sql)
+-------------------------------------------------------------------------------
+
+create table if not exists public.drink_views (
+  drink_id text not null,
+  day date not null default current_date,
+  views integer not null default 0,
+  primary key (drink_id, day)
+);
+alter table public.drink_views enable row level security;
+drop policy if exists "Anyone can read view counts" on public.drink_views;
+create policy "Anyone can read view counts" on public.drink_views for select using (true);
+create index if not exists drink_views_day_idx on public.drink_views (day);
+
+-- The only way to add a view: one call per drink opened (the site skips repeat opens and your own drinks).
+create or replace function public.record_view(p_drink text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_drink is null or char_length(p_drink) > 80 then return; end if;
+  if not exists (select 1 from drinks where id = p_drink)
+     and not exists (select 1 from standard_recipes where 'std:' || slug = p_drink) then return; end if;
+  insert into drink_views (drink_id, day, views) values (p_drink, current_date, 1)
+  on conflict (drink_id, day) do update set views = drink_views.views + 1;
+end $$;
+revoke all on function public.record_view(text) from public;
+grant execute on function public.record_view(text) to anon, authenticated;
+
+-------------------------------------------------------------------------------
 -- Site stats for admins (same as stats-setup.sql)
 -------------------------------------------------------------------------------
 -- When each drink was first added (older drinks use their last edit time).
@@ -530,6 +558,19 @@ begin
         group by r.drink_id, d.name, s.name
         having count(*) >= 2
         order by avg(r.stars) desc, count(*) desc
+        limit 5
+      ) t
+    ), '[]'::jsonb),
+    'views_7d', coalesce((select sum(views) from drink_views where day > current_date - 7), 0),
+    'most_viewed', coalesce((
+      select jsonb_agg(t) from (
+        select v.drink_id as id, coalesce(d.name, s.name, v.drink_id) as name, sum(v.views) as n
+        from drink_views v
+        left join drinks d on d.id = v.drink_id
+        left join standard_recipes s on 'std:' || s.slug = v.drink_id
+        where v.day > current_date - 30
+        group by v.drink_id, d.name, s.name
+        order by sum(v.views) desc
         limit 5
       ) t
     ), '[]'::jsonb),

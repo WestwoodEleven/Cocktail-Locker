@@ -38,7 +38,7 @@ Signed-in people get a **My Cocktail Cart** page (called a locker in the code an
 
 ### Search and standard recipes
 
-Search covers every locker. The drink list is one flat list with your own drinks first, then everyone else's, sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
+Search covers every locker. On Home, the drink list is split into **My Drinks**, **Trending** (most viewed this week; **Recently Added** until there are views), **Highest Rated** and **The Classics**, five drinks each with **Show more** and then **See all**, plus **Browse all drinks** at the bottom. Searching, a filter chip or Browse all switches to one flat list with your own drinks first, then everyone else's, sorted by rating by default (or Trending, A–Z, Newest) (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
 
 ### Look and feel
 
@@ -94,6 +94,10 @@ Anyone signed in can add a photo, rate, comment and **Suggest a fix**. Site admi
 On a device's first visit, a welcome screen asks whether the visitor is 21 or older (remembered on that device; "No" can't get in). Signing in also needs a ticked "I'm 21 or older and agree to the privacy policy" box, and the time it was ticked is saved on new accounts (Supabase **Authentication > Users**, in the user's metadata as `confirmed_21_at`).
 
 ### Reports and terms
+
+### Drink views
+
+Opening someone else's drink adds one view (once per drink per visit; your own drinks don't count). Views are stored as a count per drink per day, with nothing about who viewed. Run [`supabase/views-setup.sql`](supabase/views-setup.sql) once (it's also in `setup.sql`), then re-run `stats-setup.sql` so Site stats shows views too.
 
 ### Site stats and traffic
 

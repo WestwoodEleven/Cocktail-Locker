@@ -997,3 +997,17 @@ body.on-merged .grid > main { order: -1; }
 .make.stats { display: flex; flex-direction: column; gap: 20px; max-width: 1000px; }
 .make.stats > .editor-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
 .make.stats .make-title { font-size: 34px; line-height: 1.1; }
+
+/* ---------- Drinks sections on Home ---------- */
+#list .sec-head-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 18px 0 6px; margin: 0; border-top: 1px solid var(--rule); list-style: none; }
+#list .sec-head-row:first-child { border-top: 0; padding-top: 4px; }
+#list .sec-head-row h3 { margin: 0; font-family: var(--f-display); font-size: 20px; letter-spacing: .02em; }
+#list .sec-head-row span { color: var(--muted); font-size: 13px; }
+#list .sec-more { list-style: none; padding: 4px 0 6px; }
+#list .sec-more .linkish { font-weight: 600; color: var(--accent); text-decoration: none; padding: 6px 0; font-size: 14px; }
+#list .sec-more .linkish:hover { text-decoration: underline; }
+#list .sec-all { padding-top: 16px; border-top: 1px solid var(--rule); margin-top: 8px; }
+#list .sec-all .btn { width: 100%; justify-content: center; }
+#list .sec-back { padding-bottom: 8px; }
+#list .sec-empty { list-style: none; padding: 6px 0 10px; }
+#list .sec-all .btn { border: 2px solid var(--ink); border-radius: 4px; padding: 10px 14px; font-weight: 700; background: var(--surface); }

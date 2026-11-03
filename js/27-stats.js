@@ -27,7 +27,7 @@ VIEWS.stats = function renderStats() {
   const st = S.stats;
   if (!st) { m.innerHTML = `<div class="make">${head}<p class="hint">${esc(S.statsErr || "Counting…")}</p></div>`; wireStats(); return; }
   const t = st.totals || {}, num = v => Number(v || 0).toLocaleString();
-  const tiles = [["Members", t.members], ["Signed in this week", t.active_7d], ["Drinks", t.drinks], ["Drink photos", t.drink_photos],
+  const tiles = [["Members", t.members], ["Signed in this week", t.active_7d], ["Drink views this week", st.views_7d], ["Drinks", t.drinks], ["Drink photos", t.drink_photos],
     ["Classics", t.classics], ["Ratings", t.ratings], ["Favorites", t.favorites], ["Bottle photos", t.bottle_photos],
     ["Bottle comments", t.bottle_reviews], ["Lists", t.lists], ["Follows", t.follows]];
   const weeks = st.weeks || [];
@@ -51,6 +51,7 @@ VIEWS.stats = function renderStats() {
     <section class="make-sec st-two">
       <div><div class="sec-head"><h3>Top rated</h3></div>${list(st.top_rated || [], r => `★ ${Number(r.avg).toFixed(1)} · ${r.n} ratings`)}</div>
       <div><div class="sec-head"><h3>Most favorited</h3></div>${list(st.most_saved || [], r => `♥ ${r.n}`)}</div>
+      <div><div class="sec-head"><h3>Most viewed</h3></div>${list(st.most_viewed || [], r => `${num(r.n)} views, last 30 days`)}</div>
     </section>
     <p class="hint">Visitor counts, pages and where people come from are in Cloudflare: dashboard › Analytics &amp; Logs › Web Analytics.</p>
   </div>`;

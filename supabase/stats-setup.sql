@@ -1,6 +1,6 @@
 -- My Cocktail Cart: site stats for admins (the Stats box on My Cocktail Cart).
 -- Paste into the Supabase SQL Editor and run once. Safe to run again.
--- Needs the bottle guide (is_site_admin) set up first.
+-- Needs the bottle guide (is_site_admin) and drink views (views-setup.sql) set up first.
 
 -- When each drink was first added (older drinks use their last edit time).
 alter table public.drinks add column if not exists created_at timestamptz;
@@ -61,6 +61,19 @@ begin
         group by r.drink_id, d.name, s.name
         having count(*) >= 2
         order by avg(r.stars) desc, count(*) desc
+        limit 5
+      ) t
+    ), '[]'::jsonb),
+    'views_7d', coalesce((select sum(views) from drink_views where day > current_date - 7), 0),
+    'most_viewed', coalesce((
+      select jsonb_agg(t) from (
+        select v.drink_id as id, coalesce(d.name, s.name, v.drink_id) as name, sum(v.views) as n
+        from drink_views v
+        left join drinks d on d.id = v.drink_id
+        left join standard_recipes s on 'std:' || s.slug = v.drink_id
+        where v.day > current_date - 30
+        group by v.drink_id, d.name, s.name
+        order by sum(v.views) desc
         limit 5
       ) t
     ), '[]'::jsonb),
