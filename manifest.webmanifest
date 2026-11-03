@@ -1,6 +1,6 @@
 {
   "name": "My Cocktail Cart",
-  "short_name": "Cocktail Cart",
+  "short_name": "My Cocktail Cart",
   "description": "Everyone's house cocktail specs, scaled for one glass or the whole party.",
   "start_url": "./",
   "scope": "./",
