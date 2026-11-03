@@ -814,3 +814,7 @@ body.on-browse .list { max-height: none; }
   .topsearch { min-width: 120px; }
   .brand span { white-space: nowrap; }
 }
+
+/* Recipe page: the spec sits right under the drink's style line */
+.spec-block { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.spec-top > div:first-child { flex: 1 1 320px; min-width: 0; }
