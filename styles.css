@@ -967,3 +967,7 @@ body.on-merged .grid > main { order: -1; }
 .ra-body .ask-drink { grid-template-columns: minmax(0, 1fr); }
 .ra-body .ask-pic { display: none; }
 .ra-body .ask-thread { max-height: 52vh; overflow-y: auto; }
+
+.riff { font-size: 15px; color: var(--muted); margin-top: 4px; }
+.riff-link { color: var(--accent); font-weight: 700; font-size: inherit; padding: 0; text-decoration: none; }
+.riff-link:hover { text-decoration: underline; }

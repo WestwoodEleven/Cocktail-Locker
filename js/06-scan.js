@@ -38,6 +38,7 @@ function recipeToDrink(r) {
     glass: String(r.glass || "").trim().slice(0, 40), garnish: String(r.garnish || "").trim().slice(0, 80),
     method: METHODS.includes(r.method) ? r.method : "Shaken",
     type: TYPES.includes(r.type) ? r.type : "", base: BASES.includes(r.base) ? r.base : "",
+    ...(CLASSIC_NAMES.includes(String(r.classic || "")) ? { classic: String(r.classic) } : {}),
     notes: String(r.notes || "").trim().slice(0, 1500),
     ingredients: ings.length ? ings : [{ amount: "", unit: "oz", name: "" }]
   };

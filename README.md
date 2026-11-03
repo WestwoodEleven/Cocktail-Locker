@@ -61,6 +61,10 @@ Visitors who arrive without a link to something specific (and anyone who taps th
 
 One place for the AI (`#ask`; the Bartender tab on phones, the top bar on computers, and the home page tile). People ask in their own words or tap a quick start (Use what I have, Surprise me, Make a mocktail, Find a substitute, Look up a classic). The reply is a short answer plus up to 3 drink cards with amounts, what they'd need to buy, and **Save to my cart**, **Make it** and **Try another**. Follow-ups ("less sweet", "make it for 8") refine the last answer; the last 10 messages are sent with each question. "Use my bottles" sends their in-stock bottles and fresh items. It stays on drinks and declines anything else. Each question is one AI request (the `ask` mode of `read-recipe`, logged as kind `ask`), so redeploy the function after updating.
 
+### Classics and riffs
+
+Each drink can be tied to the classic it is or riffs on (`js/12-classics.js`). The site recognizes about 40 classics from their signature ingredients (tequila + lime + orange liqueur is a Margarita, so "Mitch-A-Rita" is recognized), and owners can set it or choose "Not a riff on anything" in the editor's **Riff on a classic** field (saved as `classic` in the drink's data; AI-made drinks keep the classic the AI names). Search matches the classic as if it were part of the name, the list shows "Riff on a Margarita", and the recipe shows "A riff on the Margarita" (tap it to see the others).
+
 ### Tools, lists and sharing
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.

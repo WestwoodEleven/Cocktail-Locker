@@ -63,7 +63,7 @@ function renderMain() {
     <button type="button" class="linkish back-link" id="to-list">← Back</button>
     <div class="hero">
     <div class="spec-top">
-      <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>
+      <div><h2 class="drink-name">${esc(d.name)}</h2>${riffLabel(d) ? `<div class="riff">A riff on the <button type="button" class="linkish riff-link" data-riff="${esc(riffLabel(d))}">${esc(riffLabel(d))}</button></div>` : ""}${fromLine}<div class="meta">${meta}</div>
         <div class="spec-block">
           <div class="spec-head">
             <span class="label">Spec for</span>
@@ -156,6 +156,7 @@ function renderMain() {
   };
   $("share-btn").onclick = () => openShare(d);
   $("ask-recipe-btn").onclick = () => openRecipeAsk(d);
+  m.querySelectorAll("[data-riff]").forEach(b => b.onclick = () => { S.query = b.dataset.riff; $("search").value = b.dataset.riff; showList(null, true); window.scrollTo({ top: 0 }); });
   $("more-btn").onclick = () => {
     const btns = [...$("more-actions").querySelectorAll("button")].filter(b => !b.disabled);
     sheet(d.name, `<div class="add-menu more-menu">${btns.map(b => `<button type="button" data-proxy="${b.id}"${b.dataset.danger !== undefined ? ' class="danger"' : ""}><b>${esc(b.textContent)}</b></button>`).join("")}</div>`);

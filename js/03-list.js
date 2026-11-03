@@ -1,6 +1,6 @@
 // The Cocktail Locker: list. Scripts share one global scope and load in numbered order.
 // ---------- list + filters ----------
-const haystack = d => [d.name, d.glass, d.garnish, d.notes, d.method, typeOf(d), baseOf(d), S.backend === "supabase" ? (d.standard ? "standard recipe classic" : lockerName(d.owner)) : "",
+const haystack = d => [d.name, classicOf(d), d.glass, d.garnish, d.notes, d.method, typeOf(d), baseOf(d), S.backend === "supabase" ? (d.standard ? "standard recipe classic" : lockerName(d.owner)) : "",
   ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
 function passesFilters(d, skip) {
   const f = S.f;
@@ -12,7 +12,7 @@ function passesFilters(d, skip) {
   if (skip !== "rating" && f.rating && !(f.rating === "none" ? !ratingOf(d).count : avgOf(d) >= Number(f.rating))) return false;
   if (S.query.trim()) {
     const qs = slugify(S.query);
-    const byName = qs && (slugify(d.name).includes(qs) || (d.aliases || []).includes(qs));
+    const byName = qs && (slugify(d.name).includes(qs) || (d.aliases || []).includes(qs) || (classicOf(d) && slugify(classicOf(d)).includes(qs)));
     const h = haystack(d);
     if (!byName && !S.query.toLowerCase().split(/\s+/).filter(w => w && w !== "the").every(w => h.includes(w))) return false;
   }
@@ -69,7 +69,7 @@ function rowHtml(d, ver) {
   const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your cart" : lockerName(d.owner)) : baseOf(d));
   return `<li${ver ? ' class="ver"' : ""}><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
     ${drinkThumb(d)}
-    <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
+    <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${riffLabel(d) && !ver ? "Riff on a " + esc(riffLabel(d)) + " · " : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
 }
 function lookupRow() {
   const q = S.query.trim();

@@ -15,7 +15,7 @@ function readForm() {
   const e = S.editing;
   e.name = $("f-name").value; e.glass = $("f-glass").value; e.method = $("f-method").value;
   e.garnish = $("f-garnish").value; e.notes = $("f-notes").value;
-  e.type = $("f-type").value; e.base = $("f-base").value;
+  e.type = $("f-type").value; e.base = $("f-base").value; e.classic = $("f-classic").value;
   document.querySelectorAll(".ing-row").forEach((r, i) => {
     e.ingredients[i].amountText = r.querySelector(".amt").value;
     e.ingredients[i].unit = r.querySelector(".ing-unit").value;
@@ -50,6 +50,7 @@ function renderEditor(errMsg) {
       </div>
       <div class="row2">
         <div class="field"><label for="f-type">Cocktail type</label><select id="f-type"><option value="" id="f-type-auto">${esc("Auto: " + guessType(draftDrink()))}</option>${TYPES.map(x => `<option ${e.type === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
+        <div class="field"><label for="f-classic">Riff on a classic</label><select id="f-classic"><option value="" id="f-classic-auto">${esc("Auto: " + (detectClassic(draftDrink()) || "none found"))}</option>${CLASSIC_NAMES.map(x => `<option ${e.classic === x ? "selected" : ""}>${esc(x)}</option>`).join("")}<option value="none" ${e.classic === "none" ? "selected" : ""}>Not a riff on anything</option></select></div>
         <div class="field"><label for="f-base">Base spirit</label><select id="f-base"><option value="" id="f-base-auto">${esc("Auto: " + guessBase(draftDrink()))}</option>${BASES.map(x => `<option ${e.base === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
       </div>
       <datalist id="glasses"><option>Rocks</option><option>Coupe</option><option>Nick &amp; Nora</option><option>Collins</option><option>Highball</option><option>Martini</option><option>Copper mug</option><option>Wine glass</option><option>Tiki mug</option><option>Flute</option></datalist>
@@ -70,6 +71,7 @@ function renderEditor(errMsg) {
     const dd = draftDrink();
     $("f-type-auto").textContent = "Auto: " + guessType(dd);
     $("f-base-auto").textContent = "Auto: " + guessBase(dd);
+    if ($("f-classic-auto")) $("f-classic-auto").textContent = "Auto: " + (detectClassic(dd) || "none found");
     document.querySelectorAll(".ing-row").forEach((r, k) => { r.querySelector(".ing-kind option[value='']").textContent = "Auto: " + guessKind(e.ingredients[k].name); });
   };
   m.querySelectorAll(".ing-name, .ing-brand, .amt").forEach(x => x.addEventListener("input", refreshAuto));
@@ -101,6 +103,7 @@ function renderEditor(errMsg) {
     const d = { id, name: e.name.trim(), glass: e.glass.trim(), method: e.method, garnish: e.garnish.trim(), notes: e.notes.trim(), ingredients: ings, updatedAt: new Date().toISOString() };
     if (e.type) d.type = e.type;
     if (e.base) d.base = e.base;
+    if (e.classic) d.classic = e.classic;
     if (e.photo) d.photo = e.photo;
     if (e.owner) d.owner = e.owner;
     if (e.origin) d.origin = e.origin;
