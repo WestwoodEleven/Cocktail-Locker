@@ -53,7 +53,7 @@ export default async function () {
   await q.close();
 
   const m = await open({ width: 390, home: true });
-  check("phone tabs are Home, Drinks, Bartender, My cart", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "Drinks", "Bartender", "My Cocktails"]));
+  check("phone tabs are Home, Drinks, Bartender, My cart", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "Drinks", "Bartender", "My Bar"]));
   await m.click(".tabbar [data-nav=browse]"); await m.waitForTimeout(150);
   check("Drinks tab opens All drinks with search open", (await m.evaluate("S.view")) === "browse" && await m.isVisible("#search") && (await m.getAttribute(".tabbar [data-nav=browse]", "aria-current")) === "page");
   await m.click(".tabbar [data-nav=cart]"); await m.waitForTimeout(200);
