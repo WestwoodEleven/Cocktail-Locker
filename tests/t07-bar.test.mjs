@@ -3,6 +3,12 @@ export default async function () {
   const p = await open();
   await p.click("#locker-btn"); await p.waitForTimeout(150);
   check("old plain-name bar still loads", (await p.text("#chips-liquors")).includes("Campari"));
+  check("My drinks has one Add button", await p.isVisible("#prof-drink-add") && !(await p.evaluate("!!document.getElementById('prof-scan') || !!document.getElementById('prof-new')")));
+  await p.click("#prof-drink-add"); await p.waitForTimeout(50);
+  check("Add a drink offers a photo or typing", /from a photo/i.test(await p.text("#gen-body")) && /type it in/i.test(await p.text("#gen-body")));
+  await p.click("#da-type"); await p.waitForTimeout(100);
+  check("Type it in opens a new drink", await p.isVisible("#f-name") && !(await p.isVisible("#gen-modal")));
+  await p.click("#locker-btn"); await p.waitForTimeout(150);
   check("no typing boxes in My bottles", !(await p.evaluate("!!document.querySelector('#prof-bar input[type=text]')")));
   // add a bottle with a brand through + Add, Type it in
   await p.click("#prof-bottle-add"); await p.waitForTimeout(50);

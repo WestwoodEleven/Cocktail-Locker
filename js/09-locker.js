@@ -60,7 +60,7 @@ function renderProfile() {
 
       <section class="make-sec" id="prof-drinks">
         <div class="sec-head"><h3>My drinks</h3>
-          <div class="panel-actions"><button class="btn small" type="button" id="prof-scan">Scan a recipe</button><button class="btn primary small" type="button" id="prof-new">+ New drink</button></div></div>
+          <div class="panel-actions"><button class="btn primary small" type="button" id="prof-drink-add" aria-haspopup="dialog">+ Add</button></div></div>
         ${mine.length ? `<ul class="plist">${mine.map(d => drinkRow(d, false)).join("")}</ul>`
           : `<p class="hint" style="margin:0">Your cart has no drinks yet. Add one, scan a recipe, or copy someone else's drink.</p>`}
       </section>
@@ -95,9 +95,18 @@ function renderProfile() {
   m.querySelectorAll(".stat").forEach(a => a.onclick = e => { e.preventDefault(); const t = $(a.getAttribute("href").slice(1)); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
   wireProfileSocial(m);
   $("prof-rename").onclick = () => openNameForm(false);
-  $("prof-new").onclick = () => openEditor(null);
-  $("prof-scan").onclick = () => $("scan-file").click();
+  $("prof-drink-add").onclick = openDrinkAdd;
   $("prof-make").onclick = () => openAsk("What can I make with my bottles? Give me three ideas.");
   wireAdmin();
   wireAccount();
+}
+
+// Add a drink: from a photo of a recipe, or typed in.
+function openDrinkAdd() {
+  sheet("Add a drink", `<div class="add-menu">
+    <button type="button" id="da-photo"><b>From a photo</b><span>A recipe card, book page or screenshot. We fill in the recipe</span></button>
+    <button type="button" id="da-type"><b>Type it in</b><span>Enter the ingredients and amounts yourself</span></button>
+  </div>`);
+  $("da-photo").onclick = () => { closeSheet(); $("scan-file").click(); };
+  $("da-type").onclick = () => { closeSheet(); openEditor(null); };
 }
