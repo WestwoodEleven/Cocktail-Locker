@@ -1,8 +1,8 @@
 import { open, check } from "./harness.mjs";
 export default async function () {
   const p = await open({ user: null });
-  check("party planner available signed out", await p.isVisible("#party-btn"));
-  await p.click("#party-btn"); await p.waitForTimeout(100);
+  check("party planner available signed out", await p.isVisible(".plan-row [data-home=party]"));
+  await p.click(".plan-row [data-home=party]"); await p.waitForTimeout(100);
   check("party link", (await p.evaluate("location.hash")) === "#party");
   await p.fill("#pp-search", "negro"); await p.waitForTimeout(300);
   const n = await p.evaluate("document.querySelectorAll('[data-addparty]').length");

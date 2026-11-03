@@ -37,7 +37,7 @@ export default async function () {
   const saved2 = await p.evaluate("window.__MOCK.tables.bars[0].items.liquors.find(x => x.name === 'Campari')");
   check("out of stock saved", saved2.out === true);
   // effect on What can I make?
-  await p.click("#canmake-btn"); await p.waitForTimeout(150);
+  await p.evaluate("openCanMake()"); await p.waitForTimeout(150);
   const t = await p.text("#main");
   check("Negronis drop out of Ready when Campari is out", /Ready to make\s*\|?\s*0/.test(t) && t.includes("Out of Campari"), t.slice(0, 500));
   // brand match: recipe calls for Cointreau by brand

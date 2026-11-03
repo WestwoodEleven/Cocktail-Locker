@@ -60,7 +60,7 @@ function renderMain() {
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
-    <button type="button" class="linkish back-link" id="to-list">← All drinks</button>
+    <button type="button" class="linkish back-link" id="to-list">← Back</button>
     <div class="hero">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>
@@ -164,7 +164,7 @@ function renderMain() {
       if (id === "del-btn") setTimeout(() => { const c = document.querySelector(".confirm"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }, 50);
     });
   };
-  $("to-list").onclick = () => showList(null);
+  $("to-list").onclick = () => { if (history.state && history.state.inSite) history.back(); else showList(null); };
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
@@ -252,7 +252,7 @@ function setHash(id) {
   try {
     if ((location.hash || "") === want) return;
     if (S._routing) history.replaceState(null, "", want || location.pathname + location.search);
-    else history.pushState(null, "", want || location.pathname + location.search);
+    else history.pushState({ inSite: true }, "", want || location.pathname + location.search);
   } catch (e) {}
 }
 // Show the page for the address's #part: used for Back/forward and for links.

@@ -2,16 +2,14 @@ import { open, check } from "./harness.mjs";
 export default async function () {
   // Back button walks back through the site
   const p = await open({ width: 390, home: true });
-  await p.evaluate("showList(null)"); await p.waitForTimeout(100);
-  await p.evaluate("window.scrollTo(0, 120); S._browseY = 120");
-  await p.pick("pk"); await p.waitForTimeout(100);
-  check("opening a drink adds a history step", (await p.evaluate("location.hash")) === "#pk" && (await p.evaluate("history.length")) >= 3);
-  await p.goBack(); await p.waitForTimeout(200);
-  check("Back from a recipe returns to All drinks", (await p.evaluate("S.view")) === "browse" && (await p.evaluate("location.hash")) === "#drinks");
-  await p.goBack(); await p.waitForTimeout(200);
-  check("Back again returns home", (await p.evaluate("S.view")) === "home");
-  await p.goForward(); await p.waitForTimeout(200);
-  check("Forward works too", (await p.evaluate("S.view")) === "browse");
+  await p.evaluate("window.scrollTo(0, 300)"); await p.waitForTimeout(100);
+  const y0 = await p.evaluate("window.scrollY");
+  await p.pick("pk"); await p.waitForTimeout(150);
+  check("opening a drink adds a history step", (await p.evaluate("location.hash")) === "#pk" && (await p.evaluate("history.length")) >= 2);
+  await p.goBack(); await p.waitForTimeout(250);
+  check("Back from a recipe returns to Home where you were", (await p.evaluate("S.view")) === "home" && (await p.evaluate("location.hash")) === "" && Math.abs((await p.evaluate("window.scrollY")) - y0) < 30, String(await p.evaluate("window.scrollY")) + " vs " + y0);
+  await p.goForward(); await p.waitForTimeout(250);
+  check("Forward works too", (await p.evaluate("S.view")) === "detail" && (await p.evaluate("location.hash")) === "#pk");
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
 
@@ -31,7 +29,7 @@ export default async function () {
 
   // Tools have homes; pop-ups come up from the bottom on phones
   const h = await open({ width: 390, home: true });
-  check("home has Plan & explore", /plan & explore/i.test(await h.text("#main")) && await h.isVisible(".plan-row [data-home=guide]") && await h.isVisible(".plan-row [data-home=canmake]"));
+  check("home has Plan & explore", /plan & explore/i.test(await h.text("#home-after")) && await h.isVisible(".plan-row [data-home=guide]") && await h.isVisible(".plan-row [data-home=canmake]"));
   await h.click(".plan-row [data-home=guide]"); await h.waitForTimeout(100);
   check("Plan & explore opens the bottle guide", (await h.evaluate("S.view")) === "guide");
   await h.click(".tabbar [data-nav=cart]"); await h.waitForTimeout(150);

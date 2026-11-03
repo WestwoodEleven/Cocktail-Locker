@@ -16,8 +16,10 @@ const invoke = `async (name, body) => {
 }`;
 export default async function () {
   const p = await open({ invoke });
-  check("Stock my bar in Tools", await p.isVisible("#stock-btn"));
-  await p.click("#stock-btn"); await p.waitForTimeout(100);
+  await p.evaluate("$('locker-btn').click()"); await p.waitForTimeout(100);
+  await p.click("#prof-bottle-add"); await p.waitForTimeout(50);
+  check("Stock from photos in My Bar's Add", await p.isVisible("#ba-photo"));
+  await p.click("#ba-photo"); await p.waitForTimeout(100);
   check("stock page link", (await p.evaluate("location.hash")) === "#stock-bar");
   await p.setInputFiles("#stock-file", [fx("shelf1.jpg"), fx("shelf2.jpg")]);
   await p.waitForTimeout(150);
@@ -42,7 +44,7 @@ export default async function () {
   check("mixer went to fresh today", await p.evaluate("JSON.parse(localStorage.getItem('mc-fresh')).includes('Tonic water')"));
   check("lands on My cart after adding", (await p.evaluate("location.hash")) === "#my-locker");
   await p.setViewportSize({ width: 390, height: 844 });
-  await p.click("#stock-btn"); await p.setInputFiles("#stock-file", [fx("shelf1.jpg")]); await p.waitForTimeout(700);
+  await p.evaluate("openStock()"); await p.setInputFiles("#stock-file", [fx("shelf1.jpg")]); await p.waitForTimeout(700);
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();

@@ -1,11 +1,11 @@
 // ---------- home page ----------
-// What people see when they arrive without a link to something specific (and when they tap the logo or Drinks):
-// a big welcome with the drink of the day, quick ways to browse by style and spirit, the best-rated drinks
-// as picture tiles, the newest as a menu, and (for new visitors) what an account adds.
+// Home is also the drink list: a welcome (big for new visitors, one line when signed in) and the drink of the day,
+// then every drink with quick filter chips (the index under the main column), then Plan & explore.
+// Searching filters the list in place and hides the welcome so results come first.
 function openHome() {
   S.view = "home"; S.editing = null; S.confirmDelete = false; S.confirmPhoto = false;
   S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; renderFilters();
-  setHash(null); renderList(); renderMain(); window.scrollTo({ top: 0 });
+  setHash(null); renderList(); renderMain(); window.scrollTo({ top: S._routing ? (S._homeY || 0) : 0 });
 }
 
 // Same pick all day for everyone: one of the best-rated drinks, preferring ones with photos.
@@ -16,28 +16,12 @@ function drinkOfTheDay() {
   const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
   return best[day % best.length];
 }
-// Best first by weighted rating (unrated drinks fill in after rated ones).
-function topRated(n) {
-  return S.drinks.slice().sort((a, b) => (score(b) - score(a)) || (ratingOf(b).count - ratingOf(a).count) || byName(a, b)).slice(0, n);
-}
-function newest(n) {
-  return S.drinks.slice().sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")) || byName(a, b)).slice(0, n);
-}
-
-// Browse shortcuts: [label, filter key, value]
-const HOME_STYLES = [["Sours", "type", "Sour"], ["Spirit-forward", "type", "Spirit-forward"], ["Tiki", "type", "Tiki"], ["Highballs", "type", "Highball"], ["Fizzes", "type", "Fizz & Collins"], ["Spritzes", "type", "Spritz & bubbly"], ["Mocktails", "base", "No alcohol"]];
-const HOME_BASES = ["Gin", "Rum", "Tequila", "Mezcal", "Whiskey", "Vodka", "Brandy"];
-
 VIEWS.home = function renderHome() {
   const m = $("main");
   if (!S.loaded) { m.innerHTML = `<div class="blank"><div class="glass">Opening the bar…</div></div>`; return; }
   const signedIn = !!uid(), accounts = S.backend === "supabase";
   const me = signedIn ? myProfile() : null;
   const feat = drinkOfTheDay();
-  const top = topRated(8), fresh = newest(6);
-  const has = (k, v) => S.drinks.some(d => (k === "type" ? typeOf(d) : baseOf(d)) === v);
-  const styles = HOME_STYLES.filter(([, k, v]) => has(k, v));
-  const bases = HOME_BASES.filter(b => has("base", b));
   const today = new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" });
   const sub = d => [typeOf(d), accounts ? (isMine(d) && signedIn ? "Your cart" : lockerName(d.owner)) : baseOf(d)].filter(Boolean).join(" · ");
   const amt = i => { const s = show(i, 1, "spec"); return (s.q + (s.u ? " " + s.u : "")).trim(); };
@@ -69,49 +53,29 @@ VIEWS.home = function renderHome() {
         </button>` : ""}
       </div>
 
-      ${styles.length || bases.length ? `<nav class="home-browse" aria-label="Browse">
-        ${styles.length ? `<span class="label">Style</span><div class="pills">${styles.map(([t, k, v]) => `<button type="button" data-f="${k}" data-v="${esc(v)}">${esc(t)}</button>`).join("")}</div>` : ""}
-        ${bases.length ? `<span class="label">Base</span><div class="pills">${bases.map(b => `<button type="button" data-f="base" data-v="${esc(b)}">${esc(b)}</button>`).join("")}</div>` : ""}
-      </nav>` : ""}
-
-      ${top.length ? `<section class="home-sec">
-        <div class="sec-head"><h3>Top rated</h3><button type="button" class="linkish" data-home="toplist">All drinks →</button></div>
-        <ul class="tiles">${top.map(d => `<li><button type="button" class="tile" data-open="${esc(d.id)}">
-          <span class="tile-img">${d.photo ? `<img src="${esc(photoUrl(d.photo))}" alt="" loading="lazy">` : drinkPicture(d)}${ratingOf(d).count ? `<span class="tile-rate">★ ${avgOf(d).toFixed(1)}</span>` : ""}</span>
-          <span class="tile-name">${esc(d.name)}</span>
-          <span class="tile-sub">${esc(sub(d))}</span>
-        </button></li>`).join("")}</ul>
-      </section>` : ""}
-
-      <div class="home-split">
-        ${fresh.length ? `<section class="home-sec">
-          <div class="sec-head"><h3>Just added</h3><button type="button" class="linkish" data-home="newlist">Newest first →</button></div>
-          <ul class="menu-list">${fresh.map(d => `<li><button type="button" data-open="${esc(d.id)}"><span class="mn">${esc(d.name)}</span><span class="lead" aria-hidden="true"></span><span class="ms">${esc([baseOf(d), accounts ? (isMine(d) && signedIn ? "Your cart" : lockerName(d.owner)) : ""].filter(Boolean).join(" · "))}</span></button></li>`).join("")}</ul>
-        </section>` : ""}
-        ${signedIn || !accounts ? "" : `<aside class="home-promo" aria-label="What you can do with a free cart">
-          <h3>Your bottles,<br>working for you</h3>
-          <ul>
-            <li><b>What can I make?</b> Save your bottles and see every drink you can pour right now.</li>
-            <li><b>Snap a recipe.</b> Photograph a recipe card, or your shelf, and we fill it in.</li>
-            <li><b>Make it a mocktail.</b> A zero-proof version of any drink.</li>
-            <li><b>Plan a party.</b> Batches, a shopping list and a printed menu.</li>
-          </ul>
-          <button class="btn primary" type="button" data-home="signin">Start your cart, free</button>
-        </aside>`}
-      </div>
-
-      <section class="home-sec plan-links" aria-label="Plan and explore">
-        <div class="sec-head"><h3>Plan &amp; explore</h3></div>
-        <div class="plan-row">
-          ${signedIn ? `<button type="button" data-home="canmake"><b>What can I make?</b><span>From your bottles</span></button>` : ""}
-          <button type="button" data-home="guide"><b>Bottle guide</b><span>Ratings, photos and notes</span></button>
-          <button type="button" data-home="party"><b>Plan a party</b><span>Batches, shopping list, menu</span></button>
-        </div>
-      </section>
+      ${signedIn || !accounts ? "" : `<aside class="home-promo" aria-label="What you can do with a free cart">
+        <h3>Your bottles,<br>working for you</h3>
+        <ul>
+          <li><b>What can I make?</b> Save your bottles and see every drink you can pour right now.</li>
+          <li><b>Snap a recipe.</b> Photograph a recipe card, or your shelf, and we fill it in.</li>
+          <li><b>Make it a mocktail.</b> A zero-proof version of any drink.</li>
+          <li><b>Plan a party.</b> Batches, a shopping list and a printed menu.</li>
+        </ul>
+        <button class="btn primary" type="button" data-home="signin">Start your cart, free</button>
+      </aside>`}
 
       ${!S.drinks.length ? `<p class="hint">No drinks yet.${S.canWrite ? " Add the first one with + New drink." : ""}</p>` : ""}
     </div>`;
 
+  const after = $("home-after");
+  after.innerHTML = `<section class="home-sec plan-links" aria-label="Plan and explore">
+      <div class="sec-head"><h3>Plan &amp; explore</h3></div>
+      <div class="plan-row">
+        ${signedIn ? `<button type="button" data-home="canmake"><b>What can I make?</b><span>From your bottles</span></button>` : ""}
+        <button type="button" data-home="guide"><b>Bottle guide</b><span>Ratings, photos and notes</span></button>
+        <button type="button" data-home="party"><b>Plan a party</b><span>Batches, shopping list, menu</span></button>
+      </div>
+    </section>`;
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { selectDrink(b.dataset.open); window.scrollTo({ top: 0, behavior: "smooth" }); });
   const go = {
     cart: () => openProfile(),
@@ -128,7 +92,7 @@ VIEWS.home = function renderHome() {
     toplist: () => showList("rated"),
     newlist: () => showList("new")
   };
-  m.querySelectorAll("[data-home]").forEach(b => b.onclick = () => go[b.dataset.home] && go[b.dataset.home]());
+  [m, after].forEach(el => el.querySelectorAll("[data-home]").forEach(b => b.onclick = () => go[b.dataset.home] && go[b.dataset.home]()));
   m.querySelectorAll("[data-f]").forEach(b => b.onclick = () => {
     S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" };
     S.f[b.dataset.f] = b.dataset.v;
@@ -137,13 +101,12 @@ VIEWS.home = function renderHome() {
   });
 };
 
-// Open the All drinks page (the list with its filters and tools), optionally re-sorted.
+// Show the drink list on Home, keeping the search and filters, optionally re-sorted.
 // keepFocus: called while typing in the search box, so don't move the page.
 function showList(sort, keepFocus) {
   if (sort && S.sort !== sort) { S.sort = sort; $("sort").value = sort; try { localStorage.setItem("mc-sort", sort); } catch (e) {} }
-  const returning = S.view !== "browse";
-  S.view = "browse"; S.editing = null; S.confirmDelete = false; setHash("drinks");
+  S.view = "home"; S.editing = null; S.confirmDelete = false; setHash(null);
   renderFilters(); renderList(); renderMain();
-  // Coming back to All drinks lands where you were (search and filters are kept too).
-  if (!keepFocus) window.scrollTo({ top: returning && !sort ? (S._browseY || 0) : 0 });
+  if (keepFocus) return;
+  const t = $("drinks-title"); if (t) t.scrollIntoView({ block: "start" });
 }

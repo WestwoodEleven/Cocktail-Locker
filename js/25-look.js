@@ -66,7 +66,7 @@ function drinkPicture(d) {
 
 // ---------- navigation: the top bar on computers, the tab bar on phones ----------
 // Which tab is "open right now" (tapping it again scrolls to the top instead).
-const VIEW_OF_NAV = { home: "home", browse: "browse", ask: "ask", cart: "profile" };
+const VIEW_OF_NAV = { home: "home", ask: "ask", cart: "profile" };
 function navGo(where) {
   if (VIEW_OF_NAV[where] && S.view === VIEW_OF_NAV[where] && window.scrollY > 0) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
   const needSignIn = msg => { toast(msg); const a = $("auth-btn"); if (a && !a.hidden) a.click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -92,21 +92,22 @@ function navGo(where) {
 document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => navGo(b.dataset.nav)));
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 // Pages that use the full width, without the drink list, filters and tools beside them.
-// Recipe pages too; the drink list, filters and tools have their own All drinks page ("browse").
-const FULL_WIDTH_VIEWS = ["home", "ask", "detail"];
+// Recipe pages and Ask the bartender use the full width. Home shows the welcome with the drink list under it.
+const FULL_WIDTH_VIEWS = ["ask", "detail"];
 function syncChrome() {
+  const home = S.view === "home", searching = home && !!(S.query || "").trim();
   document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));
-  document.body.classList.toggle("on-browse", S.view === "browse");
-  // The search box stays open on All drinks and while there's a search; elsewhere the phone shows a search button.
-  if (S.view === "browse" || (S.query || "").trim()) setSearchOpen(true);
+  document.body.classList.toggle("on-merged", home);
+  document.body.classList.toggle("searching", searching);
+  const after = $("home-after"); if (after) after.hidden = !home || searching;
+  // The search box stays open while there's a search; otherwise the phone shows a search button.
+  if ((S.query || "").trim()) setSearchOpen(true);
   else if (document.activeElement !== $("search")) setSearchOpen(false);
   markNav();
 }
-// All drinks: the list, search filters and tools, full width. The main column is unused here.
-VIEWS.browse = function renderBrowse() { $("main").innerHTML = ""; };
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", browse: "browse", detail: "browse", profile: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
 function markNav() {
   const here = NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
@@ -114,11 +115,11 @@ function markNav() {
 
 // Typing in the top search from the home page opens the drink list.
 $("search").addEventListener("input", () => {
-  if (S.view !== "browse" && $("search").value.trim()) showList(null, true);
+  if (S.view !== "home" && $("search").value.trim()) showList(null, true);
 });
 
-// Remember how far down All drinks you were.
-window.addEventListener("scroll", () => { if (S.view === "browse") S._browseY = window.scrollY; }, { passive: true });
+// Remember how far down Home (the drink list) you were, for Back.
+window.addEventListener("scroll", () => { if (S.view === "home") S._homeY = window.scrollY; }, { passive: true });
 
 // ---------- phone header: search button, account menu, hide on scroll ----------
 function setSearchOpen(open) {

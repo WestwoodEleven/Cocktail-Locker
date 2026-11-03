@@ -1,8 +1,8 @@
 import { open, check } from "./harness.mjs";
 export default async function () {
   const p = await open();
-  check("tools panel shows for signed-in users", await p.isVisible("#canmake-btn"));
-  await p.click("#canmake-btn"); await p.waitForTimeout(150);
+  check("What can I make? in Plan & explore for signed-in users", await p.isVisible(".plan-row [data-home=canmake]"));
+  await p.click(".plan-row [data-home=canmake]"); await p.waitForTimeout(150);
   const t = await p.text("#main");
   check("both Negronis are ready to make", /Ready to make\s*\|?\s*2/.test(t), t.slice(0, 300));
   check("hash link set", (await p.evaluate("location.hash")) === "#can-make");
@@ -27,6 +27,6 @@ export default async function () {
   check("can-make link opens the page", (await q.text("#main")).includes("What can I make?"));
   await q.close();
   const r = await open({ user: null });
-  check("signed out: tools hint shown, bar tools hidden", await r.isVisible("#tools-hint") && !(await r.isVisible("#canmake-btn")));
+  check("signed out: no What can I make?", await r.isVisible(".plan-row [data-home=guide]") && !(await r.isVisible(".plan-row [data-home=canmake]")));
   await r.close();
 }
