@@ -165,7 +165,7 @@ function sortItems(list) {
   const k = S.sort;
   return list.sort((a, b) => k === "az" ? byName(a, b)
     : k === "new" ? (String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")) || byName(a, b))
-    : (score(b) - score(a)) || (ratingOf(b).count - ratingOf(a).count) || byName(a, b));
+    : (score(b) - score(a)) || (ratingOf(b).count - ratingOf(a).count) || (!!a.standard - !!b.standard) || byName(a, b));
 }
 function afterData() {
   const want = hashId();

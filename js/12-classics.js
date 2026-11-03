@@ -69,3 +69,16 @@ function riffLabel(d) {
   const k = slugify(c), n = slugify(d.name || "");
   return n === k || n.includes(k) ? "" : c;
 }
+
+// On a classic's page: the house versions that riff on it.
+function riffsOf(d) {
+  const k = slugify(d.name);
+  return S.drinks.filter(x => { const c = classicOf(x); return c && slugify(c) === k; })
+    .sort((a, b) => (score(b) - score(a)) || byName(a, b));
+}
+function riffsHtml(d) {
+  const rs = riffsOf(d);
+  if (!rs.length) return "";
+  return `<section class="make-sec riffs"><div class="sec-head"><h3>Riffs on the ${esc(d.name)}</h3><span class="hint">${rs.length} house version${rs.length === 1 ? "" : "s"}</span></div>
+    <ul class="plist">${rs.map(x => drinkRow(x, true)).join("")}</ul></section>`;
+}

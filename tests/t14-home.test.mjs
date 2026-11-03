@@ -18,7 +18,7 @@ export default async function () {
   check("phone: quick chips shown, full filters tucked away", await p.isVisible(".fchip") && !(await p.isVisible("#find-title")) && await p.isVisible("#filters-toggle"));
   await p.click(".fchip[data-fv=Rum]"); await p.waitForTimeout(100);
   const rum = await p.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
-  check("a chip filters the list", rum.length === 1 && rum[0] === "pk" && (await p.getAttribute(".fchip[data-fv=Rum]", "aria-pressed")) === "true" && /filters \(1\)/i.test(await p.text("#filters-toggle")), JSON.stringify(rum));
+  check("a chip filters the list", rum.join() === "pk,std:daiquiri" && (await p.getAttribute(".fchip[data-fv=Rum]", "aria-pressed")) === "true" && /filters \(1\)/i.test(await p.text("#filters-toggle")), JSON.stringify(rum));
   await p.click(".fchip[data-fv=Rum]"); await p.waitForTimeout(100);
   await p.click("#filters-toggle"); await p.waitForTimeout(100);
   check("Filters button opens the full filters", await p.isVisible("#flt-type"));

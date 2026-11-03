@@ -4,7 +4,7 @@ const haystack = d => [d.name, classicOf(d), d.glass, d.garnish, d.notes, d.meth
   ...(d.ingredients || []).flatMap(i => [i.name, i.brand, kindOf(i)])].filter(Boolean).join(" ").toLowerCase();
 function passesFilters(d, skip) {
   const f = S.f;
-  if (skip !== "owner" && f.owner && !(f.owner === "mine" ? isMine(d) : f.owner === "fav" ? isFav(d) : f.owner === "following" ? followingIds().includes(d.owner) : f.owner.startsWith("col:") ? !!(S.colItems[f.owner.slice(4)] && S.colItems[f.owner.slice(4)].has(d.id)) : d.owner === f.owner)) return false;
+  if (skip !== "owner" && f.owner && !(f.owner === "std" ? !!d.standard : f.owner === "mine" ? isMine(d) : f.owner === "fav" ? isFav(d) : f.owner === "following" ? followingIds().includes(d.owner) : f.owner.startsWith("col:") ? !!(S.colItems[f.owner.slice(4)] && S.colItems[f.owner.slice(4)].has(d.id)) : d.owner === f.owner)) return false;
   if (skip !== "type" && f.type && typeOf(d) !== f.type) return false;
   if (skip !== "base" && f.base && baseOf(d) !== f.base) return false;
   if (skip !== "method" && f.method && d.method !== f.method) return false;
@@ -19,7 +19,8 @@ function passesFilters(d, skip) {
   return true;
 }
 // Standard recipes appear only when searching, or under My favorites.
-const pool = () => (S.query.trim() || S.f.owner === "fav" || S.f.owner.startsWith("col:")) ? allDrinks() : S.drinks.slice();
+// Everyone's drinks plus the shared classics (the Cart filter narrows it: Mine, Classics, a person, a list).
+const pool = () => allDrinks();
 function filtered() { return sortItems(pool().filter(d => passesFilters(d))); }
 function renderFilters() {
   if (typeof renderChipRow === "function") setTimeout(renderChipRow, 0);
@@ -38,6 +39,7 @@ function renderFilters() {
     const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
     $("flt-owner").innerHTML = `<option value="">Everyone's carts</option>` +
       (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My Bar (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+      (S.std.length ? `<option value="std" ${S.f.owner === "std" ? "selected" : ""}>Classics (${allDrinks().filter(d => passesFilters(d, "owner") && d.standard).length})</option>` : "") +
       (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
       (uid() && !S.followsOff && followingIds().length ? `<option value="following" ${S.f.owner === "following" ? "selected" : ""}>People I follow (${S.drinks.filter(d => passesFilters(d, "owner") && followingIds().includes(d.owner)).length})</option>` : "") +
       (uid() ? myLists().map(c => `<option value="col:${esc(c.id)}" ${S.f.owner === "col:" + c.id ? "selected" : ""}>List: ${esc(c.name)} (${allDrinks().filter(d => passesFilters(d, "owner") && S.colItems[c.id] && S.colItems[c.id].has(d.id)).length})</option>`).join("") : "") +
@@ -66,7 +68,7 @@ function refreshView() {
 
 function rowHtml(d, ver) {
   const multi = S.backend === "supabase";
-  const who = d.standard ? `<span class="std-tag">Standard recipe</span>` : esc(multi ? (isMine(d) && uid() ? "Your cart" : lockerName(d.owner)) : baseOf(d));
+  const who = d.standard ? `<span class="std-tag">Classic</span>` : esc(multi ? (isMine(d) && uid() ? "Your cart" : lockerName(d.owner)) : baseOf(d));
   return `<li${ver ? ' class="ver"' : ""}><button type="button" data-id="${esc(d.id)}" aria-current="${d.id === S.selected && S.view === "detail"}">
     ${drinkThumb(d)}
     <span class="txt"><span class="nm">${esc(d.name)}${isFav(d) ? ' <span class="fav-dot" aria-label="Favorite">♥</span>' : ""}</span><span class="sub">${ratingOf(d).count ? `<span class="stars">★</span> ${avgOf(d).toFixed(1)} · ` : ""}${riffLabel(d) && !ver ? "Riff on a " + esc(riffLabel(d)) + " · " : ""}${ver ? who : esc(typeOf(d)) + " · " + who}</span></span></button></li>`;
@@ -81,7 +83,7 @@ function lookupRow() {
 function renderList() {
   if (typeof syncChrome === "function") syncChrome();
   const items = filtered();
-  const total = S.drinks.length, shown = items.length;
+  const total = allDrinks().length, shown = items.length;
   $("count-label").textContent = !S.loaded ? "" : S.query.trim() ? `${shown} found` : shown === total ? String(total) : `${shown} of ${total}`;
   const ul = $("list");
   if (!S.loaded) { ul.innerHTML = '<li class="empty-list">Pulling the recipes…</li>'; return; }
@@ -121,7 +123,7 @@ $("new-btn").addEventListener("click", () => openEditor(null));
 
 // ---------- quick filter chips (All drinks) ----------
 const CHIP_DEFS = [
-  ["Mine", "owner", "mine", "acct"], ["Favorites", "owner", "fav", "acct"], ["★ 4+", "rating", "4", "acct"],
+  ["Mine", "owner", "mine", "acct"], ["Favorites", "owner", "fav", "acct"], ["Classics", "owner", "std"], ["★ 4+", "rating", "4", "acct"],
   ["Sours", "type", "Sour"], ["Spirit-forward", "type", "Spirit-forward"], ["Tiki", "type", "Tiki"], ["Highballs", "type", "Highball"],
   ["Gin", "base", "Gin"], ["Rum", "base", "Rum"], ["Tequila", "base", "Tequila"], ["Mezcal", "base", "Mezcal"], ["Whiskey", "base", "Whiskey"], ["Vodka", "base", "Vodka"], ["Mocktails", "base", "No alcohol"]
 ];
@@ -129,7 +131,7 @@ function renderChipRow() {
   const el = $("fchips"); if (!el) return;
   const signedIn = !!uid() && S.backend === "supabase";
   const pool = allDrinks();
-  const count = (k, v) => pool.filter(d => k === "owner" ? (v === "mine" ? isMine(d) : isFav(d)) : k === "rating" ? avgOf(d) >= Number(v) : (k === "type" ? typeOf(d) : baseOf(d)) === v).length;
+  const count = (k, v) => pool.filter(d => k === "owner" ? (v === "std" ? !!d.standard : v === "mine" ? isMine(d) : isFav(d)) : k === "rating" ? avgOf(d) >= Number(v) : (k === "type" ? typeOf(d) : baseOf(d)) === v).length;
   const chips = CHIP_DEFS.filter(([, k, v, acct]) => (!acct || signedIn) && (S.f[k] === v || count(k, v) > 0));
   el.innerHTML = chips.map(([t, k, v]) => `<button type="button" class="fchip" data-fk="${k}" data-fv="${esc(v)}" aria-pressed="${S.f[k] === v}">${esc(t)}</button>`).join("");
   const n = Object.values(S.f).filter(Boolean).length;

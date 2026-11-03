@@ -7,7 +7,7 @@ export default async function () {
   check("negroni versions grouped", /negroni \| 2 versions/i.test(list), list);
   check("rating shown in list", list.includes("★ 4.5"), list);
   await p.fill("#search", "daiquiri"); await p.waitForTimeout(100);
-  check("standard recipe found by search", (await p.text("#list")).includes("Standard recipe"));
+  check("standard recipe found by search", (await p.text("#list")).includes("Classic"));
   await p.fill("#search", "zombie punch"); await p.waitForTimeout(100);
   check("lookup offered when nothing matches", await p.isVisible("#lookup-btn"));
   await p.fill("#search", "");

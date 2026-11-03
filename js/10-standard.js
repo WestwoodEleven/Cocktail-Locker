@@ -15,6 +15,17 @@ async function loadStd() {
   S.stdOff = false;
   S.std = (data || []).map(stdToDrink);
 }
+// Admins can correct a classic. Keeps its slug, aliases and About text.
+async function saveStdDrink(e, d) {
+  if (!sb || !S.isAdmin) { toast("Only site admins can change classics."); return null; }
+  const data = { name: d.name, glass: d.glass, method: d.method, garnish: d.garnish, notes: d.notes, ingredients: d.ingredients, about: e.about || "" };
+  ["type", "base", "classic"].forEach(k => { if (d[k]) data[k] = d[k]; });
+  const { error } = await sb.from("standard_recipes").update({ name: d.name, data }).eq("slug", e.slug);
+  if (error) { toast("Couldn't save the classic. Run classics.sql in Supabase, then try again."); return null; }
+  const nd = stdToDrink({ slug: e.slug, name: d.name, data, aliases: e.aliases || [] });
+  S.std = S.std.filter(x => x.id !== nd.id).concat(nd);
+  return nd;
+}
 const stdFor = q => { const k = slugify(q); return k ? S.std.find(d => d.slug === k || d.aliases.includes(k)) : null; };
 async function lookupStandard(q) {
   q = String(q || "").trim().slice(0, 80);

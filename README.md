@@ -65,6 +65,8 @@ One place for the AI (`#ask`; the Bartender tab on phones, the top bar on comput
 
 Each drink can be tied to the classic it is or riffs on (`js/12-classics.js`). The site recognizes about 40 classics from their signature ingredients (tequila + lime + orange liqueur is a Margarita, so "Mitch-A-Rita" is recognized), and owners can set it or choose "Not a riff on anything" in the editor's **Riff on a classic** field (saved as `classic` in the drink's data; AI-made drinks keep the classic the AI names). Search matches the classic as if it were part of the name, the list shows "Riff on a Margarita", and the recipe shows "A riff on the Margarita" (tap it to see the others).
 
+The classics themselves live in the shared standard library: run `supabase/classics.sql` once in the Supabase SQL Editor to load 42 classic specs (it never overwrites ones already there). They appear in the main drink list tagged **Classic**, with a **Classics** chip to show only them; a house drink with the same name sorts first. A classic's page lists the house riffs on it. Site admins can correct a classic from ⋯ More > **Edit this classic**. To change the starting specs, edit `tools/classics-data.mjs` and run `node tools/make-classics-sql.mjs`.
+
 ### Tools, lists and sharing
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.

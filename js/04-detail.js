@@ -56,7 +56,7 @@ function renderMain() {
     d.garnish && `<span class="chip">Garnish: ${esc(d.garnish)}</span>`, d.starter && `<span class="chip amber">Starter recipe</span>`, d.origin && `<span class="chip amber">${esc(d.origin)}</span>`, d.standard && `<span class="chip amber">Classic</span>`].filter(Boolean).join("");
   const mine = isMine(d);
   const canPhoto = S.backend === "supabase" && mine;
-  const fromLine = d.standard ? `<div class="from"><b>Standard recipe</b> from the shared library</div>` : S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your cart</b>" : `<button type="button" data-locker="${esc(d.owner || "")}">${esc(lockerName(d.owner))}</button>`}</div>` : "";
+  const fromLine = d.standard ? `<div class="from"><b>Classic</b> from the shared library</div>` : S.backend === "supabase" ? `<div class="from">From ${mine && uid() ? "<b>your cart</b>" : `<button type="button" data-locker="${esc(d.owner || "")}">${esc(lockerName(d.owner))}</button>`}</div>` : "";
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
@@ -110,11 +110,12 @@ function renderMain() {
     ${d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p></div>` : ""}
     ${rateBlock(d)}
     ${notesBlock(d)}
+    ${d.standard ? riffsHtml(d) : ""}
     ${!d.standard && !mine ? `<p class="report-line">${reportBtn("drink", d.id, d.owner, d.name, "Report this drink")}</p>` : ""}
     <div class="actions recipe-bar">
       <button class="btn small primary" type="button" id="ask-recipe-btn" aria-haspopup="dialog" aria-label="Ask about this drink">Ask</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small fav-btn${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}" aria-label="${isFav(d) ? "Favorited" : "Favorite"}">${isFav(d) ? "♥" : "♡"}</button>` : ""}<button class="btn small" type="button" id="more-btn" aria-haspopup="dialog">⋯ More</button>
     </div>
-    <div id="more-actions" hidden>${S.backend === "supabase" && uid() ? `<button type="button" id="list-add">Add to list</button>` : ""}<button type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "Add to party plan"}</button>${S.canWrite && !mine ? `<button type="button" id="copy-btn">${d.standard ? "Save to My Bar" : "Copy to My Bar"}</button>` : ""}${mine ? `<button type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button type="button" id="del-btn" data-danger>Delete</button>` : ""}</div>
+    <div id="more-actions" hidden>${S.backend === "supabase" && uid() ? `<button type="button" id="list-add">Add to list</button>` : ""}<button type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "Add to party plan"}</button>${S.canWrite && !mine ? `<button type="button" id="copy-btn">${d.standard ? "Save to My Bar" : "Copy to My Bar"}</button>` : ""}${mine ? `<button type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button type="button" id="del-btn" data-danger>Delete</button>` : ""}${d.standard && S.isAdmin ? `<button type="button" id="std-edit-btn">Edit this classic</button>` : ""}</div>
   `;
 
   const setServ = n => { n = Math.max(0.5, Math.min(999, Math.round(n * 10) / 10)); S.servings = n; S._fillL = null; renderMain(); };
@@ -156,6 +157,7 @@ function renderMain() {
   };
   $("share-btn").onclick = () => openShare(d);
   $("ask-recipe-btn").onclick = () => openRecipeAsk(d);
+  m.querySelectorAll(".riffs [data-open]").forEach(b => b.onclick = () => { selectDrink(b.dataset.open); window.scrollTo({ top: 0 }); });
   m.querySelectorAll("[data-riff]").forEach(b => b.onclick = () => { S.query = b.dataset.riff; $("search").value = b.dataset.riff; showList(null, true); window.scrollTo({ top: 0 }); });
   $("more-btn").onclick = () => {
     const btns = [...$("more-actions").querySelectorAll("button")].filter(b => !b.disabled);
@@ -180,6 +182,7 @@ function renderMain() {
     c.notes = (c.notes ? c.notes + "\n\n" : "") + (d.standard ? "Based on the standard recipe." : "Copied from " + lockerName(d.owner) + ".");
     openEditor(c, true);
   };
+  if ($("std-edit-btn")) $("std-edit-btn").onclick = () => openEditor(d);
   if (mine) {
     $("edit-btn").onclick = () => openEditor(d);
     $("del-btn").onclick = () => { S.confirmDelete = true; renderMain(); };

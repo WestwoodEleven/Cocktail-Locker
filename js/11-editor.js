@@ -107,6 +107,14 @@ function renderEditor(errMsg) {
     if (e.photo) d.photo = e.photo;
     if (e.owner) d.owner = e.owner;
     if (e.origin) d.origin = e.origin;
+    if (e.standard && e.slug) {
+      // An admin correcting a classic in the shared library.
+      $("save-btn").disabled = true;
+      const sd = await saveStdDrink(e, d);
+      if (!sd) { $("save-btn").disabled = false; return; }
+      S.selected = sd.id; S.view = "detail"; S.scanNote = null;
+      renderList(); renderMain(); toast("Saved " + sd.name); return;
+    }
     $("save-btn").disabled = true;
     const ok = await saveDrink(d);
     if (!ok) { $("save-btn").disabled = false; return; }
