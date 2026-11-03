@@ -37,7 +37,7 @@ function renderFilters() {
     const counts = {}; S.drinks.filter(d => passesFilters(d, "owner")).forEach(d => counts[d.owner || ""] = (counts[d.owner || ""] || 0) + 1);
     const named = ids.filter(id => id !== uid()).sort((a, b) => lockerName(a).localeCompare(lockerName(b)));
     $("flt-owner").innerHTML = `<option value="">Everyone's carts</option>` +
-      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My cart (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
+      (uid() ? `<option value="mine" ${S.f.owner === "mine" ? "selected" : ""}>My Cocktails (${S.drinks.filter(d => passesFilters(d, "owner") && isMine(d)).length})</option>` : "") +
       (uid() && !S.favsOff ? `<option value="fav" ${S.f.owner === "fav" ? "selected" : ""}>My favorites (${allDrinks().filter(d => passesFilters(d, "owner") && isFav(d)).length})</option>` : "") +
       (uid() && !S.followsOff && followingIds().length ? `<option value="following" ${S.f.owner === "following" ? "selected" : ""}>People I follow (${S.drinks.filter(d => passesFilters(d, "owner") && followingIds().includes(d.owner)).length})</option>` : "") +
       (uid() ? myLists().map(c => `<option value="col:${esc(c.id)}" ${S.f.owner === "col:" + c.id ? "selected" : ""}>List: ${esc(c.name)} (${allDrinks().filter(d => passesFilters(d, "owner") && S.colItems[c.id] && S.colItems[c.id].has(d.id)).length})</option>`).join("") : "") +

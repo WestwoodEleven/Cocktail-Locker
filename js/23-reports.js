@@ -1,6 +1,6 @@
 // ---------- reports and moderation ----------
 // Anyone signed in can report a drink, rating note, bottle comment, bottle photo or cart. Reports go to
-// a table only site admins can read; admins review them on the Reports page (#reports, linked from My cart).
+// a table only site admins can read; admins review them on the Reports page (#reports, linked from My Cocktails).
 // Targets: drink = drink id; note = "<drink id>|<user id>"; comment = "<bottle slug>|<user id>";
 // bottle_photo = photo id; cart = user id.
 const REPORT_REASONS = [
@@ -126,7 +126,7 @@ VIEWS.reports = function renderReports() {
     <div class="make">
       <div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Reports</h2>
         <div class="hint">${S.reportsOff ? "Reports aren't switched on yet. Run reports-setup.sql in Supabase." : groups.length ? `${groups.length} to review` : "Nothing to review."}</div></div>
-        <button class="btn small" type="button" id="rp-back">Back to My cart</button></div>
+        <button class="btn small" type="button" id="rp-back">Back to My Cocktails</button></div>
       ${groups.map((g, i) => {
         const s = reportSubject(g);
         const acts = [];
@@ -192,7 +192,7 @@ async function moderate(act, g, btn) {
   toast(done); renderList(); renderMain();
 }
 
-// Admin section for My cart
+// Admin section for My Cocktails
 function adminHtml() {
   if (!S.isAdmin) return "";
   const n = reportGroups().length;

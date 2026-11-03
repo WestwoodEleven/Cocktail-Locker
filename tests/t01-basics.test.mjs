@@ -2,7 +2,7 @@ import { open, check } from "./harness.mjs";
 export default async function () {
   const p = await open();
   check("loads with no errors", p.errors.length === 0, p.errors.join("; "));
-  check("signed in shows My cart", (await p.text("#locker-btn")) === "My cart");
+  check("signed in shows My cart", (await p.text("#locker-btn")) === "My Cocktails");
   const list = await p.text("#list");
   check("negroni versions grouped", /negroni \| 2 versions/i.test(list), list);
   check("rating shown in list", list.includes("★ 4.5"), list);

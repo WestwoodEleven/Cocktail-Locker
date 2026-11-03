@@ -32,9 +32,9 @@ To switch these on:
 
 Optional secrets: `RECIPE_DAILY_LIMIT` (default 25), `RECIPE_MODEL` (default `claude-sonnet-5-5`) and `UNLIMITED_EMAILS` (comma-separated emails with no daily limit). Site admins (see Bottle guide below) also have no daily limit.
 
-### My cart and favorites
+### My Cocktails and favorites
 
-Signed-in people get a **My cart** page (called a locker in the code and database) (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
+Signed-in people get a **My Cocktails** page (called a locker in the code and database) (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
 
 ### Search and standard recipes
 
@@ -47,15 +47,15 @@ The "Back bar" design: condensed all-caps display type (Big Shoulders Display), 
 ### Phone navigation
 
 - **Back button**: every page change is a browser history step (`setHash` pushes, `routeHash` handles Back/forward), and All drinks keeps its scroll position, search and filters.
-- **Header**: one slim row on phones (logo, search button, account button). The account button opens a menu with My cart, What can I make?, Bottle guide, Plan a party, Install, Sign in/out. The header tucks away while scrolling down and returns on scroll up.
-- **Tabs**: Home, Drinks (All drinks with search open), Bartender, My cart. Tapping the open tab scrolls to the top.
+- **Header**: one slim row on phones (logo, search button, account button). The account button opens a menu with My Cocktails, What can I make?, Bottle guide, Plan a party, Install, Sign in/out. The header tucks away while scrolling down and returns on scroll up.
+- **Tabs**: Home, Drinks (All drinks with search open), Bartender, My Cocktails. Tapping the open tab scrolls to the top.
 - **Recipe actions**: Make it, Mocktail, Share, ♥ and ⋯ More (Add to list, party plan, copy, Edit, Add photo, Delete), pinned above the tabs on phones.
 - **All drinks**: quick filter chips above the results; the full filters open from the Filters button on phones.
 - **Pop-ups** slide up from the bottom on phones. Recipes, ratings and photos people have loaded are kept by the service worker so they open offline (public data only).
 
 ### Home page
 
-Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My cart, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.
+Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My Cocktails, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.
 
 ### Ask the bartender
 
@@ -89,11 +89,11 @@ On a device's first visit, a welcome screen asks whether the visitor is 21 or ol
 
 ### Reports and terms
 
-Next to other people's drinks, rating notes, bottle comments, bottle photos and carts there's a small **Report** link (reason plus optional details). Only site admins can read reports: admins get **Review reports** on My cart (or `#reports`), grouped by what was reported, with buttons to remove a drink's photo, delete the drink, remove a note or comment, delete a bottle photo, reset a cart name, or dismiss. Run [`supabase/reports-setup.sql`](supabase/reports-setup.sql) once (it's also in `setup.sql`). The rules people agree to are in [`terms.html`](terms.html), linked from the footer, the age check and sign-in.
+Next to other people's drinks, rating notes, bottle comments, bottle photos and carts there's a small **Report** link (reason plus optional details). Only site admins can read reports: admins get **Review reports** on My Cocktails (or `#reports`), grouped by what was reported, with buttons to remove a drink's photo, delete the drink, remove a note or comment, delete a bottle photo, reset a cart name, or dismiss. Run [`supabase/reports-setup.sql`](supabase/reports-setup.sql) once (it's also in `setup.sql`). The rules people agree to are in [`terms.html`](terms.html), linked from the footer, the age check and sign-in.
 
 ### Deleting an account
 
-People can delete their own account from the bottom of **My cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
+People can delete their own account from the bottom of **My Cocktails** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
 
 ### Claiming the first recipes
 

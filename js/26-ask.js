@@ -39,7 +39,7 @@ function askCardHtml(x, mi, di) {
       ${x.notes ? `<p class="ask-notes">${esc(x.notes)}</p>` : ""}
       ${(x.need || []).length ? `<p class="ask-need"><b>You'll need:</b> ${esc(x.need.join(", "))}</p>` : ""}
       <div class="panel-actions" style="justify-content:flex-start">
-        <button class="btn small primary" type="button" data-ask-save="${id}">Save to my cart</button>
+        <button class="btn small primary" type="button" data-ask-save="${id}">Save to My Cocktails</button>
         <button class="btn small" type="button" data-ask-make="${id}">Make it</button>
         <button class="btn small" type="button" data-ask-other="${id}">Try another</button>
       </div>

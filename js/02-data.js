@@ -36,9 +36,9 @@ function refreshAuthUI() {
   $("tools-hint").hidden = S.canWrite;
   const me = myProfile();
   $("locker-btn").hidden = !S.session;
-  $("locker-btn").textContent = me && me.display_name ? "My cart" : "Name your cart";
-  $("locker-btn").title = "Open my cart";
-  $("locker-btn").setAttribute("aria-label", "My cart: " + $("locker-btn").textContent);
+  $("locker-btn").textContent = me && me.display_name ? "My Cocktails" : "Name your cart";
+  $("locker-btn").title = "Open My Cocktails";
+  $("locker-btn").setAttribute("aria-label", "My Cocktails: " + $("locker-btn").textContent);
   if (S.session) $("signin").hidden = true;
   setStatus(S.session ? "ok" : "", S.session ? "Signed in" : "Browsing");
 }

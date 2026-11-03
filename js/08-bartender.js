@@ -141,7 +141,7 @@ const chipGroupHtml = g => `<div class="cgroup">
         ${g.saved ? `<input id="br-${g.key}" type="text" class="brand-in" placeholder="Brand (optional)" autocomplete="off" enterkeyhint="done" aria-label="Brand">` : ""}
         <button class="btn small" type="button" data-add="${g.key}">Add</button></div>
       <datalist id="dl-${g.key}"></datalist></div>`;
-// My bottles on My cart: the groups show only their bottles; adding happens through one Add button.
+// My bottles on My Cocktails: the groups show only their bottles; adding happens through one Add button.
 const barGroupHtml = g => `<div class="cgroup"><span class="label">${esc(g.label)}</span><div class="chips" id="chips-${g.key}"></div></div>`;
 function wireBarChips(groups) {
   groups.forEach(g => {
@@ -263,7 +263,7 @@ function ideasHtml() {
       ${x.notes ? `<p class="idea-line">${esc(x.notes)}</p>` : ""}
       ${x.why ? `<p class="idea-line hint">${esc(x.why)}</p>` : ""}
       ${x.extras ? `<p class="idea-line hint"><b>Even better with:</b> ${esc(x.extras)}</p>` : ""}
-      <div><button class="btn primary small" type="button" data-save-idea="${k}">Save to my cart</button></div>
+      <div><button class="btn primary small" type="button" data-save-idea="${k}">Save to My Cocktails</button></div>
     </article>`).join("")}</div>
     <div class="form-actions"><button class="btn" type="button" id="ideas-again">Suggest 3 more</button></div>`;
 }

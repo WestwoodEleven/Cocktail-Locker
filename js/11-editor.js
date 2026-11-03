@@ -63,7 +63,7 @@ function renderEditor(errMsg) {
       </div>
       <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Notes">${esc(e.notes)}</textarea></div>
       ${errMsg ? `<div class="err" role="alert">${esc(errMsg)}</div>` : ""}
-      <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to my cart"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
+      <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to My Cocktails"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
     </form>`;
   const refreshAuto = () => {
     readForm();

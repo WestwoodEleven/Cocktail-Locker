@@ -101,7 +101,7 @@ function listsHtml(lists, editable) {
   return lists.map(c => { const ds = listDrinks(c); return `<details class="listbox">
     <summary><b>${esc(c.name)}</b> <span class="hint">${ds.length} drink${ds.length === 1 ? "" : "s"}${editable ? (c.is_public ? " · shown on your cart page" : " · private") : ""}</span></summary>
     ${ds.length ? `<ul class="plist">${ds.map(d => drinkRow(d, true)).join("")}</ul>` : `<p class="hint" style="margin:0">Empty. Use "Add to list" on any drink.</p>`}
-    ${editable ? `<div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-colpub="${esc(c.id)}">${c.is_public ? "Make private" : "Show on my cart page"}</button><button class="btn small" type="button" data-colfilter="${esc(c.id)}">Show in drink list</button><button class="btn small danger ghost" type="button" data-coldel="${esc(c.id)}">Delete list</button></div>` : ""}
+    ${editable ? `<div class="panel-actions" style="justify-content:flex-start"><button class="btn small" type="button" data-colpub="${esc(c.id)}">${c.is_public ? "Make private" : "Show on my public page"}</button><button class="btn small" type="button" data-colfilter="${esc(c.id)}">Show in drink list</button><button class="btn small danger ghost" type="button" data-coldel="${esc(c.id)}">Delete list</button></div>` : ""}
   </details>`; }).join("");
 }
 function wireLists(m) {
@@ -184,7 +184,7 @@ VIEWS.locker = function renderLocker() {
   $("lk-link").onclick = () => copyText(lockerLink(id), "Cart link copied");
 };
 
-// Extra sections for My cart
+// Extra sections for My Cocktails
 function profileSocialHtml() {
   const lists = myLists();
   const following = followingIds();
@@ -195,7 +195,7 @@ function profileSocialHtml() {
         : lists.length ? listsHtml(lists, true) : `<p class="hint" style="margin:0">No lists yet. Open any drink and tap Add to list to start one, like "Thanksgiving" or "Summer patio".</p>`}
     </section>
     ${S.followsOff ? "" : `<section class="make-sec" id="prof-following">
-      <div class="sec-head"><h3>Following</h3><span class="hint">${followersOf(uid())} follower${followersOf(uid()) === 1 ? "" : "s"} · <button type="button" class="linkish" id="prof-link">Copy my cart link</button></span></div>
+      <div class="sec-head"><h3>Following</h3><span class="hint">${followersOf(uid())} follower${followersOf(uid()) === 1 ? "" : "s"} · <button type="button" class="linkish" id="prof-link">Copy my public page link</button></span></div>
       ${following.length ? `<div class="chips">${following.map(f => `<button type="button" class="chip-item lockerchip" data-locker="${esc(f)}">${esc(lockerName(f))}</button>`).join("")}</div>`
         : `<p class="hint" style="margin:0">You're not following anyone yet. Tap a cart name on any drink to visit it and follow.</p>`}
     </section>`}`;
