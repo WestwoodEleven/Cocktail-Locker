@@ -1011,3 +1011,6 @@ body.on-merged .grid > main { order: -1; }
 #list .sec-back { padding-bottom: 8px; }
 #list .sec-empty { list-style: none; padding: 6px 0 10px; }
 #list .sec-all .btn { border: 2px solid var(--ink); border-radius: 4px; padding: 10px 14px; font-weight: 700; background: var(--surface); }
+
+.signin-code { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.signin-code input { flex: 0 1 160px; font-size: 20px; letter-spacing: .2em; font-variant-numeric: tabular-nums; }

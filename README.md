@@ -17,6 +17,17 @@ Live site: https://www.mycocktailcart.com (the old https://westwoodeleven.github
 3. Under **Authentication > URL Configuration**, set **Site URL** to `https://www.mycocktailcart.com` and add `https://www.mycocktailcart.com/**` and `https://mycocktailcart.com/**` to **Redirect URLs**.
 4. Put the Project URL and publishable key in [`config.js`](config.js) (already done for this site).
 
+### Signing in
+
+Sign-in is by email, with no password. The email has a 6-digit code to type into the site, plus a link. The code matters for the app added to an iPhone home screen: it keeps its own sign-in, separate from Safari, and email links always open in Safari. For the code to appear, the **Magic Link** email template in Supabase (Authentication > Emails > Templates) must include `{{ .Token }}`, for example:
+
+```html
+<h2>Your My Cocktail Cart sign-in code</h2>
+<p style="font-size:28px;letter-spacing:4px"><b>{{ .Token }}</b></p>
+<p>Type this code on the site. It works once and expires soon.</p>
+<p>Or <a href="{{ .ConfirmationURL }}">tap here to sign in</a> in this browser.</p>
+```
+
 ### AI features: recipe scanning and the AI bartender
 
 Signed-in people can tap **Scan a recipe** (or **Fill from a photo** in a new drink) to read a recipe from a photo, and **Make me a drink** to get 3 cocktail ideas from the ingredients they have. Their liquors, syrups and bitters are saved as their bar for next time. Both use Claude through the `read-recipe` function, cost roughly a cent or two per use, and share one allowance of 25 per person per day.

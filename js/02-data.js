@@ -117,7 +117,7 @@ async function removeDrink(id) {
 
 $("auth-btn").onclick = async () => {
   if (S.session) { await sb.auth.signOut(); toast("Signed out"); return; }
-  $("signin").hidden = false; $("signin-msg").textContent = "New here? The link creates your cart."; $("signin-email").focus();
+  $("signin").hidden = false; $("signin-code-row").hidden = true; $("signin-msg").textContent = "New here? Signing in creates your cart."; $("signin-email").focus();
 };
 $("signin-cancel").onclick = () => { $("signin").hidden = true; };
 $("signin").onsubmit = async ev => {
@@ -126,11 +126,25 @@ $("signin").onsubmit = async ev => {
   if (!$("signin-age").checked) { $("signin-msg").textContent = "Please confirm you're 21 or older."; return; }
   $("signin-msg").textContent = "Sending…";
   const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname, data: { confirmed_21_at: new Date().toISOString() } } });
-  $("signin-msg").textContent = !error ? "Check your email and tap the link to sign in."
+  if (!error) { $("signin-code-row").hidden = false; $("signin-send").textContent = "Send a new code"; $("signin-code").value = ""; $("signin-code").focus(); }
+  $("signin-msg").textContent = !error ? "Check your email and type the code here (or tap the link in the email)."
     : /rate|seconds|too many/i.test(error.message || "") ? "Too many sign-in emails just now. Wait a few minutes and try again."
     : /signup|not allowed/i.test(error.message || "") ? "New sign-ups are turned off for this site."
-    : "Couldn't send the link. Check the address and try again.";
+    : "Couldn't send the email. Check the address and try again.";
 };
+// Signing in with the code keeps you in the app you're using (the iPhone home screen app opens links in Safari instead).
+async function signInWithCode() {
+  const email = $("signin-email").value.trim(), token = $("signin-code").value.replace(/\D/g, "");
+  if (!email) { $("signin-msg").textContent = "Enter your email first."; return; }
+  if (token.length < 6) { $("signin-msg").textContent = "Type the code from the email."; return; }
+  $("signin-code-btn").disabled = true; $("signin-msg").textContent = "Checking…";
+  const { error } = await sb.auth.verifyOtp({ email, token, type: "email" });
+  $("signin-code-btn").disabled = false;
+  if (error) { $("signin-msg").textContent = "That code didn't work or has expired. Check it, or send a new one."; return; }
+  $("signin").hidden = true; $("signin-code-row").hidden = true; toast("Signed in");
+}
+$("signin-code-btn").onclick = signInWithCode;
+$("signin-code").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); signInWithCode(); } });
 
 function openNameForm(first) {
   const me = myProfile();

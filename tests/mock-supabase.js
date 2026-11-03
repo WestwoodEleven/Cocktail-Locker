@@ -55,7 +55,8 @@
     auth: {
       getSession: () => Promise.resolve({ data: { session: M.user ? { user: { id: M.user, email: M.user + "@example.com" } } : null } }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
-      signOut: () => Promise.resolve({}), signInWithOtp: () => Promise.resolve({ error: null })
+      signOut: () => Promise.resolve({}), signInWithOtp: () => Promise.resolve({ error: null }),
+      verifyOtp: async o => { M.lastVerify = o; return o.token === "123456" ? { data: {}, error: null } : { data: null, error: { message: "Token has expired or is invalid" } }; }
     },
     channel: () => { const c = { on: () => c, subscribe: () => c }; return c; },
     storage: { from: () => ({ getPublicUrl: p => ({ data: { publicUrl: "photo/" + p } }), upload: async () => ({ error: null }), remove: async () => ({}) }) },
