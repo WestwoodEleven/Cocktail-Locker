@@ -35,10 +35,10 @@ export default async function () {
   check("plan is remembered after reloading", !kept || (await q.text("#main")).includes("Moscow Mule"), (await q.evaluate("S.view + ' ' + location.hash")) + " :: " + (await q.text("#main")).slice(0, 200));
   await q.click("#party-close");
   await q.pick('pk');
-  await q.click("#party-add"); await q.waitForTimeout(100);
+  await q.act('party-add'); await q.waitForTimeout(100);
   check("+ Party from a drink page", (await q.text("#party-add")).includes("In your party"));
   await q.setViewportSize({ width: 390, height: 844 });
-  await q.click("#party-add"); await q.waitForTimeout(150);
+  await q.act('party-add'); await q.waitForTimeout(150);
   check("no sideways scroll on phone", (await q.evaluate("document.documentElement.scrollWidth")) <= 390);
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await q.close();

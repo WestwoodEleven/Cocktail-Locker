@@ -22,6 +22,7 @@ function passesFilters(d, skip) {
 const pool = () => (S.query.trim() || S.f.owner === "fav" || S.f.owner.startsWith("col:")) ? allDrinks() : S.drinks.slice();
 function filtered() { return sortItems(pool().filter(d => passesFilters(d))); }
 function renderFilters() {
+  if (typeof renderChipRow === "function") setTimeout(renderChipRow, 0);
   const multi = S.backend === "supabase";
   $("flt-owner-wrap").hidden = !multi;
   const opts = (key, all, label, valueOf) => {
@@ -117,3 +118,32 @@ $("search").addEventListener("input", e => { S.query = e.target.value; refreshVi
 $("search").addEventListener("keydown", e => { if (e.key === "Enter" && !filtered().length && S.query.trim().length >= 2 && uid()) lookupStandard(S.query); });
 try { $("sort").value = S.sort; } catch (e) {}
 $("new-btn").addEventListener("click", () => openEditor(null));
+
+// ---------- quick filter chips (All drinks) ----------
+const CHIP_DEFS = [
+  ["Mine", "owner", "mine", "acct"], ["Favorites", "owner", "fav", "acct"], ["★ 4+", "rating", "4", "acct"],
+  ["Sours", "type", "Sour"], ["Spirit-forward", "type", "Spirit-forward"], ["Tiki", "type", "Tiki"], ["Highballs", "type", "Highball"],
+  ["Gin", "base", "Gin"], ["Rum", "base", "Rum"], ["Tequila", "base", "Tequila"], ["Mezcal", "base", "Mezcal"], ["Whiskey", "base", "Whiskey"], ["Vodka", "base", "Vodka"], ["Mocktails", "base", "No alcohol"]
+];
+function renderChipRow() {
+  const el = $("fchips"); if (!el) return;
+  const signedIn = !!uid() && S.backend === "supabase";
+  const pool = allDrinks();
+  const count = (k, v) => pool.filter(d => k === "owner" ? (v === "mine" ? isMine(d) : isFav(d)) : k === "rating" ? avgOf(d) >= Number(v) : (k === "type" ? typeOf(d) : baseOf(d)) === v).length;
+  const chips = CHIP_DEFS.filter(([, k, v, acct]) => (!acct || signedIn) && (S.f[k] === v || count(k, v) > 0));
+  el.innerHTML = chips.map(([t, k, v]) => `<button type="button" class="fchip" data-fk="${k}" data-fv="${esc(v)}" aria-pressed="${S.f[k] === v}">${esc(t)}</button>`).join("");
+  const n = Object.values(S.f).filter(Boolean).length;
+  $("filters-toggle").textContent = n ? `Filters (${n})` : "Filters";
+}
+$("fchips").addEventListener("click", e => {
+  const b = e.target.closest("[data-fk]"); if (!b) return;
+  const k = b.dataset.fk, v = b.dataset.fv;
+  S.f[k] = S.f[k] === v ? "" : v;
+  refreshView();
+});
+$("filters-toggle").addEventListener("click", () => {
+  const open = !document.body.classList.contains("filters-open");
+  document.body.classList.toggle("filters-open", open);
+  $("filters-toggle").setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) { const f = $("find-title"); if (f) f.scrollIntoView({ behavior: "smooth", block: "start" }); }
+});

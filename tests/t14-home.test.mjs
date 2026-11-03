@@ -14,7 +14,15 @@ export default async function () {
   check("drink of the day opens the recipe", await p.isVisible("#makeit-btn") && (await p.evaluate("location.hash")).length > 1);
   check("recipe page has no list, filters or tools beside it", !(await p.isVisible("#list")) && !(await p.isVisible("#find-title")) && !(await p.isVisible("#tools-title")));
   await p.click("#to-list"); await p.waitForTimeout(100);
-  check("All drinks link opens the list page", await p.isVisible("#list") && await p.isVisible("#find-title") && !(await p.isVisible("#main")) && (await p.evaluate("location.hash")) === "#drinks");
+  check("All drinks link opens the list page", await p.isVisible("#list") && !(await p.isVisible("#main")) && (await p.evaluate("location.hash")) === "#drinks");
+  check("phone: quick chips shown, full filters tucked away", await p.isVisible(".fchip") && !(await p.isVisible("#find-title")) && await p.isVisible("#filters-toggle"));
+  await p.click(".fchip[data-fv=Rum]"); await p.waitForTimeout(100);
+  const rum = await p.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
+  check("a chip filters the list", rum.length === 1 && rum[0] === "pk" && (await p.getAttribute(".fchip[data-fv=Rum]", "aria-pressed")) === "true" && /filters \(1\)/i.test(await p.text("#filters-toggle")), JSON.stringify(rum));
+  await p.click(".fchip[data-fv=Rum]"); await p.waitForTimeout(100);
+  await p.click("#filters-toggle"); await p.waitForTimeout(100);
+  check("Filters button opens the full filters", await p.isVisible("#flt-type"));
+  await p.click("#filters-toggle");
   await p.click("#home-link"); await p.waitForTimeout(100);
   await p.click("#home-link"); await p.waitForTimeout(150);
   check("logo goes back home", /house specs/i.test(await p.text("#main")) && (await p.evaluate("location.hash")) === "");
@@ -22,14 +30,16 @@ export default async function () {
   const ids1 = await p.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
   check("style shortcut filters the list", ids1.length === 1 && ids1[0] === "pk", JSON.stringify(ids1));
   await p.click(".tabbar [data-nav=home]"); await p.waitForTimeout(100);
+  await p.click("#search-toggle");
+  check("search button opens the search box", await p.isVisible("#search") && await p.evaluate("document.activeElement.id") === "search");
   await p.fill("#search", "campari"); await p.waitForTimeout(150);
   const ids = await p.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => b.dataset.id)");
   check("typing in the top search from home shows matches", ids.length > 0 && ids.every(id => id.startsWith("neg")) && await p.evaluate("document.activeElement.id") === "search", JSON.stringify(ids));
   await p.fill("#search", ""); await p.click(".tabbar [data-nav=home]"); await p.waitForTimeout(100);
   await p.click("[data-home=signin]"); await p.waitForTimeout(100);
   check("sign in button opens sign-in", await p.isVisible("#signin-email"));
-  await p.click(".tabbar [data-nav=bar]"); await p.waitForTimeout(100);
-  check("My bar tab asks signed-out visitors to sign in", await p.isVisible("#signin-email"));
+  await p.click(".tabbar [data-nav=cart]"); await p.waitForTimeout(100);
+  check("My cart tab asks signed-out visitors to sign in", await p.isVisible("#signin-email"));
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
 
@@ -43,12 +53,14 @@ export default async function () {
   await q.close();
 
   const m = await open({ width: 390, home: true });
-  check("phone tabs are Home, Bartender, My drinks, My bottles", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "Bartender", "My drinks", "My bottles"]));
-  await m.click(".tabbar [data-nav=mine]"); await m.waitForTimeout(400);
-  check("My drinks opens your drinks on My cart", /my drinks/i.test(await m.text("#prof-drinks")) && (await m.evaluate("Math.abs(document.getElementById('prof-drinks').getBoundingClientRect().top)")) < 60);
-  check("My drinks tab marked", (await m.getAttribute(".tabbar [data-nav=mine]", "aria-current")) === "page");
-  await m.click(".tabbar [data-nav=bar]"); await m.waitForTimeout(400);
-  check("My bottles tab marked instead", (await m.getAttribute(".tabbar [data-nav=bar]", "aria-current")) === "page" && !(await m.getAttribute(".tabbar [data-nav=mine]", "aria-current")));
+  check("phone tabs are Home, Drinks, Bartender, My cart", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "Drinks", "Bartender", "My cart"]));
+  await m.click(".tabbar [data-nav=browse]"); await m.waitForTimeout(150);
+  check("Drinks tab opens All drinks with search open", (await m.evaluate("S.view")) === "browse" && await m.isVisible("#search") && (await m.getAttribute(".tabbar [data-nav=browse]", "aria-current")) === "page");
+  await m.click(".tabbar [data-nav=cart]"); await m.waitForTimeout(200);
+  check("My cart tab opens My cart with drinks and bottles", /my drinks/i.test(await m.text("#prof-drinks")) && await m.isVisible("#prof-bar") && (await m.getAttribute(".tabbar [data-nav=cart]", "aria-current")) === "page");
+  await m.evaluate("window.scrollTo(0, 600)"); await m.waitForTimeout(100);
+  await m.click(".tabbar [data-nav=cart]"); await m.waitForTimeout(600);
+  check("tapping the open tab scrolls to the top", (await m.evaluate("window.scrollY")) < 20 && (await m.evaluate("S.view")) === "profile");
   await m.click(".tabbar [data-nav=home]"); await m.waitForTimeout(150);
   check("Home tab returns home and clears the filter", /welcome back/i.test(await m.text("#main")) && (await m.evaluate("S.f.owner")) === "");
   check("no errors", m.errors.length === 0, m.errors.join("; "));

@@ -58,6 +58,11 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   // Most tests start from the drink list; the home page has its own tests.
   if (!home) await page.evaluate("S.view === 'home' && showList(null, true)");
   page.errors = errors;
+  // Use a recipe action: the main ones are on the page, the rest are in the ⋯ More menu.
+  page.act = async id => {
+    if (await page.isVisible(`#${id}`)) return page.click(`#${id}`);
+    await page.click("#more-btn"); await page.click(`[data-proxy='${id}']`);
+  };
   // Open a drink from the All drinks list (recipe pages don't show the list, so go there first).
   page.pick = async id => {
     if (!(await page.isVisible("#list"))) await page.evaluate("showList(null, true)");

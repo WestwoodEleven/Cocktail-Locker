@@ -4,7 +4,7 @@
 S.mockCache = {};
 function mockBtn(d) {
   if (S.backend !== "supabase" || !uid() || baseOf(d) === "No alcohol") return "";
-  return `<button class="btn small" type="button" id="mock-btn">Make it a mocktail</button>`;
+  return `<button class="btn small" type="button" id="mock-btn" aria-label="Make it a mocktail">Mocktail</button>`;
 }
 function mockToDrink(d, x) {
   const drink = recipeToDrink({ name: x.name, method: x.method, glass: x.glass || d.glass, garnish: x.garnish || d.garnish, ingredients: x.ingredients, notes: x.notes, type: typeOf(d), base: "No alcohol" });

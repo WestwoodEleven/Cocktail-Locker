@@ -94,7 +94,6 @@ function renderMain() {
           </div>
         </div>
         ${ratingSummary(d)}</div>
-      <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small" type="button" id="list-add">Add to list</button>` : ""}<button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my cart" : "Copy to my cart"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
     </div>
     ${d.photo ? `<figure class="photo${busy ? " uploading" : ""}">
       <img src="${esc(photoUrl(d.photo))}" alt="${esc(d.name)}" id="photo-img">
@@ -112,6 +111,10 @@ function renderMain() {
     ${rateBlock(d)}
     ${notesBlock(d)}
     ${!d.standard && !mine ? `<p class="report-line">${reportBtn("drink", d.id, d.owner, d.name, "Report this drink")}</p>` : ""}
+    <div class="actions recipe-bar">
+      <button class="btn small primary" type="button" id="makeit-btn">Make it</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small fav-btn${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}" aria-label="${isFav(d) ? "Favorited" : "Favorite"}">${isFav(d) ? "♥" : "♡"}</button>` : ""}<button class="btn small" type="button" id="more-btn" aria-haspopup="dialog">⋯ More</button>
+    </div>
+    <div id="more-actions" hidden>${S.backend === "supabase" && uid() ? `<button type="button" id="list-add">Add to list</button>` : ""}<button type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "Add to party plan"}</button>${S.canWrite && !mine ? `<button type="button" id="copy-btn">${d.standard ? "Save to my cart" : "Copy to my cart"}</button>` : ""}${mine ? `<button type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button type="button" id="del-btn" data-danger>Delete</button>` : ""}</div>
   `;
 
   const setServ = n => { n = Math.max(0.5, Math.min(999, Math.round(n * 10) / 10)); S.servings = n; S._fillL = null; renderMain(); };
@@ -153,6 +156,14 @@ function renderMain() {
   };
   $("share-btn").onclick = () => openShare(d);
   $("makeit-btn").onclick = () => openMakeMode(d);
+  $("more-btn").onclick = () => {
+    const btns = [...$("more-actions").querySelectorAll("button")].filter(b => !b.disabled);
+    sheet(d.name, `<div class="add-menu more-menu">${btns.map(b => `<button type="button" data-proxy="${b.id}"${b.dataset.danger !== undefined ? ' class="danger"' : ""}><b>${esc(b.textContent)}</b></button>`).join("")}</div>`);
+    document.querySelectorAll("[data-proxy]").forEach(x => x.onclick = () => {
+      const id = x.dataset.proxy; closeSheet(); $(id).click();
+      if (id === "del-btn") setTimeout(() => { const c = document.querySelector(".confirm"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }, 50);
+    });
+  };
   $("to-list").onclick = () => showList(null);
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
@@ -234,8 +245,28 @@ const fmtNumPlain = n => Number.isInteger(n) ? String(n) : String(n);
 // ---------- deep links ----------
 const hashId = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")); } catch (e) { return ""; } };
 const drinkLink = id => location.origin + location.pathname + "#" + encodeURIComponent(id);
-function setHash(id) { try { history.replaceState(null, "", id ? "#" + encodeURIComponent(id) : location.pathname); } catch (e) {} }
-window.addEventListener("hashchange", () => { const id = hashId(); if (id === "") { if (S.view !== "home") openHome(); return; } if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } });
+// Each page change is a history step, so the phone's Back button goes back through the site.
+// Re-showing the page you're already on (or re-rendering it) doesn't add a step.
+function setHash(id) {
+  const want = id ? "#" + encodeURIComponent(id) : "";
+  try {
+    if ((location.hash || "") === want) return;
+    if (S._routing) history.replaceState(null, "", want || location.pathname + location.search);
+    else history.pushState(null, "", want || location.pathname + location.search);
+  } catch (e) {}
+}
+// Show the page for the address's #part: used for Back/forward and for links.
+function routeHash() {
+  const id = hashId();
+  if (S._routedHash === id && Date.now() - (S._routedAt || 0) < 80) return; // Back fires popstate and hashchange together
+  S._routedHash = id; S._routedAt = Date.now();
+  S._routing = true;
+  try { routeTo(id); } finally { S._routing = false; }
+}
+function routeTo(id) { if (id === "") { if (S.view !== "home") openHome(); return; } if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } }
+window.addEventListener("popstate", routeHash);
+window.addEventListener("hashchange", routeHash);
+try { history.scrollRestoration = "manual"; } catch (e) {}
 
 $("home-link").addEventListener("click", ev => {
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button) return;

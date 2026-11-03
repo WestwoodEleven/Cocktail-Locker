@@ -15,11 +15,11 @@ export default async function () {
   const saved2 = await p.evaluate("window.__MOCK.tables.ratings.find(r => r.drink_id === 'neg-1' && r.user_id === 'u1')");
   check("changing stars keeps the note", saved2.stars === 5 && saved2.note === "Great with Carpano.", JSON.stringify(saved2));
   // lists
-  await p.click("#list-add"); await p.waitForTimeout(50);
+  await p.act('list-add'); await p.waitForTimeout(50);
   await p.fill("#newlist-name", "Thanksgiving"); await p.click("#newlist-add"); await p.waitForTimeout(150);
   check("new list created with the drink", (await p.text("#gen-body")).includes("Thanksgiving 1 drinks"));
   await p.keyboard.press("Escape");
-  await p.pick('pk'); await p.click("#list-add"); await p.waitForTimeout(50);
+  await p.pick('pk'); await p.act('list-add'); await p.waitForTimeout(50);
   await p.check("#gen-body [data-col]"); await p.waitForTimeout(150); await p.keyboard.press("Escape");
   const opts = await p.text("#flt-owner");
   check("list appears in the Locker filter", opts.includes("List: Thanksgiving (2)"), opts);

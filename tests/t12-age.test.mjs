@@ -12,7 +12,10 @@ export default async function () {
   await p.reload(); await p.waitForTimeout(300);
   check("remembered on this device", !(await p.isVisible("#age-gate")));
 
-  await p.click("#auth-btn");
+  check("phone header is one slim row", !(await p.isVisible("#auth-btn")) && await p.isVisible("#acct-btn") && await p.isVisible("#search-toggle"));
+  await p.click("#acct-btn");
+  check("account menu has sign in, guide and party", /sign in or join/i.test(await p.text("#gen-body")) && /bottle guide/i.test(await p.text("#gen-body")) && /plan a party/i.test(await p.text("#gen-body")));
+  await p.click("#acct-signin");
   check("sign-in asks to confirm 21+", await p.isVisible("#signin-age") && (await p.text("#signin")).includes("21 or older"));
   await p.fill("#signin-email", "new@example.com");
   await p.click("#signin button[type=submit]"); await p.waitForTimeout(100);

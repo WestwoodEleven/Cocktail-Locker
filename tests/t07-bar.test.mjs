@@ -50,7 +50,7 @@ export default async function () {
   const sent = await p.evaluate("window.__MOCK.lastInvoke.bar.liquors");
   check("AI gets brands and skips out-of-stock bottles", sent.includes("Bourbon (Buffalo Trace)") && !sent.some(x => x.startsWith("Campari")), JSON.stringify(sent));
   await p.setViewportSize({ width: 390, height: 844 });
-  await p.click("#locker-btn"); await p.waitForTimeout(100);
+  await p.click("#acct-btn"); await p.click("#acct-cart"); await p.waitForTimeout(100);
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();

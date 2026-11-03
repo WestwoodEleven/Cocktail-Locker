@@ -44,6 +44,15 @@ Search covers every locker. Versions of the same drink are grouped together and 
 
 The "Back bar" design: condensed all-caps display type (Big Shoulders Display), Instrument Sans for text and IBM Plex Mono for measurements; near-black and off-white with one cherry-red accent (light and dark modes). A dark top bar holds the logo, the main sections and the search box. Recipe pages, the home page and Ask the bartender are full width; the drink list, search filters and Tools live on their own All drinks page (`#drinks`, the Drinks link, or ← All drinks on a recipe), which opens as soon as someone types in the search box; on phones a tab bar (Home, My drinks, My bottles) sits at the bottom and an open drink comes before the drink list. Drinks without a photo get a line drawing of their glass (coupe, rocks, highball or tiki mug, from the drink's glass or style) filled with a color guessed from its ingredients (`js/25-look.js`). The design mockup lives on a Claude design canvas.
 
+### Phone navigation
+
+- **Back button**: every page change is a browser history step (`setHash` pushes, `routeHash` handles Back/forward), and All drinks keeps its scroll position, search and filters.
+- **Header**: one slim row on phones (logo, search button, account button). The account button opens a menu with My cart, What can I make?, Bottle guide, Plan a party, Install, Sign in/out. The header tucks away while scrolling down and returns on scroll up.
+- **Tabs**: Home, Drinks (All drinks with search open), Bartender, My cart. Tapping the open tab scrolls to the top.
+- **Recipe actions**: Make it, Mocktail, Share, ♥ and ⋯ More (Add to list, party plan, copy, Edit, Add photo, Delete), pinned above the tabs on phones.
+- **All drinks**: quick filter chips above the results; the full filters open from the Filters button on phones.
+- **Pop-ups** slide up from the bottom on phones. Recipes, ratings and photos people have loaded are kept by the service worker so they open offline (public data only).
+
 ### Home page
 
 Visitors who arrive without a link to something specific (and anyone who taps the logo) see the home page: for new visitors, a short intro, a search box, Sign in or join, and what the site can do; for signed-in people, quick actions (My cart, What can I make?, Make me a drink, + New drink). Everyone gets a drink of the day (one of the best-rated drinks, preferring ones with photos; the same pick all day), the top-rated drinks and the newest. On phones the home page comes before the drink list.

@@ -100,6 +100,15 @@ VIEWS.home = function renderHome() {
         </aside>`}
       </div>
 
+      <section class="home-sec plan-links" aria-label="Plan and explore">
+        <div class="sec-head"><h3>Plan &amp; explore</h3></div>
+        <div class="plan-row">
+          ${signedIn ? `<button type="button" data-home="canmake"><b>What can I make?</b><span>From your bottles</span></button>` : ""}
+          <button type="button" data-home="guide"><b>Bottle guide</b><span>Ratings, photos and notes</span></button>
+          <button type="button" data-home="party"><b>Plan a party</b><span>Batches, shopping list, menu</span></button>
+        </div>
+      </section>
+
       ${!S.drinks.length ? `<p class="hint">No drinks yet.${S.canWrite ? " Add the first one with + New drink." : ""}</p>` : ""}
     </div>`;
 
@@ -107,6 +116,8 @@ VIEWS.home = function renderHome() {
   const go = {
     cart: () => openProfile(),
     canmake: () => openCanMake(),
+    guide: () => openGuide(),
+    party: () => openParty(),
     make: () => openMake(),
     ask: () => openAsk(),
     new: () => openEditor(null),
@@ -130,7 +141,9 @@ VIEWS.home = function renderHome() {
 // keepFocus: called while typing in the search box, so don't move the page.
 function showList(sort, keepFocus) {
   if (sort && S.sort !== sort) { S.sort = sort; $("sort").value = sort; try { localStorage.setItem("mc-sort", sort); } catch (e) {} }
+  const returning = S.view !== "browse";
   S.view = "browse"; S.editing = null; S.confirmDelete = false; setHash("drinks");
   renderFilters(); renderList(); renderMain();
-  if (!keepFocus) window.scrollTo({ top: 0 });
+  // Coming back to All drinks lands where you were (search and filters are kept too).
+  if (!keepFocus) window.scrollTo({ top: returning && !sort ? (S._browseY || 0) : 0 });
 }

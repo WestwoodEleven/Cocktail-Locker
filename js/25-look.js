@@ -65,11 +65,15 @@ function drinkPicture(d) {
 }
 
 // ---------- navigation: the top bar on computers, the tab bar on phones ----------
+// Which tab is "open right now" (tapping it again scrolls to the top instead).
+const VIEW_OF_NAV = { home: "home", browse: "browse", ask: "ask", cart: "profile" };
 function navGo(where) {
+  if (VIEW_OF_NAV[where] && S.view === VIEW_OF_NAV[where] && window.scrollY > 0) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
   const needSignIn = msg => { toast(msg); const a = $("auth-btn"); if (a && !a.hidden) a.click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   if (where === "home") return openHome();
   if (where === "browse") return showList(null);
   if (where === "ask") return openAsk();
+  if (where === "cart") { if (!uid()) return needSignIn("Sign in to see your cart."); S.profTab = null; openProfile(); window.scrollTo({ top: 0 }); return; }
   if (where === "guide") return openGuide();
   if (where === "party") return openParty();
   if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bottles and see what you can make."); return openCanMake(); }
@@ -93,15 +97,18 @@ const FULL_WIDTH_VIEWS = ["home", "ask", "detail"];
 function syncChrome() {
   document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));
   document.body.classList.toggle("on-browse", S.view === "browse");
+  // The search box stays open on All drinks and while there's a search; elsewhere the phone shows a search button.
+  if (S.view === "browse" || (S.query || "").trim()) setSearchOpen(true);
+  else if (document.activeElement !== $("search")) setSearchOpen(false);
   markNav();
 }
 // All drinks: the list, search filters and tools, full width. The main column is unused here.
 VIEWS.browse = function renderBrowse() { $("main").innerHTML = ""; };
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", browse: "browse", detail: "browse", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", browse: "browse", detail: "browse", profile: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
 function markNav() {
-  const here = S.view === "profile" ? (S.profTab || "mine") : NAV_OF_VIEW[S.view] || "";
+  const here = NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
 
@@ -109,3 +116,47 @@ function markNav() {
 $("search").addEventListener("input", () => {
   if (S.view !== "browse" && $("search").value.trim()) showList(null, true);
 });
+
+// Remember how far down All drinks you were.
+window.addEventListener("scroll", () => { if (S.view === "browse") S._browseY = window.scrollY; }, { passive: true });
+
+// ---------- phone header: search button, account menu, hide on scroll ----------
+function setSearchOpen(open) {
+  document.body.classList.toggle("search-open", !!open);
+  $("search-toggle").setAttribute("aria-expanded", open ? "true" : "false");
+}
+$("search-toggle").onclick = () => {
+  const open = !document.body.classList.contains("search-open");
+  setSearchOpen(open);
+  if (open) { $("topbar").classList.remove("tucked"); $("search").focus(); }
+};
+function openAccountMenu() {
+  const signedIn = !!uid(), accounts = S.backend === "supabase";
+  const items = [];
+  if (signedIn) items.push(["acct-cart", "My cart", "Your drinks, bottles, lists and favorites"]);
+  if (accounts && !signedIn) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
+  if (signedIn) items.push(["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"]);
+  items.push(["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"]);
+  items.push(["acct-party", "Plan a party", "Batches, a shopping list and a menu"]);
+  if (!$("install-btn").hidden) items.push(["acct-install", "Install the app", "Add My Cocktail Cart to your home screen"]);
+  if (signedIn) items.push(["acct-signout", "Sign out", ""]);
+  sheet("Menu", `<div class="add-menu acct-menu">${items.map(([id, t, h]) => `<button type="button" id="${id}"><b>${esc(t)}</b>${h ? `<span>${esc(h)}</span>` : ""}</button>`).join("")}</div>
+    <p class="hint" style="margin:0"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="mailto:support@mycocktailcart.com">support@mycocktailcart.com</a></p>`);
+  const go = { "acct-cart": () => $("locker-btn").click(), "acct-signin": () => { $("auth-btn").click(); window.scrollTo({ top: 0 }); },
+    "acct-canmake": () => navGo("canmake"), "acct-guide": () => openGuide(), "acct-party": () => openParty(),
+    "acct-install": () => $("install-btn").click(), "acct-signout": () => $("auth-btn").click() };
+  items.forEach(([id]) => { $(id).onclick = () => { closeSheet(); go[id](); }; });
+}
+$("acct-btn").onclick = openAccountMenu;
+// On phones the header tucks away while you scroll down and comes back when you scroll up.
+(() => {
+  let lastY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY, bar = $("topbar");
+    if (!bar) return;
+    if (document.activeElement === $("search")) { lastY = y; return; }
+    if (y > 80 && y - lastY > 6) bar.classList.add("tucked");
+    else if (lastY - y > 6 || y < 40) bar.classList.remove("tucked");
+    lastY = y;
+  }, { passive: true });
+})();
