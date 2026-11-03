@@ -60,6 +60,7 @@ function renderMain() {
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
+    <button type="button" class="linkish back-link" id="to-list">← All drinks</button>
     <div class="hero">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${fromLine}<div class="meta">${meta}</div>${ratingSummary(d)}</div>
@@ -108,7 +109,7 @@ function renderMain() {
     </div>
     ${perServing ? `<div class="totals">
       <div class="tot"><b>${fmtLiters(totalMl)}</b><span>${floats.length ? "Batch liquid, before floats" : "Total liquid"}</span></div>
-      <div class="tot"><b>${fmtOz(totalMl / ML.oz)} oz</b><span>Same, in ounces</span></div>
+      <div class="tot"><b>${qHtml(fmtOz(totalMl / ML.oz))} oz</b><span>Same, in ounces</span></div>
       ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
     </div>` : ""}
     ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
@@ -133,6 +134,7 @@ function renderMain() {
   $("fill").onkeydown = e => { if (e.key === "Enter") doFill(); };
   $("share-btn").onclick = () => openShare(d);
   $("makeit-btn").onclick = () => openMakeMode(d);
+  $("to-list").onclick = () => showList(null);
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };

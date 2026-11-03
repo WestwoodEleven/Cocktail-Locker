@@ -164,7 +164,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .spec-table tr.water .n, .spec-table tr.water .q { color: var(--green); }
 .totals { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 2px solid var(--ink); padding-top: 12px; }
 .tot { display: flex; flex-direction: column; }
-.tot b { font-family: var(--f-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.tot b { font-family: var(--f-body); font-weight: 700; font-size: 19px; font-variant-numeric: lining-nums tabular-nums; }
 .tot span { font-size: 12px; color: var(--muted); }
 .notes { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; color: var(--ink); max-width: 65ch; white-space: pre-wrap; margin: 0; }
 .notes-label { margin-bottom: 6px; }
@@ -706,7 +706,7 @@ body.on-home .grid > aside { display: none; }
 /* Header and home refinements */
 .topbar .status:not(.warn) { display: none; }
 @media (min-width: 781px) {
-  .topsearch { flex: 1 1 200px; max-width: 300px; min-width: 150px; }
+  .topsearch { flex: 1 1 180px; max-width: 260px; min-width: 140px; }
   .topbar .auth { flex: none; }
   .topnav { gap: 2px 16px; }
 }
@@ -790,3 +790,27 @@ body.on-home .grid > aside { display: none; }
 }
 
 .ba-form { display: flex; flex-direction: column; gap: 12px; }
+
+/* All drinks page: the drink index on its own, full width; recipe pages have no sidebar */
+body.on-browse .grid { grid-template-columns: minmax(0, 1fr); }
+body.on-browse .grid > main { display: none; }
+body.on-browse .list { max-height: none; }
+@media (min-width: 781px) {
+  body.on-browse .index { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 22px 44px; align-items: start; }
+  body.on-browse .index > section:nth-of-type(3) { grid-column: 2; grid-row: 1 / span 2; }
+  body.on-browse .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2px 16px; }
+  body.on-browse .list > .ghead, body.on-browse .list > .empty-list { grid-column: 1 / -1; }
+}
+@media (max-width: 780px) { body.on-browse .index > section:nth-of-type(3) { order: -1; } }
+.back-link { align-self: flex-start; padding: 0; margin-bottom: -10px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--muted); }
+.back-link:hover { color: var(--ink); }
+/* Totals: the caption style (.tot span) mustn't shrink the fraction inside the number */
+.tot b .fr { font-size: 1em; color: inherit; }
+.tot b .fr .fn, .tot b .fr .fd { font-size: .7em; color: inherit; }
+/* Keep the top bar on one line on wide screens; the search box gives way first */
+@media (min-width: 1100px) {
+  .topbar-in { flex-wrap: nowrap; }
+  .topnav { flex-wrap: nowrap; white-space: nowrap; }
+  .topsearch { min-width: 120px; }
+  .brand span { white-space: nowrap; }
+}

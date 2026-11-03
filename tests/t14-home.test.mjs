@@ -12,7 +12,10 @@ export default async function () {
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
   await p.click(".home-day"); await p.waitForTimeout(150);
   check("drink of the day opens the recipe", await p.isVisible("#makeit-btn") && (await p.evaluate("location.hash")).length > 1);
-  check("recipe shows the list again", await p.isVisible("#list"));
+  check("recipe page has no list, filters or tools beside it", !(await p.isVisible("#list")) && !(await p.isVisible("#find-title")) && !(await p.isVisible("#tools-title")));
+  await p.click("#to-list"); await p.waitForTimeout(100);
+  check("All drinks link opens the list page", await p.isVisible("#list") && await p.isVisible("#find-title") && !(await p.isVisible("#main")) && (await p.evaluate("location.hash")) === "#drinks");
+  await p.click("#home-link"); await p.waitForTimeout(100);
   await p.click("#home-link"); await p.waitForTimeout(150);
   check("logo goes back home", /house specs/i.test(await p.text("#main")) && (await p.evaluate("location.hash")) === "");
   await p.click(".home-browse [data-v=Tiki]"); await p.waitForTimeout(150);
@@ -50,6 +53,10 @@ export default async function () {
   check("Home tab returns home and clears the filter", /welcome back/i.test(await m.text("#main")) && (await m.evaluate("S.f.owner")) === "");
   check("no errors", m.errors.length === 0, m.errors.join("; "));
   await m.close();
+
+  const f = await open({ hash: "#rita", home: true });
+  check("recipe total uses readable fractions", await f.evaluate("!!document.querySelector('.totals .fr')"), await f.text(".totals"));
+  await f.close();
 
   const r = await open({ hash: "#neg-1", home: true });
   check("a link to a drink still opens the drink", /negroni/i.test(await r.text(".drink-name")));

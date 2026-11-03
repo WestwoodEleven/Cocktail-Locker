@@ -8,7 +8,7 @@ const invoke = `async (name, body) => {
 }`;
 export default async function () {
   const p = await open({ invoke });
-  await p.click("#list button[data-id='neg-1']");
+  await p.pick('neg-1');
   check("swap buttons on ingredients", (await p.evaluate("document.querySelectorAll('.spec-table .swap').length")) === 3);
   await p.click(".spec-table .swap[data-swap='1']"); await p.waitForTimeout(50);
   check("swap shows loading", (await p.text("#swap-body")).includes("Finding substitutes"));
@@ -26,7 +26,7 @@ export default async function () {
   await p.keyboard.press("Escape");
   check("Escape closes swap", await p.isHidden("#swap-modal"));
   // make mode
-  await p.click("#list button[data-id='pk']"); await p.fill("#servings", "2"); await p.press("#servings", "Enter");
+  await p.pick('pk'); await p.fill("#servings", "2"); await p.press("#servings", "Enter");
   await p.click("#makeit-btn"); await p.waitForTimeout(100);
   const mm = await p.text("#make-mode");
   check("make mode shows doubled amounts", mm.includes("4 | oz | Gold rum") || mm.includes("4 oz | Gold rum"), mm.slice(0, 300));
@@ -41,7 +41,7 @@ export default async function () {
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
   const q = await open({ user: null });
-  await q.click("#list button[data-id='neg-1']");
+  await q.pick('neg-1');
   check("signed out: no swap buttons, Make it still there", (await q.evaluate("document.querySelectorAll('.swap').length")) === 0 && await q.isVisible("#makeit-btn"));
   await q.close();
 }

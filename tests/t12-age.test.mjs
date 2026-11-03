@@ -8,7 +8,7 @@ export default async function () {
   await p.reload(); await p.waitForTimeout(300);
   check("still asked after reload", await p.isVisible("#age-yes"));
   await p.click("#age-yes");
-  check("Yes lets you in", !(await p.isVisible("#age-gate")) && await p.isVisible("#main"));
+  check("Yes lets you in", !(await p.isVisible("#age-gate")) && await p.isVisible(".grid"));
   await p.reload(); await p.waitForTimeout(300);
   check("remembered on this device", !(await p.isVisible("#age-gate")));
 

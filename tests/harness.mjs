@@ -58,6 +58,11 @@ export async function open({ user = "u1", tables = sample(), invoke = null, widt
   // Most tests start from the drink list; the home page has its own tests.
   if (!home) await page.evaluate("S.view === 'home' && showList(null, true)");
   page.errors = errors;
+  // Open a drink from the All drinks list (recipe pages don't show the list, so go there first).
+  page.pick = async id => {
+    if (!(await page.isVisible("#list"))) await page.evaluate("showList(null, true)");
+    await page.click(`#list button[data-id='${id}']`);
+  };
   page.text = async sel => (await page.innerText(sel)).replace(/\s*[\n\t]\s*/g, " | ");
   return page;
 }

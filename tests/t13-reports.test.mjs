@@ -4,7 +4,7 @@ export default async function () {
   const tables = sample();
   tables.ratings = (tables.ratings || []).concat([{ drink_id: "neg-1", user_id: "u2", stars: 2, note: "Buy cheap watches at spam.example" }]);
   const p = await open({ tables });
-  await p.click("#list button[data-id='neg-1']"); await p.waitForTimeout(100);
+  await p.pick('neg-1'); await p.waitForTimeout(100);
   check("someone else's drink can be reported", await p.isVisible("text=Report this drink"));
   check("their rating note can be reported", await p.isVisible(".rnotes .report-link"));
   await p.click("text=Report this drink");
@@ -19,7 +19,7 @@ export default async function () {
   check("reporting twice is handled", (await p.text("#toast")).includes("already reported") && (await p.evaluate("window.__MOCK.tables.reports.length")) === 1);
   await p.click(".rnotes .report-link"); await p.click("#rp-send"); await p.waitForTimeout(100);
   check("note reported", (await p.evaluate("window.__MOCK.tables.reports.some(r => r.kind === 'note' && r.target === 'neg-1|u2')")));
-  await p.click("#list button[data-id='rita']"); await p.waitForTimeout(100);
+  await p.pick('rita'); await p.waitForTimeout(100);
   check("no report link on your own drink", !(await p.isVisible("text=Report this drink")));
   await p.click(".who[data-locker='u2'], [data-locker='u2']").catch(() => {});
   await p.evaluate("openLocker('u2')"); await p.waitForTimeout(100);
@@ -32,7 +32,7 @@ export default async function () {
 
   // Signed out
   const q = await open({ user: null });
-  await q.click("#list button[data-id='neg-1']");
+  await q.pick('neg-1');
   await q.click("text=Report this drink");
   check("signed out is asked to sign in", (await q.text("#gen-body")).includes("Sign in to report"));
   await q.close();

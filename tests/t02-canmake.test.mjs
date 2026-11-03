@@ -14,7 +14,7 @@ export default async function () {
   await p.click("#main [data-open='mule']"); await p.waitForTimeout(100);
   check("opening a result shows the drink", (await p.text(".drink-name")) === "Moscow Mule");
   // ingredient spelling help in the editor
-  await p.click("#list button[data-id='rita']"); await p.click("#edit-btn"); await p.waitForTimeout(100);
+  await p.pick('rita'); await p.click("#edit-btn"); await p.waitForTimeout(100);
   await p.fill("#ing-name-1", "Freshly squeezed lime juice"); await p.dispatchEvent("#ing-name-1", "change"); await p.waitForTimeout(50);
   const dym = await p.isVisible(".ing-dym");
   check("editor suggests the common spelling", dym && (await p.text(".ing-dym")).includes("Lime juice"), dym ? await p.text(".ing-dym") : "none");

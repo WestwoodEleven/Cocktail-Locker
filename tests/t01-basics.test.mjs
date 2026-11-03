@@ -11,7 +11,7 @@ export default async function () {
   await p.fill("#search", "zombie punch"); await p.waitForTimeout(100);
   check("lookup offered when nothing matches", await p.isVisible("#lookup-btn"));
   await p.fill("#search", "");
-  await p.click("#list button[data-id='pk']");
+  await p.pick('pk');
   check("float shows on detail", (await p.text("#main")).includes("Float"));
   await p.fill("#servings", "8"); await p.press("#servings", "Enter");
   check("batch scales to 16 oz rum", (await p.text(".spec-table")).includes("16 | oz | Gold rum"), await p.text(".spec-table"));

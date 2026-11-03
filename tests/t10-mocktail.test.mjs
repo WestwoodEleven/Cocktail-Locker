@@ -10,7 +10,7 @@ const invoke = `async (name, body) => {
 }`;
 export default async function () {
   const p = await open({ invoke });
-  await p.click("#list button[data-id='neg-1']");
+  await p.pick('neg-1');
   check("mocktail button on drinks", await p.isVisible("#mock-btn"));
   await p.click("#mock-btn"); await p.waitForTimeout(50);
   check("shows working state", (await p.text("#gen-body")).includes("Making it zero-proof"));
@@ -35,7 +35,7 @@ export default async function () {
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
   const q = await open({ user: null });
-  await q.click("#list button[data-id='neg-1']");
+  await q.pick('neg-1');
   check("signed out: no mocktail button", !(await q.isVisible("#mock-btn")));
   await q.close();
 }

@@ -84,9 +84,9 @@ function batchCard({ item, d }, n) {
       <div class="stepper small-step"><button type="button" data-sv="${esc(d.id)}" data-d="-1" aria-label="Fewer">−</button><span class="sv">${sv}</span><button type="button" data-sv="${esc(d.id)}" data-d="1" aria-label="More">+</button></div></div>
     <div class="hint">${sv} drink${sv === 1 ? "" : "s"}${item.servings ? ` · <button type="button" class="linkish" data-auto="${esc(d.id)}">Split evenly again</button>` : ""} · <button type="button" class="linkish" data-rmparty="${esc(d.id)}">Remove</button></div>
     <table class="spec-table"><tbody>${batch.map(i => row(i, sv)).join("")}
-      ${dil > 0 ? `<tr class="water"><td class="q">${esc(amt(batchMl * dil, S.party.units).replace(/ (oz|ml|L)$/, ""))}</td><td class="u">${S.party.units === "ml" ? (batchMl * dil >= 1000 ? "L" : "ml") : "oz"}</td><td class="n">Cold water<span class="note">Pre-dilution, so it pours ready. Chill the batch.</span></td></tr>` : ""}</tbody></table>
+      ${dil > 0 ? `<tr class="water"><td class="q">${qHtml(amt(batchMl * dil, S.party.units).replace(/ (oz|ml|L)$/, ""))}</td><td class="u">${S.party.units === "ml" ? (batchMl * dil >= 1000 ? "L" : "ml") : "oz"}</td><td class="n">Cold water<span class="note">Pre-dilution, so it pours ready. Chill the batch.</span></td></tr>` : ""}</tbody></table>
     ${atServe.length ? `<p class="idea-line hint"><b>Add to each glass at serving:</b> ${atServe.map(i => { const x = show(i, 1, mode); return esc(`${x.q}${x.u ? " " + x.u : ""} ${i.name}`); }).join(", ")}</p>` : ""}
-    <p class="idea-line hint">Batch is about ${amt(batchMl * (1 + dil), S.party.units)}${batchMl * (1 + dil) >= 750 ? ` (${Math.round(batchMl * (1 + dil) / 750 * 10) / 10} bottles' worth)` : ""}.</p>
+    <p class="idea-line hint">Batch is about ${qHtml(amt(batchMl * (1 + dil), S.party.units))}${batchMl * (1 + dil) >= 750 ? ` (${Math.round(batchMl * (1 + dil) / 750 * 10) / 10} bottles' worth)` : ""}.</p>
   </article>`;
 }
 
@@ -121,7 +121,7 @@ VIEWS.party = function renderParty() {
       <section class="make-sec" id="shop">
         <div class="sec-head"><h3>Shopping list</h3>
           <div class="panel-actions"><button class="btn small" type="button" id="pp-copy">Copy list</button><button class="btn small" type="button" id="pp-print-list">Print list</button></div></div>
-        <ul class="shop">${shop.lines.map(l => `<li><span class="sname">${esc(l.name)}${l.brand ? ` <span class="hint">(${esc(l.brand)})</span>` : ""}</span><span class="sdetail">${esc(l.detail)}</span></li>`).join("")}
+        <ul class="shop">${shop.lines.map(l => `<li><span class="sname">${esc(l.name)}${l.brand ? ` <span class="hint">(${esc(l.brand)})</span>` : ""}</span><span class="sdetail">${qHtml(l.detail)}</span></li>`).join("")}
           ${shop.garnishes.map(([g, c]) => `<li><span class="sname">Garnish: ${esc(g)}</span><span class="sdetail">for ${c} drinks</span></li>`).join("")}
           <li><span class="sname">Ice</span><span class="sdetail">about ${shop.ice} lb</span></li></ul>
       </section>

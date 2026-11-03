@@ -34,7 +34,7 @@ export default async function () {
   const kept = await q.evaluate("(localStorage.getItem('mc-party') || '').includes('mule')");
   check("plan is remembered after reloading", !kept || (await q.text("#main")).includes("Moscow Mule"), (await q.evaluate("S.view + ' ' + location.hash")) + " :: " + (await q.text("#main")).slice(0, 200));
   await q.click("#party-close");
-  await q.click("#list button[data-id='pk']");
+  await q.pick('pk');
   await q.click("#party-add"); await q.waitForTimeout(100);
   check("+ Party from a drink page", (await q.text("#party-add")).includes("In your party"));
   await q.setViewportSize({ width: 390, height: 844 });

@@ -1,7 +1,7 @@
 import { open, check } from "./harness.mjs";
 export default async function () {
   const p = await open();
-  await p.click("#list button[data-id='neg-1']");
+  await p.pick('neg-1');
   const t = await p.text("#main");
   check("notes from others shown", t.toLowerCase().includes("what people say") && t.includes("Perfect bitter balance."), t.slice(-400));
   // rate and add a note
@@ -19,16 +19,17 @@ export default async function () {
   await p.fill("#newlist-name", "Thanksgiving"); await p.click("#newlist-add"); await p.waitForTimeout(150);
   check("new list created with the drink", (await p.text("#gen-body")).includes("Thanksgiving 1 drinks"));
   await p.keyboard.press("Escape");
-  await p.click("#list button[data-id='pk']"); await p.click("#list-add"); await p.waitForTimeout(50);
+  await p.pick('pk'); await p.click("#list-add"); await p.waitForTimeout(50);
   await p.check("#gen-body [data-col]"); await p.waitForTimeout(150); await p.keyboard.press("Escape");
   const opts = await p.text("#flt-owner");
   check("list appears in the Locker filter", opts.includes("List: Thanksgiving (2)"), opts);
   const colId = await p.evaluate("window.__MOCK.tables.collections[0].id");
+  await p.evaluate("showList(null, true)");
   await p.selectOption("#flt-owner", "col:" + colId); await p.waitForTimeout(100);
   check("filtering by list shows its drinks", (await p.text("#list")).includes("Painkiller") && !(await p.text("#list")).includes("Moscow Mule"));
   await p.selectOption("#flt-owner", "");
   // locker page + follow
-  await p.click("#list button[data-id='mule']"); await p.waitForTimeout(50);
+  await p.pick('mule'); await p.waitForTimeout(50);
   await p.click(".from [data-locker]"); await p.waitForTimeout(100);
   check("locker page opens from the drink", (await p.text("#main")).includes("Jo's Cart") && (await p.evaluate("location.hash")) === "#locker-u3");
   await p.click("#lk-follow"); await p.waitForTimeout(100);

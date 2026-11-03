@@ -126,15 +126,11 @@ VIEWS.home = function renderHome() {
   });
 };
 
-// Open the full drink list (the first drink that matches), optionally re-sorted.
+// Open the All drinks page (the list with its filters and tools), optionally re-sorted.
 // keepFocus: called while typing in the search box, so don't move the page.
 function showList(sort, keepFocus) {
   if (sort && S.sort !== sort) { S.sort = sort; $("sort").value = sort; try { localStorage.setItem("mc-sort", sort); } catch (e) {} }
-  const first = filtered()[0] || sorted()[0];
-  S.view = "detail"; S.selected = first ? first.id : null; setHash(first ? first.id : null);
+  S.view = "browse"; S.editing = null; S.confirmDelete = false; setHash("drinks");
   renderFilters(); renderList(); renderMain();
-  if (keepFocus) return;
-  const narrow = window.matchMedia && window.matchMedia("(max-width: 780px)").matches;
-  const target = narrow ? $("list") : $("main");
-  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!keepFocus) window.scrollTo({ top: 0 });
 }

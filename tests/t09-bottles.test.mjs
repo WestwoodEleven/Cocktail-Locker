@@ -11,7 +11,7 @@ export default async function () {
   const p = await open({ invoke });
   check("Bottle guide in Tools", await p.isVisible("#guide-btn"));
   // recipe brand links to bottle page
-  await p.click("#list button[data-id='rita']");
+  await p.pick('rita');
   await p.click(".brand-link[data-bottle='Cointreau']"); await p.waitForTimeout(100);
   let t = await p.text("#main");
   check("recipe brand opens the bottle page", t.includes("Cointreau Triple Sec") && t.includes("40% ABV") && (await p.evaluate("location.hash")) === "#bottle-cointreau", t.slice(0, 300));

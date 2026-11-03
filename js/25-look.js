@@ -68,6 +68,7 @@ function drinkPicture(d) {
 function navGo(where) {
   const needSignIn = msg => { toast(msg); const a = $("auth-btn"); if (a && !a.hidden) a.click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   if (where === "home") return openHome();
+  if (where === "browse") return showList(null);
   if (where === "ask") return openAsk();
   if (where === "guide") return openGuide();
   if (where === "party") return openParty();
@@ -87,10 +88,18 @@ function navGo(where) {
 document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => navGo(b.dataset.nav)));
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 // Pages that use the full width, without the drink list, filters and tools beside them.
-const FULL_WIDTH_VIEWS = ["home", "ask"];
-function syncChrome() { document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view)); markNav(); }
+// Recipe pages too; the drink list, filters and tools have their own All drinks page ("browse").
+const FULL_WIDTH_VIEWS = ["home", "ask", "detail"];
+function syncChrome() {
+  document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));
+  document.body.classList.toggle("on-browse", S.view === "browse");
+  markNav();
+}
+// All drinks: the list, search filters and tools, full width. The main column is unused here.
+VIEWS.browse = function renderBrowse() { $("main").innerHTML = ""; };
+HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", browse: "browse", detail: "browse", canmake: "canmake", guide: "guide", bottle: "guide", party: "party", profile: "bar" };
 function markNav() {
   const here = S.view === "profile" ? (S.profTab || "mine") : NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
@@ -98,5 +107,5 @@ function markNav() {
 
 // Typing in the top search from the home page opens the drink list.
 $("search").addEventListener("input", () => {
-  if (S.view === "home" && $("search").value.trim()) showList(null, true);
+  if (S.view !== "browse" && $("search").value.trim()) showList(null, true);
 });
