@@ -14,8 +14,34 @@ function wrap(ctx, text, maxW) {
 function loadImg(src) {
   return new Promise((res, rej) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = rej; im.src = src; });
 }
+// Amounts on the card: a fraction character like ¾ is tiny in any font, so draw it like the site does:
+// a raised top number, a slanted slash and the bottom number, right-aligned at x.
+function drawQty(ctx, text, x, baseline, size, family, draw) {
+  const m = String(text || "").match(/^(.*?)([⅛¼⅜½⅝¾⅞⅓⅔])?$/);
+  const whole = m ? m[1] : String(text || ""), frac = m && m[2] ? FRAC_PARTS[m[2]] : null;
+  const big = `700 ${size}px ${family}`, small = `700 ${Math.round(size * 0.7)}px ${family}`;
+  ctx.font = big; const wW = ctx.measureText(whole).width;
+  let fW = 0, nW = 0, dW = 0, gap = size * 0.08, slashW = size * 0.34;
+  if (frac) { ctx.font = small; nW = ctx.measureText(String(frac[0])).width; dW = ctx.measureText(String(frac[1])).width; fW = (whole ? gap : 0) + nW + slashW + dW; }
+  if (!draw) return wW + fW;
+  let cx = x - wW - fW;
+  ctx.textAlign = "left";
+  ctx.font = big; ctx.fillText(whole, cx, baseline); cx += wW;
+  if (frac) {
+    cx += whole ? gap : 0;
+    ctx.font = small; ctx.fillText(String(frac[0]), cx, baseline - size * 0.32); cx += nW;
+    ctx.save(); ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = Math.max(2, size * 0.07); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(cx + slashW * 0.78, baseline - size * 0.72); ctx.lineTo(cx + slashW * 0.22, baseline + size * 0.04); ctx.stroke(); ctx.restore();
+    cx += slashW;
+    ctx.font = small; ctx.fillText(String(frac[1]), cx, baseline);
+  }
+  return wW + fW;
+}
+// Fraction characters in small text (notes) read better spelled out: "1½" → "1 1/2".
+const plainFrac = t => String(t || "").replace(/(\d)?([⅛¼⅜½⅝¾⅞⅓⅔])/g, (m0, dgt, ch) => `${dgt ? dgt + " " : ""}${FRAC_PARTS[ch][0]}/${FRAC_PARTS[ch][1]}`);
+
 async function buildCard(d, withPhoto) {
-  try { await Promise.all(["900 80px 'Big Shoulders Display'", "600 36px 'Instrument Sans'", "400 30px 'Instrument Sans'", "600 40px 'IBM Plex Mono'"].map(f => document.fonts.load(f))); } catch (e) {}
+  try { await Promise.all(["900 80px 'Big Shoulders Display'", "700 46px 'Instrument Sans'", "600 36px 'Instrument Sans'", "400 30px 'Instrument Sans'", "600 40px 'IBM Plex Mono'"].map(f => document.fonts.load(f))); } catch (e) {}
   let photo = null;
   if (withPhoto && d.photo) { try { photo = await loadImg(photoUrl(d.photo)); } catch (e) { photo = null; } }
   const W = 1080, P = 72, inner = W - P * 2;
@@ -66,8 +92,8 @@ async function buildCard(d, withPhoto) {
     rows.forEach((row, k) => {
       y += 30;
       const top = y;
-      ctx.font = `600 44px ${mono}`;
-      if (draw) { ctx.fillStyle = row.water ? CARD.green : CARD.ink; ctx.textAlign = "right"; ctx.fillText(row.s.q, P + qW - 14, top + 42); ctx.textAlign = "left"; }
+      if (draw) ctx.fillStyle = row.water ? CARD.green : CARD.ink;
+      drawQty(ctx, row.s.q, P + qW - 14, top + 42, 46, body, draw);
       ctx.font = `400 28px ${mono}`;
       if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText(row.s.u, P + qW + 4, top + 40); }
       ctx.font = `600 38px ${body}`;
@@ -82,9 +108,9 @@ async function buildCard(d, withPhoto) {
       }
       const notes = [];
       if (row.i && row.i.brand) notes.push("Recommended: " + row.i.brand);
-      if (row.float && many) notes.push(`${row.g.q}${row.g.u ? " " + row.g.u : ""} on top of each glass`);
+      if (row.float && many) notes.push(`${plainFrac(row.g.q)}${row.g.u ? " " + row.g.u : ""} on top of each glass`);
       if (row.water) notes.push(`Stands in for ${Math.round(dil * 100)}% dilution. Chill and pour.`);
-      if (row.s.note) notes.push(row.s.note);
+      if (row.s.note) notes.push(plainFrac(row.s.note));
       ctx.font = `400 28px ${body}`;
       notes.forEach(n => wrap(ctx, n, nW).forEach(ln => { yy += 40; if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText(ln, nX, yy); } }));
       y = yy + 26;
