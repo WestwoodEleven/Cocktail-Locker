@@ -38,7 +38,7 @@ Signed-in people get a **My Cocktail Cart** page (called a locker in the code an
 
 ### Search and standard recipes
 
-Search covers every locker. Versions of the same drink are grouped together and sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
+Search covers every locker. The drink list is one flat list with your own drinks first, then everyone else's, sorted by rating by default (weighted, so a drink needs a few ratings to reach the top); people can also sort A–Z or by newest. If nobody has a drink, signed-in people can tap **Look up the standard recipe**: Claude fills in the classic spec once and saves it to a shared library, so every later lookup is instant and free. Standard recipes appear in search results, can be rated and favorited, and can be saved to a locker to make a personal version. If you ran `setup.sql` before this existed, run [`supabase/standard-setup.sql`](supabase/standard-setup.sql) and redeploy the `read-recipe` function.
 
 ### Look and feel
 

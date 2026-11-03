@@ -4,7 +4,9 @@ export default async function () {
   check("loads with no errors", p.errors.length === 0, p.errors.join("; "));
   check("signed in shows My cart", (await p.text("#locker-btn")) === "My Cocktail Cart");
   const list = await p.text("#list");
-  check("negroni versions grouped", /negroni \| 2 versions/i.test(list), list);
+  check("no group headings in the list", !(await p.evaluate("!!document.querySelector('#list .ghead')")), list);
+  const order = await p.evaluate("[...document.querySelectorAll('#list button[data-id]')].map(b => S.drinks.find(d => d.id === b.dataset.id) || { owner: 'std' }).map(d => d.owner === 'u1' ? 1 : 0)");
+  check("your drinks come first", order.indexOf(0) === order.filter(x => x).length && order[0] === 1, JSON.stringify(order));
   check("rating shown in list", list.includes("★ 4.5"), list);
   await p.fill("#search", "daiquiri"); await p.waitForTimeout(100);
   check("standard recipe found by search", (await p.text("#list")).includes("Classic"));

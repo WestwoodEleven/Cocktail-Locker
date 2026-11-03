@@ -94,11 +94,9 @@ function renderList() {
       : "No drinks match. Try fewer filters.";
     ul.innerHTML = `<li class="empty-list">${esc(msg)}</li>` + bottleRows() + lookupRow(); wireLookup(); return;
   }
-  // Group versions of the same drink; groups keep the order of their best member.
-  const groups = new Map();
-  items.forEach(d => { const k = slugify(d.name) || d.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(d); });
-  ul.innerHTML = [...groups.values()].map(g => g.length === 1 ? rowHtml(g[0], false)
-    : `<li class="ghead">${esc(g[0].name)}<span>${g.length} versions${S.sort === "rated" ? ", best rated first" : ""}</span></li>` + g.map(d => rowHtml(d, true)).join("")).join("") + bottleRows() + lookupRow();
+  // One flat list: your own drinks first, then everyone else's, each in the chosen sort order.
+  const ordered = uid() ? items.filter(isMine).concat(items.filter(d => !isMine(d))) : items;
+  ul.innerHTML = ordered.map(d => rowHtml(d, false)).join("") + bottleRows() + lookupRow();
   wireLookup();
 }
 // Bottles matching the search, shown under the drinks.
