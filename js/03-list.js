@@ -133,7 +133,8 @@ function renderChipRow() {
   const chips = CHIP_DEFS.filter(([, k, v, acct]) => (!acct || signedIn) && (S.f[k] === v || count(k, v) > 0));
   el.innerHTML = chips.map(([t, k, v]) => `<button type="button" class="fchip" data-fk="${k}" data-fv="${esc(v)}" aria-pressed="${S.f[k] === v}">${esc(t)}</button>`).join("");
   const n = Object.values(S.f).filter(Boolean).length;
-  $("filters-toggle").textContent = n ? `Filters (${n})` : "Filters";
+  const open = document.body.classList.contains("filters-open");
+  $("filters-toggle").textContent = `${open ? "−" : "+"} Filters${n ? ` (${n})` : ""}`;
 }
 $("fchips").addEventListener("click", e => {
   const b = e.target.closest("[data-fk]"); if (!b) return;
@@ -145,5 +146,6 @@ $("filters-toggle").addEventListener("click", () => {
   const open = !document.body.classList.contains("filters-open");
   document.body.classList.toggle("filters-open", open);
   $("filters-toggle").setAttribute("aria-expanded", open ? "true" : "false");
+  renderChipRow();
   if (open) { const f = $("find-title"); if (f) f.scrollIntoView({ behavior: "smooth", block: "start" }); }
 });

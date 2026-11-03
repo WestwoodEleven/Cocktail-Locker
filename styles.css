@@ -950,3 +950,12 @@ body.on-merged .grid > main { order: -1; }
   .home-top.signed .home-day > .glassbox, .home-top.signed .home-day > img { height: 220px; min-height: 0; }
   .home-top.signed .home-day > .glassbox .glass-svg { width: auto; height: 86%; }
 }
+
+/* "+ Filters" leads the chip row and scrolls with it, so it never sits on top of a chip */
+.fchips-row { overflow-x: auto; scrollbar-width: none; gap: 6px; padding: 2px 0; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+.fchips-row::-webkit-scrollbar { display: none; }
+.fchips-row .fchips { overflow: visible; flex: none; padding: 0; }
+.fchips-row .fchips:empty { display: none; }
+.filters-chip { border-color: var(--ink); }
+.filters-chip[aria-expanded="true"] { background: var(--ink); color: var(--bg); }
+@media (max-width: 780px) { #filters-toggle { display: inline-flex; align-items: center; } }
