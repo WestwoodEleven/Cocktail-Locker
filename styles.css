@@ -16,7 +16,7 @@
   --danger: #A3302A;
   --focus: #1F5F8B;
   --bar-bg: #121418;
-  --bar-ink: #F5F5F2;
+  --bar-ink: #F5F5F2; --bar-red: #E8394F; --bar-red-hi: #FF5A6E;
   --bar-muted: #C9CCD2;
   --bar-line: #4A4E57;
   --f-display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
@@ -503,7 +503,9 @@ body { padding: 0 0 48px; font-size: 16px; }
 .brand a { color: var(--bar-ink); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; border-radius: 4px; }
 .brand span { font-size: 26px; letter-spacing: .04em; line-height: 1; }
 .brand-cherry { fill: var(--accent); }
-.brand a:hover span { color: #FFFFFF; }
+.brand span { color: var(--bar-red); }
+.brand a:hover span { color: var(--bar-red-hi); }
+.cart-hub { fill: var(--bar-bg); }
 .topnav { display: flex; flex-wrap: wrap; gap: 2px 18px; }
 .topnav button { border: 0; background: none; color: var(--bar-muted); font-weight: 600; font-size: 15px; padding: 6px 0; cursor: pointer; border-bottom: 2px solid transparent; }
 .topnav button:hover { color: var(--bar-ink); }
