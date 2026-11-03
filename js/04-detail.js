@@ -29,6 +29,7 @@ function renderMain() {
 
   if (S._servFor !== d.id) { S._servFor = d.id; S.servings = 1; S._fillL = null; } // every drink opens at 1
   const perServing = liquidMl(d);
+  const canWater = d.method !== "Blended" && (DILUTION[d.method] ?? 0) > 0;
   const dil = S.prebatch ? (DILUTION[d.method] ?? 0) : 0;
   const floatMl = liquidMl(d, true);
   const floats = (d.ingredients || []).filter(i => i.float);
@@ -81,6 +82,16 @@ function renderMain() {
             <div class="tot"><b>${qHtml(fmtOz(totalMl / ML.oz))} oz</b><span>Same, in ounces</span></div>
             ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
           </div>` : ""}
+          <div class="spec-foot">
+            <div class="unit-toggle" id="mode" role="group" aria-label="Show amounts in"><span>Show in:</span>
+              <button type="button" data-m="spec" aria-pressed="${S.mode === "spec"}">As written</button>
+              <button type="button" data-m="oz" aria-pressed="${S.mode === "oz"}">oz</button>
+              <button type="button" data-m="ml" aria-pressed="${S.mode === "ml"}">ml</button>
+            </div>
+            ${canWater && S.servings > 1 ? (S.prebatch
+              ? `<button type="button" class="linkish water-link" id="prebatch-off">Remove the water</button>`
+              : `<button type="button" class="linkish water-link" id="prebatch-on">Add water so the batch pours ready to serve</button>`) : ""}
+          </div>
         </div>
         ${ratingSummary(d)}</div>
       <div class="actions"><button class="btn small primary" type="button" id="makeit-btn">Make it</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small" type="button" id="list-add">Add to list</button>` : ""}<button class="btn small" type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "+ Party"}</button>${S.backend === "supabase" && uid() ? `<button class="btn small${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}">${isFav(d) ? "♥ Favorited" : "♡ Favorite"}</button>` : ""}${S.canWrite && !mine ? `<button class="btn small" type="button" id="copy-btn">${d.standard ? "Save to my cart" : "Copy to my cart"}</button>` : ""}${mine ? `<button class="btn small" type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button class="btn small" type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button class="btn small danger ghost" type="button" id="del-btn">Delete</button>` : ""}</div>
@@ -95,18 +106,6 @@ function renderMain() {
     <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" hidden>
     ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your cart?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
 
-    <section class="batch" aria-label="Batch size">
-      <div class="ctl">
-        <span class="label">Show amounts in</span>
-        <div class="seg" id="mode">
-          <button type="button" data-m="spec" aria-pressed="${S.mode === "spec"}">As written</button>
-          <button type="button" data-m="oz" aria-pressed="${S.mode === "oz"}">oz</button>
-          <button type="button" data-m="ml" aria-pressed="${S.mode === "ml"}">ml</button>
-        </div>
-        <label class="check"><input type="checkbox" id="prebatch" ${S.prebatch ? "checked" : ""} ${d.method === "Blended" ? "disabled" : ""}>
-          <span>Pre-batch with water<br><span class="hint">${d.method === "Blended" ? "Blended drinks get their water from ice." : "Adds the melt you'd get from " + (d.method ? d.method.toLowerCase() : "mixing") + " on ice, so the batch pours ready to serve."}</span></span></label>
-      </div>
-    </section>
 
     ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
     ${d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p></div>` : ""}
@@ -122,7 +121,8 @@ function renderMain() {
   si.onchange = () => { const v = parseAmount(si.value); if (v > 0) setServ(v); else si.value = fmtNumPlain(S.servings); };
   si.onkeydown = e => { if (e.key === "Enter") si.blur(); };
   $("mode").onclick = e => { const b = e.target.closest("button[data-m]"); if (!b) return; S.mode = b.dataset.m; try { localStorage.setItem("mc-mode", S.mode); } catch (er) {} renderMain(); };
-  $("prebatch").onchange = e => { S.prebatch = e.target.checked; renderMain(); };
+  if ($("prebatch-on")) $("prebatch-on").onclick = () => { S.prebatch = true; renderMain(); };
+  if ($("prebatch-off")) $("prebatch-off").onclick = () => { S.prebatch = false; renderMain(); };
   const BATCH_UNITS = { oz: ["ounces", ML.oz], L: ["liters", 1000], gal: ["gallons", 3785.41] };
   if ($("batch-clear")) $("batch-clear").onclick = () => setServ(1);
   if ($("batch-open")) $("batch-open").onclick = () => {
@@ -133,16 +133,17 @@ function renderMain() {
           <div class="field"><label for="bf-size">Container size</label><input id="bf-size" type="text" inputmode="decimal" autocomplete="off" placeholder="${last === "oz" ? "64" : last === "gal" ? "1" : "1.75"}"></div>
           <div class="field"><label for="bf-unit">Unit</label><select id="bf-unit">${Object.entries(BATCH_UNITS).map(([k, [label]]) => `<option value="${k}" ${k === last ? "selected" : ""}>${label}</option>`).join("")}</select></div>
         </div>
-        <p class="hint" style="margin:0">One drink is about ${fmtMl(perServing * (1 + dil))} ml${dil ? " with water" : ""}.</p>
+        ${canWater ? `<label class="check"><input type="checkbox" id="bf-water" ${S.prebatch ? "checked" : ""}><span>Add water so the batch pours ready to serve<br><span class="hint">The melt you'd get from ${esc((d.method || "mixing").toLowerCase())} on ice, so you can chill it and pour.</span></span></label>` : ""}
         <p class="err" id="bf-err" role="alert" style="margin:0" hidden></p>
         <div class="share-actions"><button class="btn primary" type="submit">Batch it</button><button class="btn" type="button" id="bf-cancel">Cancel</button></div>
       </form>`);
     $("bf-cancel").onclick = closeSheet;
     $("bf-form").onsubmit = e => {
       e.preventDefault();
-      const n = parseAmount($("bf-size").value), unit = $("bf-unit").value, per = perServing * (1 + dil);
+      const water = $("bf-water") ? $("bf-water").checked : false;
+      const n = parseAmount($("bf-size").value), unit = $("bf-unit").value, per = perServing * (1 + (water ? (DILUTION[d.method] ?? 0) : 0));
       if (!(n > 0) || !per) { $("bf-err").hidden = false; $("bf-err").textContent = "Enter a container size, like 1.75"; return; }
-      S._batchUnit = unit;
+      S._batchUnit = unit; S.prebatch = water;
       const label = BATCH_UNITS[unit][0];
       S.servings = Math.max(0.5, Math.min(999, Math.floor(n * BATCH_UNITS[unit][1] / per * 2) / 2));
       S._fillL = `${fmtNumPlain(n)} ${n === 1 ? label.replace(/s$/, "") : label}`;

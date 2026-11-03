@@ -826,3 +826,12 @@ body.on-browse .list { max-height: none; }
 .batch-link { font-size: 14px; font-weight: 600; color: var(--accent); padding: 4px 2px; }
 .bf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .bf-row input, .bf-row select { font-size: 16px; }
+
+/* Under the spec: unit toggle and the water option (the dark strip is gone) */
+.spec-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
+.unit-toggle { display: flex; align-items: center; gap: 2px; font-size: 13.5px; color: var(--muted); }
+.unit-toggle span { margin-right: 4px; }
+.unit-toggle button { border: 0; background: none; color: var(--muted); font: inherit; font-weight: 600; padding: 6px 8px; min-height: 32px; border-radius: 4px; cursor: pointer; }
+.unit-toggle button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.unit-toggle button:hover:not([aria-pressed="true"]) { color: var(--ink); }
+.water-link { font-size: 13.5px; font-weight: 600; color: var(--accent); padding: 6px 0; }
