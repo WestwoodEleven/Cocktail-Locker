@@ -963,3 +963,7 @@ body.on-merged .grid > main { order: -1; }
 .site-foot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .foot-line { margin: 0; }
 .foot-line b { color: var(--ink); }
+
+.ra-body .ask-drink { grid-template-columns: minmax(0, 1fr); }
+.ra-body .ask-pic { display: none; }
+.ra-body .ask-thread { max-height: 52vh; overflow-y: auto; }

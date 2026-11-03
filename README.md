@@ -49,7 +49,7 @@ The "Back bar" design: condensed all-caps display type (Big Shoulders Display), 
 - **Back button**: every page change is a browser history step (`setHash` pushes, `routeHash` handles Back/forward), and Back from a recipe returns to the same spot on Home with search and filters kept (the recipe's ← Back does the same).
 - **Header**: one slim row on phones (logo, search button, account button). The account button opens a menu with My Bar, What can I make?, Bottle guide, Plan a party, Install, Sign in/out. The header tucks away while scrolling down and returns on scroll up.
 - **Tabs**: Home (the drink list), Bartender, My Bar. Tapping the open tab scrolls to the top.
-- **Recipe actions**: Make it, Mocktail, Share, ♥ and ⋯ More (Add to list, party plan, copy, Edit, Add photo, Delete), pinned above the tabs on phones.
+- **Recipe actions**: Ask, Mocktail, Share, ♥ and ⋯ More (Add to list, party plan, copy, Edit, Add photo, Delete), pinned above the tabs on phones.
 - **Drink list**: quick filter chips above the drinks on Home; the full filters open from the Filters button on phones.
 - **Pop-ups** slide up from the bottom on phones. Recipes, ratings and photos people have loaded are kept by the service worker so they open offline (public data only).
 
@@ -68,7 +68,7 @@ One place for the AI (`#ask`; the Bartender tab on phones, the top bar on comput
 - **Stock my bottles**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bottles. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
 - **Swap**: next to each ingredient, Claude suggests substitutes (from your bottles first) and can start your own version with the swap.
 - **Make it a mocktail**: on any drink, the AI makes a zero-proof version that keeps the drink's own non-alcoholic ingredients and uses your bottles first, shows each swap and anything you'd need to buy, and can be saved to your cart or made step by step. One AI request.
-- **Make it**: a big, step-by-step checklist that keeps the screen on while you mix.
+- **Ask about a recipe**: the Ask button on every recipe opens a pop-up conversation with the bartender about that drink (its spec goes along with the first question): sweeter or drier versions, swaps, batching, pairings, history. Each question is one AI request. (The step-by-step Make it mode is switched off for now; its code is still in `js/15-swap-makemode.js`.)
 - **Lists**: your own named lists (Thanksgiving, Summer patio). Public lists show on your locker page; you can make any list private.
 - **Notes with ratings**: add a short note when you rate; everyone sees them under "What people say".
 - **Locker pages and following**: tap a locker name to see all its drinks and public lists, copy its link (`#locker-…`), and follow it. "People I follow" appears in the Locker filter.

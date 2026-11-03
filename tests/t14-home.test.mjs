@@ -11,7 +11,7 @@ export default async function () {
   check("phone tab bar shown", await p.isVisible(".tabbar") && (await p.getAttribute(".tabbar [data-nav=home]", "aria-current")) === "page");
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
   await p.click(".home-day"); await p.waitForTimeout(150);
-  check("drink of the day opens the recipe", await p.isVisible("#makeit-btn") && (await p.evaluate("location.hash")).length > 1);
+  check("drink of the day opens the recipe", await p.isVisible("#ask-recipe-btn") && (await p.evaluate("location.hash")).length > 1);
   check("recipe page has no list, filters or tools beside it", !(await p.isVisible("#list")) && !(await p.isVisible("#find-title")) && !(await p.isVisible("#tools-title")));
   await p.click("#to-list"); await p.waitForTimeout(200);
   check("Back from a recipe returns to Home", await p.isVisible("#list") && (await p.evaluate("S.view")) === "home" && (await p.evaluate("location.hash")) === "");

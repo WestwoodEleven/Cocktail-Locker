@@ -41,14 +41,28 @@ export default async function () {
   check("Save opens the editor filled in", (await p.inputValue("#f-name")) === "Gimlet" && /ask the bartender/i.test(await p.text(".scan-banner")));
   await p.evaluate("openAsk()"); await p.waitForTimeout(100);
   check("conversation kept when you come back", (await p.text("#ask-thread")).includes("Drier Gimlet"));
-  await p.click("[data-ask-make='1:1']"); await p.waitForTimeout(150);
-  check("Make it opens make mode", (await p.text("#make-mode")).includes("Gin Rickey"));
-  await p.click("#mm-close");
+  check("answer cards have no Make it", !(await p.evaluate("!!document.querySelector('[data-ask-make]')")));
   await p.click("#ask-reset"); await p.waitForTimeout(100);
   check("Start over clears it", !(await p.evaluate("document.querySelector('.ask-drink')")) && (await p.evaluate("document.querySelectorAll('[data-ask-start]').length")) === 5);
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
+
+  // Ask about one recipe
+  const r = await open({ invoke, width: 390, hash: "#neg-1", home: true });
+  await r.click("#ask-recipe-btn"); await r.waitForTimeout(100);
+  check("recipe Ask opens a pop-up about the drink", /ask about negroni/i.test(await r.text("#gen-title")) && (await r.evaluate("document.querySelectorAll('[data-ra-start]').length")) === 5);
+  await r.fill("#ra-in", "Something refreshing with gin"); await r.press("#ra-in", "Enter"); await r.waitForTimeout(350);
+  const rs = await r.evaluate("window.__asks[window.__asks.length - 1]");
+  check("the recipe goes along with the question", rs.mode === "ask" && rs.messages[0].text.startsWith("About this recipe, Negroni:") && rs.messages[0].text.includes("Campari") && rs.messages[0].text.includes("Question: Something refreshing with gin"), rs.messages[0].text);
+  check("answer and cards show in the pop-up", (await r.text("#ra-thread")).includes("Here are two bright ones.") && (await r.evaluate("document.querySelectorAll('#ra-thread .ask-drink').length")) === 2);
+  await r.fill("#ra-in", "less sweet"); await r.press("#ra-in", "Enter"); await r.waitForTimeout(350);
+  const rs2 = await r.evaluate("window.__asks[window.__asks.length - 1]");
+  check("follow-ups continue the recipe conversation", rs2.messages.length === 3 && rs2.messages[2].text === "less sweet" && (await r.text("#ra-thread")).includes("Drier Gimlet"));
+  await r.click("[data-ra-save='3:0']"); await r.waitForTimeout(150);
+  check("Save to My Bar from the pop-up opens the editor", (await r.inputValue("#f-name")) === "Drier Gimlet");
+  check("no errors", r.errors.length === 0, r.errors.join("; "));
+  await r.close();
 
   const q = await open({ user: null, home: true });
   await q.evaluate("openAsk()"); await q.waitForTimeout(100);

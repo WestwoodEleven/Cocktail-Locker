@@ -16,7 +16,7 @@ export default async function () {
   // Recipe actions: four visible plus More, pinned on phones
   const r = await open({ width: 390, hash: "#rita", home: true });
   const vis = await r.evaluate("[...document.querySelectorAll('.recipe-bar button')].map(b => b.textContent.trim())");
-  check("recipe bar shows Make it, Mocktail, Share, heart and More", JSON.stringify(vis) === JSON.stringify(["Make it", "Mocktail", "Share", "♡", "⋯ More"]), JSON.stringify(vis));
+  check("recipe bar shows Ask, Mocktail, Share, heart and More", JSON.stringify(vis) === JSON.stringify(["Ask", "Mocktail", "Share", "♡", "⋯ More"]), JSON.stringify(vis));
   check("recipe bar is pinned on phones", (await r.evaluate("getComputedStyle(document.querySelector('.recipe-bar')).position")) === "sticky");
   await r.click("#more-btn"); await r.waitForTimeout(50);
   const more = await r.text("#gen-body");

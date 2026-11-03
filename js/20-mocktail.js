@@ -31,11 +31,9 @@ async function openMocktail(d, fresh) {
       ${x.shopping ? `<p class="idea-line hint"><b>You'll need:</b> ${esc(x.shopping)}</p>` : ""}
       <div class="panel-actions" style="justify-content:flex-start">
         <button class="btn primary small" type="button" id="mk-save">Save to My Bar</button>
-        <button class="btn small" type="button" id="mk-make">Make it</button>
         <button class="btn small ghost" type="button" id="mk-again">Try another version</button>
       </div>`);
     $("mk-save").onclick = () => { closeSheet(); openEditor(mockToDrink(d, x), false, { title: "Mocktail version.", body: "Tweak anything before saving.", warning: x.shopping ? "You'll need: " + x.shopping : "" }); };
-    $("mk-make").onclick = () => { closeSheet(); openMakeMode(Object.assign(mockToDrink(d, x), { id: "mock-" + d.id })); };
     $("mk-again").onclick = () => openMocktail(d, true);
   };
   if (!fresh && S.mockCache[key]) return draw(S.mockCache[key]);

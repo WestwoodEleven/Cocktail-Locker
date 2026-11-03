@@ -20,9 +20,8 @@ export default async function () {
   check("marks what you need to get", t.includes("Need") && t.includes("You'll need: A non-alcoholic aperitivo"));
   const sent = await p.evaluate("window.__MOCK.lastInvoke");
   check("sends the drink and your bar", sent.drink.name === "Negroni" && sent.drink.ingredients.length === 3 && sent.bar.liquors.includes("Gin"));
-  await p.click("#mk-make"); await p.waitForTimeout(100);
-  check("Make it opens the mocktail in make mode", (await p.text("#make-mode")).includes("Faux Negroni"));
-  await p.click("#mm-close");
+  check("no Make it in the mocktail pop-up", !(await p.evaluate("!!document.getElementById('mk-make')")));
+  await p.keyboard.press("Escape");
   await p.click("#mock-btn"); await p.waitForTimeout(50);
   check("second open is instant (cached)", (await p.evaluate("window.__mockCalls")) === 1 && (await p.text("#gen-body")).includes("Faux Negroni"));
   await p.click("#mk-save"); await p.waitForTimeout(100);

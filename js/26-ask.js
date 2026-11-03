@@ -40,7 +40,6 @@ function askCardHtml(x, mi, di) {
       ${(x.need || []).length ? `<p class="ask-need"><b>You'll need:</b> ${esc(x.need.join(", "))}</p>` : ""}
       <div class="panel-actions" style="justify-content:flex-start">
         <button class="btn small primary" type="button" data-ask-save="${id}">Save to My Bar</button>
-        <button class="btn small" type="button" data-ask-make="${id}">Make it</button>
         <button class="btn small" type="button" data-ask-other="${id}">Try another</button>
       </div>
     </div>
@@ -101,10 +100,6 @@ VIEWS.ask = function renderAsk() {
     const d = askDrink(x); d.origin = "AI bartender";
     openEditor(d, false, { title: "From Ask the bartender.", body: "Tweak anything before saving.", warning: (x.need || []).length ? "You'll need: " + x.need.join(", ") : "" });
   });
-  m.querySelectorAll("[data-ask-make]").forEach(b => b.onclick = () => {
-    const x = pick(b.dataset.askMake); if (!x) return;
-    openMakeMode(Object.assign(askDrink(x), { id: "ask-" + b.dataset.askMake }));
-  });
   m.querySelectorAll("[data-ask-other]").forEach(b => b.onclick = () => {
     const x = pick(b.dataset.askOther); if (!x) return;
     askSend(`Give me a different option instead of the ${x.name}.`);
@@ -136,4 +131,65 @@ async function askSend(text, isRetry) {
   const answers = document.querySelectorAll("#ask-thread .ask-a, #ask-thread .ask-err");
   const last = answers[answers.length - 1];
   if (last) last.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ---------- Ask about one recipe ----------
+// The Ask button on a recipe opens a pop-up conversation about that drink. Its spec rides along with the
+// first question, so "make it less sweet" or "what can I use instead of Campari?" are about this drink.
+const RECIPE_ASK_STARTS = ["Make it less sweet", "What can I swap for one of these?", "How do I batch this for 10?", "What food goes with it?", "What's the story behind it?"];
+function recipeContext(d) {
+  const ings = (d.ingredients || []).map(i => { const s = show(i, 1, "spec"); return `${s.q}${s.u ? " " + s.u : ""} ${i.name}${i.brand ? " (" + i.brand + ")" : ""}${i.float ? " (float)" : ""}`.replace(/\s+/g, " ").trim(); });
+  return `About this recipe, ${d.name}: ${[d.method, d.glass].filter(Boolean).join(", ")}; ${ings.join("; ")}${d.garnish ? "; garnish " + d.garnish : ""}.`.slice(0, 420);
+}
+function openRecipeAsk(d) {
+  if (!S.rAsk || S.rAsk.id !== d.id) S.rAsk = { id: d.id, d, msgs: [], loading: false, error: "" };
+  renderRecipeAsk();
+}
+function renderRecipeAsk() {
+  const A = S.rAsk, d = A.d, signedIn = !!uid();
+  const body = sheet(`Ask about ${d.name}`, !signedIn
+    ? `<p style="margin:0">Sign in to ask the bartender about this drink: swaps, sweeter or drier versions, batching, food pairings and more.</p>
+       <div class="share-actions"><button class="btn primary" type="button" id="ra-signin">Sign in or join free</button></div>`
+    : `<div class="ask-thread" id="ra-thread">
+        ${A.msgs.map((msg, mi) => msg.role === "user"
+          ? `<div class="ask-q"><span class="label">You</span><p>${esc(msg.text)}</p></div>`
+          : `<div class="ask-a"><span class="label">Bartender</span>${msg.text ? `<p class="ask-answer">${esc(msg.text)}</p>` : ""}${(msg.drinks || []).map((x, di) => askCardHtml(x, mi, di).replace(/data-ask-(save|other)=/g, "data-ra-$1=")).join("")}</div>`).join("")}
+        ${A.loading ? `<div class="ask-a"><span class="label">Bartender</span><p class="ask-answer dots">Mixing up an answer</p></div>` : ""}
+        ${A.error ? `<p class="err" style="margin:0">${esc(A.error)}</p>` : ""}
+      </div>
+      ${!A.msgs.length ? `<div class="ask-starts">${RECIPE_ASK_STARTS.map((t, i) => `<button type="button" data-ra-start="${i}">${esc(t)}</button>`).join("")}</div>` : ""}
+      <form class="ask-form" id="ra-form">
+        <label class="sr-only" for="ra-in">Your question about ${esc(d.name)}</label>
+        <textarea id="ra-in" rows="2" maxlength="300" placeholder="${A.msgs.length ? "Ask a follow-up" : "Ask anything about this drink"}" ${A.loading ? "disabled" : ""}>${esc(A.draft || "")}</textarea>
+        <button class="btn primary" type="submit" ${A.loading ? "disabled" : ""}>Ask</button>
+      </form>
+      <p class="hint" style="margin:0">Each question uses one of your 25 daily AI requests.</p>`);
+  body.classList.add("ra-body");
+  if ($("ra-signin")) { $("ra-signin").onclick = () => { closeSheet(); $("auth-btn").click(); window.scrollTo({ top: 0 }); }; return; }
+  body.querySelectorAll("[data-ra-start]").forEach(b => b.onclick = () => recipeAskSend(RECIPE_ASK_STARTS[Number(b.dataset.raStart)]));
+  $("ra-form").onsubmit = e => { e.preventDefault(); const q = $("ra-in").value.trim(); if (q) recipeAskSend(q); };
+  $("ra-in").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("ra-form").requestSubmit(); } });
+  const pick = v => { const [mi, di] = v.split(":").map(Number); return (A.msgs[mi] && A.msgs[mi].drinks || [])[di]; };
+  body.querySelectorAll("[data-ra-save]").forEach(b => b.onclick = () => {
+    const x = pick(b.dataset.raSave); if (!x) return;
+    const nd = askDrink(x); nd.origin = "AI bartender"; closeSheet();
+    openEditor(nd, false, { title: "From Ask the bartender.", body: "Tweak anything before saving.", warning: (x.need || []).length ? "You'll need: " + x.need.join(", ") : "" });
+  });
+  body.querySelectorAll("[data-ra-other]").forEach(b => b.onclick = () => { const x = pick(b.dataset.raOther); if (x) recipeAskSend(`Give me a different version instead of the ${x.name}.`); });
+  const t = $("ra-thread"); if (t && t.lastElementChild) t.lastElementChild.scrollIntoView({ block: "nearest" });
+}
+async function recipeAskSend(text) {
+  const A = S.rAsk; if (!A || A.loading || !uid()) return;
+  A.msgs.push({ role: "user", text: String(text).slice(0, 300) });
+  A.loading = true; A.error = ""; A.draft = ""; renderRecipeAsk();
+  const ctx = recipeContext(A.d);
+  const messages = A.msgs.slice(-10).map((x, i, arr) => ({ role: x.role, text: (i === 0 && x.role === "user" ? ctx + " Question: " : "") + (x.text || ""), drinks: (x.drinks || []).map(dd => dd.name) }));
+  const { data, code } = await invokeHelper({ mode: "ask", messages, useBar: S.ask.useBar, bar: S.ask.useBar ? barForAI() : null, fresh: S.ask.useBar ? S.fresh : [] });
+  if (S.rAsk !== A) return;
+  A.loading = false;
+  if (data && (data.answer || (data.drinks || []).length)) A.msgs.push({ role: "bartender", text: data.answer || "", drinks: data.drinks || [] });
+  else { A.error = code === "bad_image" ? "Ask the bartender isn't switched on yet. The site owner needs to redeploy the read-recipe function in Supabase."
+    : (code === "daily_limit" ? "You've used today's 25 AI requests. Try again tomorrow." : SCAN_ERR[code]) || "The bartender couldn't answer just now. Try again."; A.draft = (A.msgs.pop() || {}).text || ""; }
+  const modal = $("gen-modal");
+  if (modal && !modal.hidden && (document.getElementById("ra-form") || document.getElementById("ra-thread"))) renderRecipeAsk();
 }

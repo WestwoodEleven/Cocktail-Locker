@@ -112,7 +112,7 @@ function renderMain() {
     ${notesBlock(d)}
     ${!d.standard && !mine ? `<p class="report-line">${reportBtn("drink", d.id, d.owner, d.name, "Report this drink")}</p>` : ""}
     <div class="actions recipe-bar">
-      <button class="btn small primary" type="button" id="makeit-btn">Make it</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small fav-btn${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}" aria-label="${isFav(d) ? "Favorited" : "Favorite"}">${isFav(d) ? "♥" : "♡"}</button>` : ""}<button class="btn small" type="button" id="more-btn" aria-haspopup="dialog">⋯ More</button>
+      <button class="btn small primary" type="button" id="ask-recipe-btn" aria-haspopup="dialog" aria-label="Ask about this drink">Ask</button>${mockBtn(d)}<button class="btn small" type="button" id="share-btn">Share</button>${S.backend === "supabase" && uid() ? `<button class="btn small fav-btn${isFav(d) ? " fav-on" : ""}" type="button" id="fav-btn" aria-pressed="${isFav(d)}" aria-label="${isFav(d) ? "Favorited" : "Favorite"}">${isFav(d) ? "♥" : "♡"}</button>` : ""}<button class="btn small" type="button" id="more-btn" aria-haspopup="dialog">⋯ More</button>
     </div>
     <div id="more-actions" hidden>${S.backend === "supabase" && uid() ? `<button type="button" id="list-add">Add to list</button>` : ""}<button type="button" id="party-add">${S.party && S.party.items.some(x => x.id === d.id) ? "In your party ✓" : "Add to party plan"}</button>${S.canWrite && !mine ? `<button type="button" id="copy-btn">${d.standard ? "Save to My Bar" : "Copy to My Bar"}</button>` : ""}${mine ? `<button type="button" id="edit-btn">Edit</button>${canPhoto && !d.photo ? `<button type="button" id="photo-add" ${busy ? "disabled" : ""}>${busy ? "Uploading…" : "Add photo"}</button>` : ""}<button type="button" id="del-btn" data-danger>Delete</button>` : ""}</div>
   `;
@@ -155,7 +155,7 @@ function renderMain() {
     $("bf-size").focus();
   };
   $("share-btn").onclick = () => openShare(d);
-  $("makeit-btn").onclick = () => openMakeMode(d);
+  $("ask-recipe-btn").onclick = () => openRecipeAsk(d);
   $("more-btn").onclick = () => {
     const btns = [...$("more-actions").querySelectorAll("button")].filter(b => !b.disabled);
     sheet(d.name, `<div class="add-menu more-menu">${btns.map(b => `<button type="button" data-proxy="${b.id}"${b.dataset.danger !== undefined ? ' class="danger"' : ""}><b>${esc(b.textContent)}</b></button>`).join("")}</div>`);

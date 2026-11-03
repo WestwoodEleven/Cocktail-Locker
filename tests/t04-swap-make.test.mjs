@@ -25,23 +25,11 @@ export default async function () {
   check("swap results cached", (await p.evaluate("window.__MOCK.lastInvoke")) === null && (await p.text("#swap-body")).includes("Aperol"));
   await p.keyboard.press("Escape");
   check("Escape closes swap", await p.isHidden("#swap-modal"));
-  // make mode
-  await p.pick('pk'); await p.fill("#servings", "2"); await p.press("#servings", "Enter");
-  await p.click("#makeit-btn"); await p.waitForTimeout(100);
-  const mm = await p.text("#make-mode");
-  check("make mode shows doubled amounts", mm.includes("4 | oz | Gold rum") || mm.includes("4 oz | Gold rum"), mm.slice(0, 300));
-  check("float comes last", (await p.evaluate("[...document.querySelectorAll('.mm-n')].pop().textContent")).startsWith("Dark rum"));
-  check("steps include float and method", mm.includes("Float Dark rum on top.") && mm.includes("Shake hard"));
-  await p.click(".mm-ing[data-k='0']"); await p.click(".mm-ing[data-k='1']");
-  check("progress counts poured", (await p.text("#mm-progress")) === "2 of 5 poured");
-  await p.setViewportSize({ width: 390, height: 844 });
-  check("make mode fits phone", (await p.evaluate("document.querySelector('#make-mode').scrollWidth")) <= 390);
-  await p.click("#mm-done");
-  check("done closes make mode", await p.isHidden("#make-mode"));
+  check("Make it is gone from recipes", !(await p.evaluate("!!document.getElementById('makeit-btn')")));
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
   const q = await open({ user: null });
   await q.pick('neg-1');
-  check("signed out: no swap buttons, Make it still there", (await q.evaluate("document.querySelectorAll('.swap').length")) === 0 && await q.isVisible("#makeit-btn"));
+  check("signed out: no swap buttons, Ask still there", (await q.evaluate("document.querySelectorAll('.swap').length")) === 0 && await q.isVisible("#ask-recipe-btn"));
   await q.close();
 }
