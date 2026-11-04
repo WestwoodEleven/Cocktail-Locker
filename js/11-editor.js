@@ -31,7 +31,7 @@ function renderEditor(errMsg) {
     <div class="ing-row">
       <input class="amt" id="ing-amt-${k}" type="text" inputmode="decimal" placeholder="Amount" value="${esc(i.amountText)}" aria-label="Amount">
       <select class="ing-unit" id="ing-unit-${k}" aria-label="Unit">${UNIT_OPTS.map(([v, l]) => `<option value="${v}" ${i.unit === v ? "selected" : ""}>${l}</option>`).join("")}</select>
-      <input class="ing-name" id="ing-name-${k}" type="text" placeholder="Ingredient" value="${esc(i.name)}" aria-label="Ingredient">
+      <input class="ing-name" id="ing-name-${k}" type="text" placeholder="Ingredient name" value="${esc(i.name)}" aria-label="Ingredient">
       <input class="ing-brand" id="ing-brand-${k}" type="text" placeholder="Recommended brand (optional)" value="${esc(i.brand || "")}" aria-label="Recommended brand (optional)">
       <select class="ing-kind" id="ing-kind-${k}" aria-label="Ingredient type"><option value="">${esc("Auto: " + guessKind(i.name))}</option>${KINDS.map(x => `<option ${i.kind === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
       <label class="flt" title="Pour on top of each glass at serving"><input type="checkbox" id="ing-float-${k}" ${i.float ? "checked" : ""}>Float</label>
@@ -42,11 +42,11 @@ function renderEditor(errMsg) {
       <div class="editor-top"><h2>${e.id ? "Edit " + esc(e.name || "drink") : S.isCopy ? "Copy to your cart" : "New drink"}</h2>
         ${!e.id && !S.isCopy && S.backend === "supabase" ? `<button class="btn small" type="button" id="fill-photo">Fill from a photo</button>` : ""}</div>
       ${S.scanNote ? `<div class="scan-banner"><span><b>${esc(S.scanNote.title || "Read from your photo.")}</b> ${esc(S.scanNote.body || "Check the amounts and names before saving.")}</span>${S.scanNote.warning ? `<span>${esc(S.scanNote.warning)}</span>` : ""}</div>` : ""}
-      <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Drink name" autocomplete="off"></div>
+      <div class="field"><label for="f-name">Name</label><input id="f-name" type="text" value="${esc(e.name)}" placeholder="Required" autocomplete="off"></div>
       <div class="row2">
-        <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Glass"></div>
+        <div class="field"><label for="f-glass">Glass</label><input id="f-glass" type="text" list="glasses" value="${esc(e.glass)}" placeholder="Optional"></div>
         <div class="field"><label for="f-method">Method</label><select id="f-method">${METHODS.map(x => `<option ${e.method === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
-        <div class="field"><label for="f-garnish">Garnish</label><input id="f-garnish" type="text" value="${esc(e.garnish)}" placeholder="Garnish"></div>
+        <div class="field"><label for="f-garnish">Garnish</label><input id="f-garnish" type="text" value="${esc(e.garnish)}" placeholder="Optional"></div>
       </div>
       <div class="row2">
         <div class="field"><label for="f-type">Cocktail type</label><select id="f-type"><option value="" id="f-type-auto">${esc("Auto: " + guessType(draftDrink()))}</option>${TYPES.map(x => `<option ${e.type === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
@@ -62,7 +62,7 @@ function renderEditor(errMsg) {
         </div>
         <div><button class="btn small" type="button" id="add-ing">+ Add ingredient</button> <span class="hint">Fractions like 3/4 or 1 1/2 work. Brand is optional. Type sorts the ingredient for filters; Auto guesses from the name. Tick Float for anything poured on top at the end.</span></div>
       </div>
-      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Notes">${esc(e.notes)}</textarea></div>
+      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Optional: how to make it, tips or the story behind it">${esc(e.notes)}</textarea></div>
       ${errMsg ? `<div class="err" role="alert">${esc(errMsg)}</div>` : ""}
       <div class="form-actions"><button class="btn primary" type="submit" id="save-btn">${e.id ? "Save changes" : "Add to My Cocktail Cart"}</button><button class="btn" type="button" id="cancel-btn">Cancel</button></div>
     </form>`;

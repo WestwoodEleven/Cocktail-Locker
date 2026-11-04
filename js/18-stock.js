@@ -113,7 +113,7 @@ VIEWS.stock = function renderStock() {
       <input type="checkbox" id="inc-${it.id}" data-inc="${it.id}" ${it.include ? "checked" : ""} aria-label="Add ${esc(it.name)}">
       <div class="stock-fields">
         <input type="text" id="nm-${it.id}" data-nm="${it.id}" value="${esc(it.name)}" aria-label="Name" maxlength="60">
-        <input type="text" id="bd-${it.id}" data-bd="${it.id}" value="${esc(it.brand)}" placeholder="Brand" aria-label="Brand" maxlength="80">
+        <input type="text" id="bd-${it.id}" data-bd="${it.id}" value="${esc(it.brand)}" placeholder="Brand (optional)" aria-label="Brand" maxlength="80">
         <select id="gp-${it.id}" data-gp="${it.id}" aria-label="Where it goes">${STOCK_GROUPS.map(([v, l]) => `<option value="${v}" ${it.group === v ? "selected" : ""}>${l}</option>`).join("")}</select>
       </div>
       <div class="stock-meta">${it.count > 1 ? `<span class="chip">×${it.count}</span>` : ""}${it.confidence !== "high" ? `<span class="chip amber" title="The label was hard to read">${it.confidence === "low" ? "Guess, check it" : "Check name"}</span>` : ""}${STATUS_TEXT[s] ? `<span class="hint">${STATUS_TEXT[s]}</span>` : ""}</div>

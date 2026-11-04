@@ -71,7 +71,7 @@ VIEWS.ask = function renderAsk() {
       ${!A.msgs.length ? `<div class="ask-starts">${ASK_STARTS.map(([t], i) => `<button type="button" data-ask-start="${i}">${esc(t)}</button>`).join("")}</div>` : ""}
       <form class="ask-form" id="ask-form">
         <label class="sr-only" for="ask-in">${A.msgs.length ? "Ask a follow-up" : "Ask the bartender"}</label>
-        <textarea id="ask-in" rows="2" maxlength="500" placeholder="${A.msgs.length ? "Follow up, like “less sweet” or “make it for 8”" : "What are you in the mood for?"}" ${A.loading ? "disabled" : ""}></textarea>
+        <textarea id="ask-in" rows="2" maxlength="500" placeholder="${A.msgs.length ? "Ask a follow-up question" : "What are you in the mood for?"}" ${A.loading ? "disabled" : ""}></textarea>
         <button class="btn primary" type="submit" ${A.loading ? "disabled" : ""}>Ask</button>
       </form>
       <div class="ask-opts">

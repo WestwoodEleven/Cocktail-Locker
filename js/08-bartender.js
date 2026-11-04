@@ -1,13 +1,13 @@
 // The Cocktail Locker: bartender. Scripts share one global scope and load in numbered order.
 // ---------- make me a drink ----------
 const GROUPS = [
-  { key: "liquors", label: "Liquors & liqueurs", saved: true, kinds: ["Spirit", "Liqueur", "Vermouth & wine"], ph: "Add a bottle, like bourbon or Campari",
+  { key: "liquors", label: "Liquors & liqueurs", saved: true, kinds: ["Spirit", "Liqueur", "Vermouth & wine"], ph: "Name of a spirit or liqueur",
     extra: ["Bourbon", "Rye whiskey", "London dry gin", "Vodka", "White rum", "Dark rum", "Blanco tequila", "Mezcal", "Cognac", "Campari", "Aperol", "Sweet vermouth", "Dry vermouth", "Cointreau", "Green Chartreuse", "Maraschino liqueur", "Amaro Nonino", "Coffee liqueur"] },
-  { key: "syrups", label: "Syrups & sweeteners", saved: true, kinds: ["Syrup & sweetener"], ph: "Add a syrup, like honey syrup",
+  { key: "syrups", label: "Syrups & sweeteners", saved: true, kinds: ["Syrup & sweetener"], ph: "Name of a syrup or sweetener",
     extra: ["Simple syrup", "Rich demerara syrup", "Honey syrup", "Agave syrup", "Maple syrup", "Grenadine", "Orgeat", "Cinnamon syrup", "Ginger syrup"] },
-  { key: "bitters", label: "Bitters", saved: true, kinds: ["Bitters"], ph: "Add bitters, like Angostura",
+  { key: "bitters", label: "Bitters", saved: true, kinds: ["Bitters"], ph: "Name of the bitters",
     extra: ["Angostura bitters", "Orange bitters", "Peychaud's bitters", "Chocolate bitters", "Mole bitters"] },
-  { key: "fresh", label: "Juices, mixers & garnishes", saved: false, kinds: ["Juice", "Soda & mixer", "Egg & dairy", "Other"], ph: "Add what's in the fridge, like limes or soda",
+  { key: "fresh", label: "Juices, mixers & garnishes", saved: false, kinds: ["Juice", "Soda & mixer", "Egg & dairy", "Other"], ph: "A juice, mixer or garnish you have",
     extra: ["Limes", "Lemons", "Oranges", "Grapefruit juice", "Pineapple juice", "Cranberry juice", "Soda water", "Tonic water", "Ginger beer", "Cola", "Prosecco", "Egg whites", "Heavy cream", "Mint", "Cucumber", "Espresso"] }
 ];
 S.bar = { liquors: [], syrups: [], bitters: [] };
@@ -169,14 +169,14 @@ function openBottleAdd(typed) {
   const opts = g => suggestionsFor(g).map(n => `<option value="${esc(n)}">`).join("");
   sheet("Add a bottle", `<form id="ba-form" class="ba-form">
       <div class="field"><label for="ba-kind">Type</label><select id="ba-kind">${saved.map(g => `<option value="${g.key}">${esc(g.label)}</option>`).join("")}</select></div>
-      <div class="field"><label for="ba-name">Bottle</label><input id="ba-name" type="text" list="ba-dl" maxlength="60" autocomplete="off" placeholder="${esc(saved[0].ph.replace(/^Add a bottle, /, "").replace(/^like/, "Like"))}" required></div>
+      <div class="field"><label for="ba-name">Bottle</label><input id="ba-name" type="text" list="ba-dl" maxlength="60" autocomplete="off" placeholder="${esc(saved[0].ph)}" required></div>
       <datalist id="ba-dl">${opts(saved[0])}</datalist>
-      <div class="field"><label for="ba-brand">Brand (optional)</label><input id="ba-brand" type="text" maxlength="60" autocomplete="off" placeholder="Like Buffalo Trace"></div>
+      <div class="field"><label for="ba-brand">Brand (optional)</label><input id="ba-brand" type="text" maxlength="60" autocomplete="off" placeholder="Maker or label, if it matters"></div>
       <div class="share-actions"><button class="btn primary" type="submit">Add</button><button class="btn" type="button" id="ba-done">Done</button></div>
       <p class="hint" id="ba-msg" role="status" style="margin:0"></p>
     </form>`);
   const kind = $("ba-kind"), name = $("ba-name"), brand = $("ba-brand");
-  const PH = { liquors: "Like bourbon or Campari", syrups: "Like honey syrup", bitters: "Like Angostura" };
+  const PH = Object.fromEntries(saved.map(g => [g.key, g.ph]));
   kind.onchange = () => { const g = saved.find(x => x.key === kind.value); $("ba-dl").innerHTML = opts(g); name.placeholder = PH[g.key] || ""; name.focus(); };
   $("ba-done").onclick = closeSheet;
   $("ba-form").onsubmit = e => {
@@ -235,7 +235,7 @@ function renderMake() {
         </div>
         <label class="check" for="p-taste-on"><input type="checkbox" id="p-taste-on" ${S.useTaste ? "checked" : ""}>
           <span>Use my favorites and top-rated drinks<br><span class="hint">${tasteHint()}</span></span></label>
-        <div class="field"><label for="p-notes">Anything else</label><input id="p-notes" type="text" maxlength="300" value="${esc(S.prefs.notes)}" placeholder="Anything else"></div>
+        <div class="field"><label for="p-notes">Anything else</label><input id="p-notes" type="text" maxlength="300" value="${esc(S.prefs.notes)}" placeholder="Other requests for the bartender (optional)"></div>
       </section>
       <div class="form-actions"><button class="btn primary" type="button" id="make-go" ${totalItems() ? "" : "disabled"}>Suggest 3 drinks</button></div>
       <div id="ideas" aria-live="polite">${ideasHtml()}</div>

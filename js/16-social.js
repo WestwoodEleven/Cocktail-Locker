@@ -39,7 +39,7 @@ function noteForm(d) {
   if (S.notesOff || !uid() || !ratingOf(d).mine) return "";
   const n = myNote(d);
   return `<div class="note-form"><label class="label" for="note-in">${n ? "Your note" : "Add a note with your rating"}</label>
-    <div class="chip-add"><input id="note-in" type="text" maxlength="280" value="${esc(n)}" placeholder="Add a note"><button class="btn small" type="button" id="note-save">Save note</button></div></div>`;
+    <div class="chip-add"><input id="note-in" type="text" maxlength="280" value="${esc(n)}" placeholder="Optional note with your rating (public)"><button class="btn small" type="button" id="note-save">Save note</button></div></div>`;
 }
 function notesBlock(d) {
   const rows = ratingNotes(d);
@@ -70,7 +70,7 @@ function openListsFor(d) {
     const body = sheet(`Add ${d.name} to a list`, `
       ${myLists().length ? `<ul class="list-pick">${myLists().map(c => `<li><label class="check"><input type="checkbox" data-col="${esc(c.id)}" ${S.colItems[c.id] && S.colItems[c.id].has(d.id) ? "checked" : ""}><span>${esc(c.name)} <span class="hint">${(S.colItems[c.id] || new Set()).size} drinks${c.is_public ? "" : " · private"}</span></span></label></li>`).join("")}</ul>`
         : `<p class="hint" style="margin:0">You don't have any lists yet. Make one for a party, a season or a theme.</p>`}
-      <div class="chip-add"><input id="newlist-name" type="text" maxlength="60" placeholder="New list name, like Thanksgiving"><button class="btn small primary" type="button" id="newlist-add">Create and add</button></div>`);
+      <div class="chip-add"><input id="newlist-name" type="text" maxlength="60" placeholder="Name for the new list"><button class="btn small primary" type="button" id="newlist-add">Create and add</button></div>`);
     body.querySelectorAll("[data-col]").forEach(cb => cb.onchange = async () => {
       const id = cb.dataset.col;
       const { error } = cb.checked ? await sb.from("collection_items").upsert({ collection_id: id, drink_id: d.id })

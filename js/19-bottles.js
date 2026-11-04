@@ -111,7 +111,7 @@ VIEWS.bottle = function renderBottle() {
         ${uid() ? `<div class="rate" style="border-top:0;padding-top:0"><span class="label">${mine ? "Your rating" : "Rate it"}</span>
           <div class="rate-stars" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n => `<button type="button" class="star${n <= mine ? " on" : ""}" data-bstar="${n}" role="radio" aria-checked="${n === mine}" aria-label="${n} star${n === 1 ? "" : "s"}">★</button>`).join("")}</div>
           ${mine ? `<button type="button" class="linkish" id="bt-rate-clear">Remove</button>` : ""}</div>
-          ${mine ? `<div class="note-form"><label class="label" for="bt-comment">${r.mine.comment ? "Your comment" : "Add a comment"}</label><div class="chip-add"><input id="bt-comment" type="text" maxlength="500" value="${esc(r.mine.comment || "")}" placeholder="Add a comment"><button class="btn small" type="button" id="bt-comment-save">Save</button></div></div>` : ""}`
+          ${mine ? `<div class="note-form"><label class="label" for="bt-comment">${r.mine.comment ? "Your comment" : "Add a comment"}</label><div class="chip-add"><input id="bt-comment" type="text" maxlength="500" value="${esc(r.mine.comment || "")}" placeholder="Your comment about this bottle (public)"><button class="btn small" type="button" id="bt-comment-save">Save</button></div></div>` : ""}`
           : `<p class="hint" style="margin:0">Sign in to rate this bottle.</p>`}
         ${reviews.length ? `<ul class="rnotes">${reviews.map(x => `<li><span class="stars">${starText(x.stars)}</span> <b>${x.user_id === uid() ? "You" : `<button type="button" class="linkish who" data-locker="${esc(x.user_id)}">${esc(lockerName(x.user_id))}</button>`}</b>${S.isAdmin && x.user_id !== uid() ? ` <button type="button" class="linkish" data-rmreview="${esc(x.user_id)}">Remove</button>` : ` ${reportBtn("comment", b.slug + "|" + x.user_id, x.user_id, x.comment)}`}<p>${esc(x.comment)}</p></li>`).join("")}</ul>` : ""}
       </section>
@@ -172,7 +172,7 @@ async function rateBottle(b, stars, comment) {
 }
 function suggestFix(b) {
   sheet("Suggest a fix", `<p class="hint" style="margin:0">What's wrong or missing on the ${esc(b.name)} page? The site owner will see it.</p>
-    <textarea id="fix-msg" maxlength="1000" rows="4" style="width:100%;padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--raised)" placeholder="For example: it's 50% ABV, not 45%"></textarea>
+    <textarea id="fix-msg" maxlength="1000" rows="4" style="width:100%;padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--raised)" placeholder="What's wrong, and what it should say"></textarea>
     <div class="panel-actions" style="justify-content:flex-start"><button class="btn primary small" type="button" id="fix-send">Send</button></div>`);
   $("fix-msg").focus();
   $("fix-send").onclick = async () => {

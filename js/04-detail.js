@@ -143,7 +143,7 @@ function renderMain() {
     sheet("Batch it", `<form id="bf-form" class="ba-form">
         <p class="hint" style="margin:0">How big is your container? We'll work out how many drinks fill it.</p>
         <div class="bf-row">
-          <div class="field"><label for="bf-size">Container size</label><input id="bf-size" type="text" inputmode="decimal" autocomplete="off" placeholder="${last === "oz" ? "64" : last === "gal" ? "1" : "1.75"}"></div>
+          <div class="field"><label for="bf-size">Container size</label><input id="bf-size" type="text" inputmode="decimal" autocomplete="off" placeholder="Container size"></div>
           <div class="field"><label for="bf-unit">Unit</label><select id="bf-unit">${Object.entries(BATCH_UNITS).map(([k, [label]]) => `<option value="${k}" ${k === last ? "selected" : ""}>${label}</option>`).join("")}</select></div>
         </div>
         ${canWater ? `<label class="check"><input type="checkbox" id="bf-water" ${S.prebatch ? "checked" : ""}><span>Add water so the batch pours ready to serve<br><span class="hint">The melt you'd get from ${esc((d.method || "mixing").toLowerCase())} on ice, so you can chill it and pour.</span></span></label>` : ""}
