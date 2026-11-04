@@ -1035,3 +1035,10 @@ body.on-merged .grid > main { order: -1; }
 /* ---------- Missing something? (swaps) ---------- */
 .missing-row { margin: 4px 0 10px; }
 .missing-row .linkish { color: var(--accent); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; }
+
+/* ingredient names that open a how-to guide */
+.spec-table .ing-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left;
+  text-decoration: underline dotted; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.spec-table .ing-link:hover { color: var(--accent); }
+.howto-amount { margin: 0; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
+.howto-buy { margin: 0; font-weight: 600; }

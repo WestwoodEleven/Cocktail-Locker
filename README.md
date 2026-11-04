@@ -112,7 +112,7 @@ Opening someone else's drink adds one view (once per drink per visit; your own d
 
 ### How-to guides
 
-Recipe pages show a **How to** row under the spec with the techniques and house syrups that recipe uses (shake, stir, dry shake, double strain, muddle, rinse, float, express a peel, fresh citrus; simple, rich, honey, honey-ginger, demerara, agave, ginger, cinnamon and raspberry syrups, grenadine, orgeat, saline). Tapping one opens a short guide. They're matched from the ingredients, method, garnish and notes, and written once in `js/30-howto.js`.
+Syrups and fresh citrus in a recipe's spec have a dotted underline: tap the name for a short guide (simple, rich 2:1, honey, honey-ginger, demerara, agave, ginger, cinnamon and raspberry syrups, grenadine, orgeat, saline, fresh citrus). The ratio in the name picks the version ("2:1 simple syrup" opens rich simple syrup, "3:1 honey syrup" shows 3 parts honey to 1 water). Each guide says how much the drink (or the batch you've scaled to) needs and how much to make, for example "This batch needs 9 oz. 1 cup sugar and 1 cup hot water makes about 12 oz", or how many limes to squeeze. Syrups people usually buy (orgeat, grenadine, ginger) lead with what to look for. Techniques (shake, stir, dry shake, double strain, muddle, rinse, float, express a peel) show in a **How to** row under the spec. All of it lives in `js/30-howto.js`.
 
 ### Photo check
 

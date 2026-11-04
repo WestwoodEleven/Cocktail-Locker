@@ -39,13 +39,13 @@ function renderMain() {
     ? `<span class="note brand-note">Recommended: <button type="button" class="brand-link" data-bottle="${esc(i.brand)}">${esc(i.brand)}</button></span>`
     : `<span class="note brand-note">Recommended: <b>${esc(i.brand)}</b></span>`;
   const row = (i, mult, cls) => { const s = show(i, mult, S.mode);
-    return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${qHtml(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)}${swapBtn(d, i)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
+    return `<tr${cls ? ` class="${cls}"` : ""}><td class="q">${qHtml(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${typeof ingNameHtml === "function" ? ingNameHtml(d, i) : esc(i.name)}${swapBtn(d, i)}${brandNote(i)}${s.note ? `<span class="note">${esc(s.note)}</span>` : ""}</td></tr>`; };
   const rows = (d.ingredients || []).filter(i => !i.float).map(i => row(i, S.servings)).join("");
   const many = S.servings !== 1;
   const floatRows = floats.map(i => {
     const s = show(i, S.servings, S.mode), g = show(i, 1, S.mode);
     const note = many ? `${g.q}${g.u ? " " + g.u : ""} on top of each glass at serving. Keep it out of the batch.` : "";
-    return `<tr class="float"><td class="q">${qHtml(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${esc(i.name)} <span class="chip amber float-tag">Float</span>${swapBtn(d, i)}${brandNote(i)}${note ? `<span class="note">${esc(note)}</span>` : ""}</td></tr>`;
+    return `<tr class="float"><td class="q">${qHtml(s.q)}</td><td class="u">${esc(s.u)}</td><td class="n">${typeof ingNameHtml === "function" ? ingNameHtml(d, i) : esc(i.name)} <span class="chip amber float-tag">Float</span>${swapBtn(d, i)}${brandNote(i)}${note ? `<span class="note">${esc(note)}</span>` : ""}</td></tr>`;
   }).join("");
   let waterRow = "";
   if (S.prebatch && dil > 0) {
