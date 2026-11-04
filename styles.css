@@ -1074,3 +1074,20 @@ body.on-merged .grid > main { order: -1; }
 .lg-entry { display: flex; gap: 10px; align-items: center; width: 100%; background: none; border: 0; padding: 7px 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 .lg-entry .txt { display: flex; flex-direction: column; min-width: 0; }
 .lg-note { font-size: 14px; overflow-wrap: anywhere; }
+
+/* Drink of the day on tablets and computers: the picture fills its whole column, centered,
+   and on iPad-size screens (signed out too) the card spans the width with the picture beside the recipe. */
+.home-day .glassbox { align-items: center; justify-content: center; }
+.home-day img { object-position: center; }
+@media (min-width: 781px) {
+  .home-top.signed .home-day > .glassbox, .home-top.signed .home-day > img { height: 100%; min-height: 220px; align-self: stretch; }
+}
+@media (min-width: 781px) and (max-width: 1000px) {
+  .home-top:not(.signed) .home-day { flex: 1 1 100%; max-width: none; display: grid; grid-template-columns: 280px minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .home-top:not(.signed) .home-day-head { grid-column: 1 / -1; }
+  .home-top:not(.signed) .home-day > .glassbox, .home-top:not(.signed) .home-day > img { height: 100%; min-height: 220px; align-self: stretch; }
+  .home-top:not(.signed) .home-day-body { align-self: center; }
+}
+@media (min-width: 781px) {
+  .home-top.signed .home-day > .glassbox .glass-svg, .home-top:not(.signed) .home-day > .glassbox .glass-svg { height: auto; width: auto; max-height: 72%; max-width: 72%; }
+}
