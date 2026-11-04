@@ -1,10 +1,17 @@
 // The Cocktail Locker: ingredient swaps (Claude) and step-by-step Make mode. Scripts share one global scope and load in numbered order.
 
 // ---------- swaps ----------
-function swapBtn(d, i) {
-  if (S.backend !== "supabase" || !uid()) return "";
-  const idx = (d.ingredients || []).indexOf(i);
-  return idx < 0 ? "" : ` <button type="button" class="swap" data-swap="${idx}" title="Don't have it? Get a substitute">Swap</button>`;
+// One "Missing something?" link under the spec (instead of a Swap button on every ingredient).
+function swapBtn() { return ""; }
+function missingHtml(d) {
+  if (S.backend !== "supabase" || !uid() || !(d.ingredients || []).some(i => i.name)) return "";
+  return `<div class="missing-row"><button type="button" class="linkish" id="missing-btn" aria-haspopup="dialog">Missing something? Swap an ingredient</button></div>`;
+}
+function openMissing(d) {
+  swapSheet(`<p class="hint" style="margin:0 0 6px">Pick the one you don't have and we'll suggest what to use instead.</p>
+    <div class="add-menu miss-menu">${(d.ingredients || []).map((i, k) => i.name ? `<button type="button" data-miss="${k}"><b>${esc(i.name)}</b>${i.brand ? `<span>${esc(i.brand)}</span>` : ""}</button>` : "").join("")}</div>`);
+  $("swap-title").textContent = "What are you missing?";
+  document.querySelectorAll("#swap-body [data-miss]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.miss)));
 }
 S.swapCache = {};
 function swapSheet(html) {

@@ -93,6 +93,7 @@ function renderMain() {
               ? `<button type="button" class="linkish water-link" id="prebatch-off">Remove the water</button>`
               : `<button type="button" class="linkish water-link" id="prebatch-on">Add water so the batch pours ready to serve</button>`) : ""}
           </div>
+          ${missingHtml(d)}
           ${typeof howtoHtml === "function" ? howtoHtml(d) : ""}
         </div>
         ${ratingSummary(d)}</div>
@@ -173,6 +174,7 @@ function renderMain() {
   $("to-list").onclick = () => { if (history.state && history.state.inSite) history.back(); else showList(null); };
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
+  if ($("missing-btn")) $("missing-btn").onclick = () => openMissing(d);
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });

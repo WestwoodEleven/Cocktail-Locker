@@ -9,8 +9,10 @@ const invoke = `async (name, body) => {
 export default async function () {
   const p = await open({ invoke });
   await p.pick('neg-1');
-  check("swap buttons on ingredients", (await p.evaluate("document.querySelectorAll('.spec-table .swap').length")) === 3);
-  await p.click(".spec-table .swap[data-swap='1']"); await p.waitForTimeout(50);
+  check("no Swap button on each ingredient, one Missing something? link", (await p.evaluate("document.querySelectorAll('.spec-table .swap').length")) === 0 && await p.isVisible("#missing-btn"));
+  await p.click("#missing-btn"); await p.waitForTimeout(50);
+  check("it asks what you're missing, listing the ingredients", /what are you missing/i.test(await p.text("#swap-title")) && (await p.evaluate("document.querySelectorAll('#swap-body [data-miss]').length")) === 3);
+  await p.click("#swap-body [data-miss='1']"); await p.waitForTimeout(50);
   check("swap shows loading", (await p.text("#swap-body")).includes("Finding substitutes"));
   await p.waitForTimeout(300);
   const t = await p.text("#swap-body");
@@ -21,7 +23,7 @@ export default async function () {
   await p.click("#cancel-btn");
   // second time is cached (no new request)
   await p.evaluate("window.__MOCK.lastInvoke = null");
-  await p.click(".spec-table .swap[data-swap='1']"); await p.waitForTimeout(50);
+  await p.click("#missing-btn"); await p.click("#swap-body [data-miss='1']"); await p.waitForTimeout(50);
   check("swap results cached", (await p.evaluate("window.__MOCK.lastInvoke")) === null && (await p.text("#swap-body")).includes("Aperol"));
   await p.keyboard.press("Escape");
   check("Escape closes swap", await p.isHidden("#swap-modal"));
@@ -30,6 +32,6 @@ export default async function () {
   await p.close();
   const q = await open({ user: null });
   await q.pick('neg-1');
-  check("signed out: no swap buttons, Ask still there", (await q.evaluate("document.querySelectorAll('.swap').length")) === 0 && await q.isVisible("#ask-recipe-btn"));
+  check("signed out: no swap link, Ask still there", !(await q.evaluate("!!document.getElementById('missing-btn')")) && await q.isVisible("#ask-recipe-btn"));
   await q.close();
 }
