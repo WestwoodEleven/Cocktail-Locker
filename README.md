@@ -134,6 +134,10 @@ Syrups and fresh citrus in a recipe's spec have a dotted underline: tap the name
 
 New drink and bottle photos get a quick AI check (`photo_check` in the `read-recipe` function, about 800 px, one small request). Drink-related photos go up right away; anything that isn't about drinks or looks inappropriate is uploaded but hidden in `photo_reviews` until an admin approves or rejects it on **Review photos** (My Cocktail Cart, or `#photo-review`). The owner sees "waiting for a quick review". Photo checks don't count toward the 25-a-day AI allowance; they have their own cap (`PHOTO_DAILY_LIMIT`, default 30). Admins' own photos skip the check. If the check can't run, the photo goes up as before and the Report button still applies. The check runs in the browser before upload, so it's a filter for honest mistakes and casual misuse, not a hard security wall. Run [`supabase/photo-review-setup.sql`](supabase/photo-review-setup.sql) once and redeploy `read-recipe`.
 
+### Hosting
+
+The site is plain static files. It's hosted on **Cloudflare Pages**, connected to this GitHub repo: every push to `main` publishes in about a minute (no build step; build command empty, output directory `/`). `_headers` tells browsers to always re-check the app shell (`index.html`, `sw.js`, the manifest) so updates appear right away; scripts and styles carry `?v=` hashes from `tools/stamp.mjs`. It also works on GitHub Pages (`CNAME`, `.nojekyll`).
+
 ### Site stats and traffic
 
 Admins get **Site stats** on My Cocktail Cart (or `#stats`): members, sign-ins this week, drinks, photos, ratings, favorites and lists; bar charts of new members, drinks added and AI requests for the last 8 weeks; AI use by feature for the last 30 days (and how many people hit the daily limit); and the top-rated and most-favorited drinks. It's one database call, `admin_stats()`, that only admins can run: run [`supabase/stats-setup.sql`](supabase/stats-setup.sql) once (it also adds a `created_at` to drinks).
