@@ -1033,5 +1033,5 @@ body.on-merged .grid > main { order: -1; }
 .howto .hint { margin: 0; }
 
 /* ---------- Missing something? (swaps) ---------- */
-.missing-row { margin-top: 12px; }
+.missing-row { margin: 4px 0 10px; }
 .missing-row .linkish { color: var(--accent); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; }

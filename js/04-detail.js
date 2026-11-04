@@ -78,6 +78,7 @@ function renderMain() {
           </div>
           ${S._fillL ? `<div class="hint">Batched to fill ${esc(S._fillL)}. <button type="button" class="linkish" id="batch-clear">Back to 1 drink</button></div>` : ""}
           <div style="overflow-x:auto"><table class="spec-table"><tbody>${rows}${waterRow}${floatRows}</tbody></table></div>
+          ${missingHtml(d)}
           ${perServing ? `<div class="totals">
             <div class="tot"><b>${fmtLiters(totalMl)}</b><span>${floats.length ? "Batch liquid, before floats" : "Total liquid"}</span></div>
             <div class="tot"><b>${qHtml(fmtOz(totalMl / ML.oz))} oz</b><span>Same, in ounces</span></div>
@@ -93,7 +94,6 @@ function renderMain() {
               ? `<button type="button" class="linkish water-link" id="prebatch-off">Remove the water</button>`
               : `<button type="button" class="linkish water-link" id="prebatch-on">Add water so the batch pours ready to serve</button>`) : ""}
           </div>
-          ${missingHtml(d)}
           ${typeof howtoHtml === "function" ? howtoHtml(d) : ""}
         </div>
         ${ratingSummary(d)}</div>
