@@ -136,7 +136,7 @@ New drink and bottle photos get a quick AI check (`photo_check` in the `read-rec
 
 ### Hosting
 
-The site is plain static files. It's hosted on **Cloudflare Pages**, connected to this GitHub repo: every push to `main` publishes in about a minute (no build step; build command empty, output directory `/`). `_headers` tells browsers to always re-check the app shell (`index.html`, `sw.js`, the manifest) so updates appear right away; scripts and styles carry `?v=` hashes from `tools/stamp.mjs`. It also works on GitHub Pages (`CNAME`, `.nojekyll`).
+The site is plain static files. It's hosted on **Cloudflare** (Workers static assets), connected to this GitHub repo: every push to `main` publishes in about a minute. `wrangler.jsonc` names the site and serves the repo root; `.assetsignore` keeps tests, tools and Supabase code from being published. No build step (deploy command `npx wrangler deploy`). `_headers` tells browsers to always re-check the app shell (`index.html`, `sw.js`, the manifest) so updates appear right away; scripts and styles carry `?v=` hashes from `tools/stamp.mjs`. It also works on GitHub Pages (`CNAME`, `.nojekyll`).
 
 ### Site stats and traffic
 

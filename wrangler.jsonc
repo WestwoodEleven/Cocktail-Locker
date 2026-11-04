@@ -1,0 +1,9 @@
+// Cloudflare: serve this repo as a static site (Workers static assets). No build step.
+// Files listed in .assetsignore (tests, tools, Supabase code) are not published.
+{
+  "name": "mycocktailcart",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./"
+  }
+}

@@ -1,0 +1,14 @@
+.git
+.github
+.gitignore
+.assetsignore
+node_modules
+tests
+tools
+supabase
+package.json
+package-lock.json
+wrangler.jsonc
+README.md
+CNAME
+.nojekyll
