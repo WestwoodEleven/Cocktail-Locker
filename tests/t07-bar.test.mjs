@@ -39,10 +39,10 @@ export default async function () {
   // effect on What can I make?
   await p.evaluate("openCanMake()"); await p.waitForTimeout(150);
   const t = await p.text("#main");
-  check("Negronis drop out of Ready when Campari is out", /Ready to make\s*\|?\s*0/.test(t) && t.includes("Out of Campari"), t.slice(0, 500));
+  check("Negronis drop out of Ready when Campari is out", /Ready to make\s*\|?\s*1/.test(t) && t.includes("Out of Campari"), t.slice(0, 500));
   // brand match: recipe calls for Cointreau by brand
   await p.click("#chips-liquors [data-out='1']"); await p.waitForTimeout(400);
-  check("restocking brings them back", /Ready to make\s*\|?\s*2/.test(await p.text("#main")));
+  check("restocking brings them back", /Ready to make\s*\|?\s*3/.test(await p.text("#main")));
   // AI tools get in-stock items with brands only
   await p.click("#chips-liquors [data-out='1']"); await p.waitForTimeout(400);
   await p.evaluate("window.__MOCK.invoke = async () => ({ data: { drinks: [] }, error: null })");

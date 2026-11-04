@@ -80,10 +80,38 @@ function sameThing(a, b) {
 function barKeys() {
   return [...inStock(savedItems()).flatMap(x => typeof x === "string" ? [x] : [x.name, x.brand]), ...S.fresh].map(ingKey).filter(Boolean);
 }
+// "Assume I have the basics" (on by default): everyday kitchen things never block a drink,
+// and common store-bought mixers count as "pick up" items instead of missing ones.
+S.assumeBasics = (() => { try { return localStorage.getItem("mc-basics") !== "off"; } catch (e) { return true; } })();
+const BASICS = [
+  /^(lime|lemon|orange)( juice| wheel| wedge| wedges| peel| twist| slice| zest)?$/,
+  /^(lime|lemon) cut into wedges$/, /^half (a )?lime$/,
+  /^(sugar|superfine sugar|caster sugar|sugar cube|raw sugar|demerara sugar|turbinado sugar|honey)$/,
+  /^(simple|rich simple|rich|sugar|cane|cane sugar|demerara|rich demerara|turbinado|honey)( syrup)?$/,
+  /^(ice|crushed ice|water|hot water|soda water|club soda|soda|seltzer|sparkling water)$/,
+  /^(egg|egg white|egg yolk|whole egg)$/, /^(cream|heavy cream|whipping cream|milk|whole milk|half and half)$/,
+  /^(salt|sea salt|saline|saline solution|pinch of salt|pinch of salt and pepper|salt and pepper)$/,
+  /^(mint|mint leaves|mint leaf|mint sprig|mint sprigs)$/
+];
+const PICKUPS = [
+  /^(grapefruit|pineapple|cranberry|tomato|apple|pomegranate|white grape)( juice)?$/,
+  /^(tonic|tonic water|ginger beer|ginger ale|cola|coca cola|coke|lemon lime soda|grapefruit soda|sprite)$/,
+  /^(espresso|coffee|cold brew|cold brew coffee)$/
+];
+const isBasic = i => BASICS.some(re => re.test(ingKey(i.name)));
+const isPickup = i => PICKUPS.some(re => re.test(ingKey(i.name)));
+// The basics, in words, for Ask the bartender.
+const BASICS_FOR_AI = ["Lemons, limes and oranges", "Sugar, simple syrup, rich syrup, honey syrup, demerara syrup", "Soda water", "Eggs", "Cream and milk", "Fresh mint", "Salt"];
 function haveIngredient(i, keys) {
   const k = ingKey(i.name), bk = ingKey(i.brand);
   if (ALWAYS_HAVE.includes(k)) return true;
-  return keys.some(b => sameThing(b, k) || (bk && sameThing(b, bk)));
+  if (keys.some(b => sameThing(b, k) || (bk && sameThing(b, bk)))) return true;
+  return S.assumeBasics && (isBasic(i) || isPickup(i));
+}
+// Assumed mixers you'd still need to buy (not on your list).
+function pickupsFor(d, keys) {
+  if (!S.assumeBasics) return [];
+  return (d.ingredients || []).filter(i => isPickup(i) && !keys.some(b => sameThing(b, ingKey(i.name))));
 }
 // Ingredients you have on your list but marked out of stock
 function outOfStock(i) {
@@ -114,7 +142,14 @@ HASH_VIEWS["can-make"] = openCanMake;
 VIEWS.canmake = function renderCanMake() {
   const m = $("main");
   const r = canMakeResults();
-  const missRow = ([d, miss]) => drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">${esc(miss.every(outOfStock) ? "Out of " + miss.map(i => i.name).join(" and ") : "Missing " + miss.map(i => i.name + (outOfStock(i) ? " (out)" : "")).join(" and "))}</span> · `);
+  const pickNote = d => { const p = pickupsFor(d, r.keys); return p.length ? `<span class="pick">Pick up ${esc(p.map(i => i.name).join(" and "))}</span> · ` : ""; };
+  const readyRow = d => drinkRow(d, true).replace('<span class="sub">', `<span class="sub">${pickNote(d)}`);
+  const missRow = ([d, miss]) => drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">${esc(miss.every(outOfStock) ? "Out of " + miss.map(i => i.name).join(" and ") : "Missing " + miss.map(i => i.name + (outOfStock(i) ? " (out)" : "")).join(" and "))}</span> · ${pickNote(d)}`);
+  const shopping = (() => {
+    const c = new Map();
+    r.ready.forEach(d => pickupsFor(d, r.keys).forEach(i => { const k = ingKey(i.name); const e = c.get(k) || { name: i.name, n: 0 }; e.n++; c.set(k, e); }));
+    return [...c.values()].sort((a, b) => b.n - a.n);
+  })();
   const commonMissing = (() => {
     const c = new Map();
     r.one.forEach(([, miss]) => { const k = ingKey(miss[0].name); const e = c.get(k) || { name: miss[0].name, n: 0 }; e.n++; c.set(k, e); });
@@ -124,11 +159,14 @@ VIEWS.canmake = function renderCanMake() {
     <div class="make">
       <div class="editor-top"><div><span class="label">From your bottles</span><h2 class="make-title">What can I make?</h2></div>
         <button class="btn small" type="button" id="cm-close">Back to drinks</button></div>
-      <p class="hint" style="margin:0">Matches your bottles and today's fresh ingredients against every recipe on the site. Ice, water and sugar are assumed.</p>
+      <p class="hint" style="margin:0">Matches your bottles against every recipe on the site.</p>
+      <label class="check basics-toggle"><input type="checkbox" id="cm-basics" ${S.assumeBasics ? "checked" : ""}>
+        <span><b>Assume I have the basics</b><br><span class="hint">Lemons, limes and oranges, sugar and simple syrups, soda water, eggs, cream and mint. Juices and mixers like tonic or ginger beer count too, marked "Pick up".</span></span></label>
       ${!r.keys.length ? `<div class="scan-banner"><span><b>No bottles yet.</b> Add your bottles below to see what you can make.</span></div>` : ""}
       <section class="make-sec">
         <div class="sec-head"><h3>Ready to make <span class="count">${r.ready.length}</span></h3></div>
-        ${r.ready.length ? `<ul class="plist">${r.ready.map(d => drinkRow(d, true)).join("")}</ul>` : `<p class="hint" style="margin:0">Nothing yet. Add citrus and mixers under Fresh today, or check the near misses below.</p>`}
+        ${shopping.length ? `<p class="hint pick-list" style="margin:0">To pick up for these: ${shopping.map(x => `${esc(x.name)} (${x.n})`).join(", ")}</p>` : ""}
+        ${r.ready.length ? `<ul class="plist">${r.ready.map(readyRow).join("")}</ul>` : `<p class="hint" style="margin:0">Nothing yet. Check the near misses below${S.assumeBasics ? "" : ", or add citrus and mixers under Fresh today"}.</p>`}
       </section>
       <section class="make-sec">
         <div class="sec-head"><h3>Missing one ingredient <span class="count">${r.one.length}</span></h3>
@@ -137,7 +175,7 @@ VIEWS.canmake = function renderCanMake() {
       </section>
       ${r.two.length ? `<section class="make-sec"><div class="sec-head"><h3>Missing two <span class="count">${r.two.length}</span></h3></div><ul class="plist">${r.two.slice(0, 30).map(missRow).join("")}</ul></section>` : ""}
       <section class="make-sec">
-        <div class="sec-head"><h3>Fresh today</h3><span class="hint">Citrus, mixers and garnishes, remembered on this device.</span></div>
+        <div class="sec-head"><h3>Fresh today</h3><span class="hint">${S.assumeBasics ? "Anything beyond the basics, like passion fruit or a special mixer. Remembered on this device." : "Citrus, mixers and garnishes, remembered on this device."}</span></div>
         ${GROUPS.filter(g => !g.saved).map(chipGroupHtml).join("")}
       </section>
       <section class="make-sec">
@@ -146,6 +184,7 @@ VIEWS.canmake = function renderCanMake() {
       </section>
     </div>`;
   wireGroups(GROUPS);
+  $("cm-basics").onchange = e => { S.assumeBasics = e.target.checked; try { localStorage.setItem("mc-basics", S.assumeBasics ? "on" : "off"); } catch (er) {} renderMain(); };
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => selectDrink(b.dataset.open));
   $("cm-close").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
 };

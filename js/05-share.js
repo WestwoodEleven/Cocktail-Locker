@@ -53,7 +53,7 @@ async function buildCard(d, withPhoto) {
   if (dil > 0) rows.push({ water: true, s: show({ amount: per * dil, unit: "ml" }, S.servings, S.mode === "spec" ? "oz" : S.mode) });
   (d.ingredients || []).filter(i => i.float).forEach(i => rows.push({ i, s: show(i, S.servings, S.mode), float: true, g: show(i, 1, S.mode) }));
   const meta = [typeOf(d), baseOf(d), d.method, d.glass].filter(Boolean).join("  ·  ");
-  const from = d.standard ? "Standard recipe" : S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
+  const from = d.standard ? "A classic" : S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
 
   const layout = (ctx, draw) => {
     let y = 0;

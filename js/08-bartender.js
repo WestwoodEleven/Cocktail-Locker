@@ -314,7 +314,7 @@ async function generateIdeas() {
   S.ideasState = { loading: true, token };
   $("ideas").innerHTML = ideasHtml(); wireIdeas(); $("make-go").disabled = true;
   $("ideas").scrollIntoView({ behavior: "smooth", block: "start" });
-  const { data, code, detail } = await invokeHelper({ mode: "generate", bar: barForAI(), fresh: S.fresh, prefs: S.prefs, taste: S.useTaste ? tasteProfile() : null });
+  const { data, code, detail } = await invokeHelper({ mode: "generate", bar: barForAI(), fresh: freshForAI(), prefs: S.prefs, taste: S.useTaste ? tasteProfile() : null });
   if (!S.ideasState || S.ideasState.token !== token) return;
   if (data && Array.isArray(data.drinks) && data.drinks.length) S.ideasState = { drinks: data.drinks, note: data.note || "" };
   else {

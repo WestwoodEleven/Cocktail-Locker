@@ -110,6 +110,10 @@ On a device's first visit, a welcome screen asks whether the visitor is 21 or ol
 
 Opening someone else's drink adds one view (once per drink per visit; your own drinks don't count). Views are stored as a count per drink per day, with nothing about who viewed. Run [`supabase/views-setup.sql`](supabase/views-setup.sql) once (it's also in `setup.sql`), then re-run `stats-setup.sql` so Site stats shows views too.
 
+### What can I make? and the basics
+
+**Assume I have the basics** (on by default, remembered per device) treats everyday things as always on hand: lemons, limes and oranges, sugar and simple/rich/honey/demerara syrups, soda water, ice, eggs, cream and milk, salt and mint. Common store-bought juices and mixers (grapefruit, pineapple, cranberry, tomato juice, tonic, ginger beer, ginger ale, cola, espresso) don't block a drink either; they show as **Pick up …** with a "To pick up for these" list. Spirits, liqueurs, vermouths, bitters and specialty syrups (orgeat, falernum…) still count as missing. Ask the bartender, Make it a mocktail and drink ideas get the same basics when you use your bottles. Switch it off for exact matching against your saved bottles and Fresh today. The lists live in `BASICS` and `PICKUPS` in `js/13-match.js`.
+
 ### Drink log
 
 **✓ I made this** under a recipe's ratings adds a private, dated entry (today by default) with an optional note. The recipe shows "Made 3 times · Last on Oct 28" and your notes, newest first, each with Edit and, when there's a note, **Make my version with this change** (starts your own riff of the drink, with that note). If you haven't rated the drink, logging it asks "How was it?" with stars that set your normal public rating. **My Log** on My Cocktail Cart shows this month, all time, your most-made drink and a month-by-month timeline; drink lists show "Made 4×". Only you can see your log. Run [`supabase/log-setup.sql`](supabase/log-setup.sql) once (it's also in `setup.sql`).

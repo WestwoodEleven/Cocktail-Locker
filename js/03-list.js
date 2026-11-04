@@ -18,7 +18,7 @@ function passesFilters(d, skip) {
   }
   return true;
 }
-// Standard recipes appear only when searching, or under My favorites.
+// Classics (the shared standard library) are part of the main list.
 // Everyone's drinks plus the shared classics (the Cart filter narrows it: Mine, Classics, a person, a list).
 const pool = () => allDrinks();
 function filtered() { return sortItems(pool().filter(d => passesFilters(d))); }

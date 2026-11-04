@@ -1091,3 +1091,8 @@ body.on-merged .grid > main { order: -1; }
 @media (min-width: 781px) {
   .home-top.signed .home-day > .glassbox .glass-svg, .home-top:not(.signed) .home-day > .glassbox .glass-svg { height: auto; width: auto; max-height: 72%; max-width: 72%; }
 }
+
+/* What can I make? */
+.basics-toggle { align-items: flex-start; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
+.basics-toggle .hint { font-weight: 400; }
+.plist .pick { color: var(--muted); font-weight: 600; }

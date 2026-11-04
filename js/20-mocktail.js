@@ -41,7 +41,7 @@ async function openMocktail(d, fresh) {
   draw({ loading: true });
   const { data, code, detail } = await invokeHelper({ mode: "mocktail",
     drink: { name: d.name, method: d.method, glass: d.glass || "", garnish: d.garnish || "", ingredients: (d.ingredients || []).map(i => ({ amount: i.amount, unit: i.unit, name: i.name, brand: i.brand || "", float: !!i.float })) },
-    bar: barForAI(), fresh: S.fresh });
+    bar: barForAI(), fresh: freshForAI() });
   if (S.mockToken !== token || !$("gen-modal") || $("gen-modal").hidden) return;
   let st;
   if (data && data.mocktail) st = S.mockCache[key] = { mocktail: data.mocktail };

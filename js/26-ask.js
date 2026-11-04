@@ -115,7 +115,7 @@ async function askSend(text, isRetry) {
   const token = {}; A.token = token;
   if (S.view === "ask") { renderMain(); const t = $("ask-thread"); if (t && t.lastElementChild) t.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
   const messages = A.msgs.slice(-10).map(x => ({ role: x.role, text: x.text || "", drinks: (x.drinks || []).map(d => d.name) }));
-  const { data, code } = await invokeHelper({ mode: "ask", messages, useBar: A.useBar, bar: A.useBar ? barForAI() : null, fresh: A.useBar ? S.fresh : [] });
+  const { data, code } = await invokeHelper({ mode: "ask", messages, useBar: A.useBar, bar: A.useBar ? barForAI() : null, fresh: A.useBar ? freshForAI() : [] });
   if (A.token !== token) return;
   A.loading = false;
   if (data && (data.answer || (data.drinks || []).length)) {
@@ -184,7 +184,7 @@ async function recipeAskSend(text) {
   A.loading = true; A.error = ""; A.draft = ""; renderRecipeAsk();
   const ctx = recipeContext(A.d);
   const messages = A.msgs.slice(-10).map((x, i, arr) => ({ role: x.role, text: (i === 0 && x.role === "user" ? ctx + " Question: " : "") + (x.text || ""), drinks: (x.drinks || []).map(dd => dd.name) }));
-  const { data, code } = await invokeHelper({ mode: "ask", messages, useBar: S.ask.useBar, bar: S.ask.useBar ? barForAI() : null, fresh: S.ask.useBar ? S.fresh : [] });
+  const { data, code } = await invokeHelper({ mode: "ask", messages, useBar: S.ask.useBar, bar: S.ask.useBar ? barForAI() : null, fresh: S.ask.useBar ? freshForAI() : [] });
   if (S.rAsk !== A) return;
   A.loading = false;
   if (data && (data.answer || (data.drinks || []).length)) A.msgs.push({ role: "bartender", text: data.answer || "", drinks: data.drinks || [] });
@@ -193,3 +193,5 @@ async function recipeAskSend(text) {
   const modal = $("gen-modal");
   if (modal && !modal.hidden && (document.getElementById("ra-form") || document.getElementById("ra-thread"))) renderRecipeAsk();
 }
+// Fresh items for the AI: today's list plus the basics, when "Assume I have the basics" is on.
+function freshForAI() { return S.assumeBasics ? S.fresh.concat(BASICS_FOR_AI.filter(x => !S.fresh.includes(x))) : S.fresh; }
