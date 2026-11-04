@@ -110,6 +110,10 @@ On a device's first visit, a welcome screen asks whether the visitor is 21 or ol
 
 Opening someone else's drink adds one view (once per drink per visit; your own drinks don't count). Views are stored as a count per drink per day, with nothing about who viewed. Run [`supabase/views-setup.sql`](supabase/views-setup.sql) once (it's also in `setup.sql`), then re-run `stats-setup.sql` so Site stats shows views too.
 
+### Drink log
+
+**✓ I made this** under a recipe's ratings adds a private, dated entry (today by default) with an optional note. The recipe shows "Made 3 times · Last on Oct 28" and your notes, newest first, each with Edit and, when there's a note, **Make my version with this change** (starts your own riff of the drink, with that note). If you haven't rated the drink, logging it asks "How was it?" with stars that set your normal public rating. **My Log** on My Cocktail Cart shows this month, all time, your most-made drink and a month-by-month timeline; drink lists show "Made 4×". Only you can see your log. Run [`supabase/log-setup.sql`](supabase/log-setup.sql) once (it's also in `setup.sql`).
+
 ### How-to guides
 
 Syrups and fresh citrus in a recipe's spec have a dotted underline: tap the name for a short guide (simple, rich 2:1, honey, honey-ginger, demerara, agave, ginger, cinnamon and raspberry syrups, grenadine, orgeat, saline, fresh citrus). The ratio in the name picks the version ("2:1 simple syrup" opens rich simple syrup, "3:1 honey syrup" shows 3 parts honey to 1 water). Each guide says how much the drink (or the batch you've scaled to) needs and how much to make, for example "This batch needs 9 oz. 1 cup sugar and 1 cup hot water makes about 12 oz", or how many limes to squeeze. Syrups people usually buy (orgeat, grenadine, ginger) lead with what to look for. Techniques (shake, stir, dry shake, double strain, muddle, rinse, float, express a peel) show as a **How to** row with the drink's instructions, under About (or Notes). All of it lives in `js/30-howto.js`.

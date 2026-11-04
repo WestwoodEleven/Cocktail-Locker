@@ -117,6 +117,7 @@ function renderMain() {
         + (!d.notes && !d.about && how ? `<div>${how}</div>` : "");
     })()}
     ${rateBlock(d)}
+    ${typeof madeHtml === "function" ? madeHtml(d) : ""}
     ${notesBlock(d)}
     ${d.standard ? riffsHtml(d) : ""}
     ${!d.standard && !mine ? `<p class="report-line">${reportBtn("drink", d.id, d.owner, d.name, "Report this drink")}</p>` : ""}
@@ -179,6 +180,7 @@ function renderMain() {
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
   if ($("missing-btn")) $("missing-btn").onclick = () => openMissing(d);
+  if (typeof wireMade === "function") wireMade(d);
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });

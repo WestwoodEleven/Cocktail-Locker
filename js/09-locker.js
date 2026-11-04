@@ -72,6 +72,8 @@ function renderProfile() {
           : `<p class="hint" style="margin:0">No favorites yet. Tap ♡ Favorite on any drink, yours or someone else's, to keep it here.</p>`}
       </section>
 
+      ${typeof logSectionHtml === "function" ? logSectionHtml() : ""}
+
       ${profileSocialHtml()}
 
       <section class="make-sec" id="prof-bar">
@@ -98,6 +100,7 @@ function renderProfile() {
   wireProfileSocial(m);
   $("prof-rename").onclick = () => openNameForm(false);
   $("prof-drink-add").onclick = openDrinkAdd;
+  if (typeof wireLogSection === "function") wireLogSection();
   wireAdmin();
   wireAccount();
 }
