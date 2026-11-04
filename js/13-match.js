@@ -143,8 +143,9 @@ VIEWS.canmake = function renderCanMake() {
   const m = $("main");
   const r = canMakeResults();
   const pickNote = d => { const p = pickupsFor(d, r.keys); return p.length ? `<span class="pick">Pick up ${esc(p.map(i => i.name).join(" and "))}</span> · ` : ""; };
-  const readyRow = d => drinkRow(d, true).replace('<span class="sub">', `<span class="sub">${pickNote(d)}`);
-  const missRow = ([d, miss]) => drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">${esc(miss.every(outOfStock) ? "Out of " + miss.map(i => i.name).join(" and ") : "Missing " + miss.map(i => i.name + (outOfStock(i) ? " (out)" : "")).join(" and "))}</span> · ${pickNote(d)}`);
+  const withShop = (html, items, d) => { const b = typeof shopBtn === "function" ? items.map(i => shopBtn(i.brand ? `${i.name} (${i.brand})` : i.name, "For the " + d.name)).join("") : ""; return b ? html.replace("<li>", '<li class="has-shop">').replace(/<\/button><\/li>$/, `</button><span class="shop-btns">${b}</span></li>`) : html; };
+  const readyRow = d => withShop(drinkRow(d, true).replace('<span class="sub">', `<span class="sub">${pickNote(d)}`), pickupsFor(d, r.keys), d);
+  const missRow = ([d, miss]) => withShop(drinkRow(d, true).replace('<span class="sub">', `<span class="sub"><span class="miss">${esc(miss.every(outOfStock) ? "Out of " + miss.map(i => i.name).join(" and ") : "Missing " + miss.map(i => i.name + (outOfStock(i) ? " (out)" : "")).join(" and "))}</span> · ${pickNote(d)}`), miss.concat(pickupsFor(d, r.keys)), d);
   const shopping = (() => {
     const c = new Map();
     r.ready.forEach(d => pickupsFor(d, r.keys).forEach(i => { const k = ingKey(i.name); const e = c.get(k) || { name: i.name, n: 0 }; e.n++; c.set(k, e); }));
@@ -165,12 +166,12 @@ VIEWS.canmake = function renderCanMake() {
       ${!r.keys.length ? `<div class="scan-banner"><span><b>No bottles yet.</b> Add your bottles below to see what you can make.</span></div>` : ""}
       <section class="make-sec">
         <div class="sec-head"><h3>Ready to make <span class="count">${r.ready.length}</span></h3></div>
-        ${shopping.length ? `<p class="hint pick-list" style="margin:0">To pick up for these: ${shopping.map(x => `${esc(x.name)} (${x.n})`).join(", ")}</p>` : ""}
+        ${shopping.length ? `<p class="hint pick-list" style="margin:0">To pick up for these: ${shopping.map(x => `${esc(x.name)} (${x.n})${typeof shopBtn === "function" ? " " + shopBtn(x.name, `For ${x.n} drink${x.n === 1 ? "" : "s"}`) : ""}`).join(" · ")}</p>` : ""}
         ${r.ready.length ? `<ul class="plist">${r.ready.map(readyRow).join("")}</ul>` : `<p class="hint" style="margin:0">Nothing yet. Check the near misses below${S.assumeBasics ? "" : ", or add citrus and mixers under Fresh today"}.</p>`}
       </section>
       <section class="make-sec">
         <div class="sec-head"><h3>Missing one ingredient <span class="count">${r.one.length}</span></h3>
-          ${commonMissing.length ? `<span class="hint">Worth buying: ${commonMissing.map(x => `${esc(x.name)} (${x.n})`).join(", ")}</span>` : ""}</div>
+          ${commonMissing.length ? `<span class="hint worth">Worth buying: ${commonMissing.map(x => `${esc(x.name)} (${x.n})${typeof shopBtn === "function" ? " " + shopBtn(x.name, `Unlocks ${x.n} drink${x.n === 1 ? "" : "s"}`) : ""}`).join(" · ")}</span>` : ""}</div>
         ${r.one.length ? `<ul class="plist">${r.one.map(missRow).join("")}</ul>` : `<p class="hint" style="margin:0">None.</p>`}
       </section>
       ${r.two.length ? `<section class="make-sec"><div class="sec-head"><h3>Missing two <span class="count">${r.two.length}</span></h3></div><ul class="plist">${r.two.slice(0, 30).map(missRow).join("")}</ul></section>` : ""}

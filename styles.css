@@ -1096,3 +1096,35 @@ body.on-merged .grid > main { order: -1; }
 .basics-toggle { align-items: flex-start; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
 .basics-toggle .hint { font-weight: 400; }
 .plist .pick { color: var(--muted); font-weight: 600; }
+
+/* ---------- shopping list ---------- */
+.shop-add { border: 1.5px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; vertical-align: middle; }
+.shop-add.on { background: var(--accent); color: #fff; cursor: default; }
+li.has-shop { display: flex; align-items: center; gap: 8px; }
+li.has-shop > .prow { flex: 1; min-width: 0; }
+.shop-btns { display: flex; flex-direction: column; gap: 4px; flex: none; }
+.worth .shop-add, .pick-list .shop-add { padding: 1px 8px; font-size: 11px; }
+.count-pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 12px; font-weight: 700; }
+.missing-row { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.bi-shop { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.shop-form { display: flex; gap: 8px; }
+.shop-form input { flex: 1; min-width: 0; font-size: 16px; padding: 9px 11px; border: 1px solid var(--rule); border-radius: 8px; background: var(--raised, #fff); color: var(--ink); }
+.shop-list { list-style: none; margin: 0; padding: 0; }
+.shop-grp { font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--rule); padding: 12px 0 4px; display: flex; gap: 8px; align-items: center; }
+.shop-grp span { text-transform: none; letter-spacing: 0; font-family: var(--f-body); }
+.shop-grp .linkish { margin-left: auto; color: var(--accent); font-weight: 700; text-transform: none; letter-spacing: 0; font-family: var(--f-body); font-size: 13px; }
+.shop-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.shop-check { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
+.shop-check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.shop-check .box { width: 26px; height: 26px; border: 2px solid var(--ink); border-radius: 6px; flex: none; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+.shop-check input:checked + .box { background: var(--ink); color: var(--bg); }
+.shop-check input:checked + .box::after { content: "✓"; }
+.shop-check input:focus-visible + .box { outline: 2px solid var(--focus); outline-offset: 2px; }
+.shop-check .txt { display: flex; flex-direction: column; min-width: 0; }
+.shop-check .txt b { font-size: 17px; overflow-wrap: anywhere; }
+.shop-item.done .txt b { text-decoration: line-through; color: var(--muted); font-weight: 600; }
+.shop-item .x { background: none; border: 0; color: var(--muted); font-size: 22px; cursor: pointer; padding: 4px 8px; }
+.shop-sugg { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px dashed var(--rule); border-radius: 6px; margin: 4px 0; background: var(--surface); }
+.shop-sugg .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.shop-prompt { list-style: none; background: var(--surface); border: 1px solid var(--ink); border-left: 4px solid #2E7D4F; border-radius: 6px; padding: 10px 12px; margin: 4px 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.shop-empty { padding: 10px 0; }

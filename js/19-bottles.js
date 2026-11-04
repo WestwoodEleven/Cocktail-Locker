@@ -103,7 +103,7 @@ VIEWS.bottle = function renderBottle() {
           ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
           ${b.description ? `<p class="bottle-desc">${esc(b.description)}</p>` : ""}
           <p class="hint" style="margin:0">Written by AI and may contain errors. ${uid() ? `<button type="button" class="linkish" id="bt-fix">Suggest a fix</button>` : ""}${S.isAdmin ? ` · <button type="button" class="linkish" id="bt-edit">Edit details</button>` : ""}</p>
-          <div class="panel-actions" style="justify-content:flex-start">${uid() ? (inBar ? `<span class="chip">In your bottles ✓</span>` : `<button class="btn primary small" type="button" id="bt-addbar">Add to my bottles</button>`) : ""}<button class="btn small" type="button" id="bt-link">Copy link</button></div>
+          <div class="panel-actions" style="justify-content:flex-start">${uid() ? (inBar ? `<span class="chip">In your bottles ✓</span>` : `<button class="btn primary small" type="button" id="bt-addbar">Add to my bottles</button>`) : ""}${typeof shopBtn === "function" ? shopBtn(b.name, "From the Bottle guide", "+ Shopping list") : ""}<button class="btn small" type="button" id="bt-link">Copy link</button></div>
         </div>
       </div>
       <section class="make-sec">

@@ -180,6 +180,7 @@ function renderMain() {
   if ($("mock-btn")) $("mock-btn").onclick = () => openMocktail(d);
   m.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => openSwap(d, Number(b.dataset.swap)));
   if ($("missing-btn")) $("missing-btn").onclick = () => openMissing(d);
+  if ($("shop-recipe")) $("shop-recipe").onclick = () => addRecipeToShop(d);
   if (typeof wireMade === "function") wireMade(d);
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);

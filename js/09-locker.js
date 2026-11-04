@@ -80,6 +80,7 @@ function renderProfile() {
         <div class="sec-head"><h3>My bottles</h3>
           <div class="panel-actions"><button class="btn primary small" type="button" id="prof-bottle-add" aria-haspopup="dialog">+ Add</button></div></div>
         <button type="button" class="linkish canmake-link" id="prof-canmake">What can I make with these? →</button>
+        <button type="button" class="linkish canmake-link" id="prof-shop">Shopping list <span class="count-pill" data-shop-count ${typeof shopOpen === "function" && shopOpen().length ? "" : "hidden"}>${typeof shopOpen === "function" ? shopOpen().length : ""}</span> →</button>
         <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock. <span id="bar-saved">${S.barOff ? "Your bottles can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></p>
         ${outSummary()}
         ${GROUPS.filter(g => g.saved).map(barGroupHtml).join("")}
@@ -91,6 +92,7 @@ function renderProfile() {
   wireBarChips(GROUPS.filter(g => g.saved));
   $("prof-bottle-add").onclick = () => openBottleAdd();
   $("prof-canmake").onclick = () => openCanMake();
+  if ($("prof-shop")) $("prof-shop").onclick = () => openShop();
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
     S.selected = b.dataset.open; S.view = "detail"; setHash(S.selected);
     const d = current(); if (d && !passesFilters(d)) { S.f = { owner: "", type: "", base: "", method: "", kind: "", rating: "" }; S.query = ""; $("search").value = ""; renderFilters(); }

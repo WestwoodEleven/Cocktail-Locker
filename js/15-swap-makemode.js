@@ -5,7 +5,7 @@
 function swapBtn() { return ""; }
 function missingHtml(d) {
   if (S.backend !== "supabase" || !uid() || !(d.ingredients || []).some(i => i.name)) return "";
-  return `<div class="missing-row"><button type="button" class="linkish" id="missing-btn" aria-haspopup="dialog">Missing something? Swap an ingredient</button></div>`;
+  return `<div class="missing-row"><button type="button" class="linkish" id="missing-btn" aria-haspopup="dialog">Missing something? Swap an ingredient</button>${S.shopOff ? "" : `<button type="button" class="linkish" id="shop-recipe">+ Add what I don't have to my shopping list</button>`}</div>`;
 }
 function openMissing(d) {
   swapSheet(`<p class="hint" style="margin:0 0 6px">Pick the one you don't have and we'll suggest what to use instead.</p>

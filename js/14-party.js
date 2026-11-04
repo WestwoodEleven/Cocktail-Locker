@@ -120,7 +120,7 @@ VIEWS.party = function renderParty() {
       ${n ? `
       <section class="make-sec" id="shop">
         <div class="sec-head"><h3>Shopping list</h3>
-          <div class="panel-actions"><button class="btn small" type="button" id="pp-copy">Copy list</button><button class="btn small" type="button" id="pp-print-list">Print list</button></div></div>
+          <div class="panel-actions">${uid() && S.backend === "supabase" ? `<button class="btn small primary" type="button" id="pp-shop">+ Add all to my list</button>` : ""}<button class="btn small" type="button" id="pp-copy">Copy list</button><button class="btn small" type="button" id="pp-print-list">Print list</button></div></div>
         <ul class="shop">${shop.lines.map(l => `<li><span class="sname">${esc(l.name)}${l.brand ? ` <span class="hint">(${esc(l.brand)})</span>` : ""}</span><span class="sdetail">${qHtml(l.detail)}</span></li>`).join("")}
           ${shop.garnishes.map(([g, c]) => `<li><span class="sname">Garnish: ${esc(g)}</span><span class="sdetail">for ${c} drinks</span></li>`).join("")}
           <li><span class="sname">Ice</span><span class="sdetail">about ${shop.ice} lb</span></li></ul>
@@ -149,6 +149,7 @@ VIEWS.party = function renderParty() {
     const it = P.items.find(x => x.id === b.dataset.sv); if (!it) return;
     it.servings = Math.max(1, servingsFor(it, n) + Number(b.dataset.d)); saveParty(); rerender();
   });
+  if ($("pp-shop")) $("pp-shop").onclick = () => addManyToShop(shoppingList().lines.map(l => [l.brand ? `${l.name} (${l.brand})` : l.name, `Party: ${String(l.detail).replace(/<[^>]+>/g, "")}`]));
   if ($("pp-copy")) $("pp-copy").onclick = async () => {
     const txt = shoppingText();
     try { await navigator.clipboard.writeText(txt); toast("Shopping list copied"); }
