@@ -54,7 +54,7 @@ VIEWS.ask = function renderAsk() {
     <div class="make ask">
       <div class="editor-top">
         <div><span class="label">AI bartender</span><h2 class="make-title">Ask the bartender</h2></div>
-        ${A.msgs.length ? `<button class="btn small" type="button" id="ask-reset">Start over</button>` : ""}
+        <div class="panel-actions">${A.msgs.length ? `<button class="btn small" type="button" id="ask-reset">Start over</button>` : ""}<button class="btn small" type="button" id="ask-menu">📷 Decode a bar menu</button></div>
       </div>
       ${!signedIn ? `<div class="scan-banner"><span><b>Sign in to ask the bartender.</b> Ideas from your bottles, substitutes, mocktails and classic recipes, all in one place.</span>
         <div><button class="btn small primary" type="button" id="ask-signin">Sign in or join free</button></div></div>` : ""}
@@ -81,6 +81,7 @@ VIEWS.ask = function renderAsk() {
     </div>`;
 
   if ($("ask-signin")) $("ask-signin").onclick = () => { $("auth-btn").click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  if ($("ask-menu")) $("ask-menu").onclick = () => openMenuDecoder();
   if ($("ask-reset")) $("ask-reset").onclick = () => { S.ask.msgs = []; S.ask.error = ""; S.ask.loading = false; S.ask.token = null; renderMain(); };
   if ($("ask-retry")) $("ask-retry").onclick = () => { const q = S.ask.retry; S.ask.retry = null; S.ask.error = ""; askSend(q, true); };
   if ($("ask-bar")) $("ask-bar").onchange = e => { S.ask.useBar = e.target.checked; try { localStorage.setItem("mc-ask-bar", S.ask.useBar ? "1" : "0"); } catch (er) {} };

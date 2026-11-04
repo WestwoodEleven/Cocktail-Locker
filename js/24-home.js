@@ -72,6 +72,7 @@ VIEWS.home = function renderHome() {
       <div class="sec-head"><h3>Plan &amp; explore</h3></div>
       <div class="plan-row">
         ${signedIn ? `<button type="button" data-home="canmake"><b>What can I make?</b><span>From your bottles</span></button>` : ""}
+        <button type="button" data-home="menu"><b>Menu decoder</b><span>Snap a bar's menu, make it at home</span></button>
         <button type="button" data-home="guide"><b>Bottle guide</b><span>Ratings, photos and notes</span></button>
         <button type="button" data-home="party"><b>Plan a party</b><span>Batches, shopping list, menu</span></button>
       </div>
@@ -81,6 +82,7 @@ VIEWS.home = function renderHome() {
     cart: () => openProfile(),
     canmake: () => openCanMake(),
     guide: () => openGuide(),
+    menu: () => openMenuDecoder(),
     party: () => openParty(),
     make: () => openMake(),
     ask: () => openAsk(),

@@ -93,7 +93,7 @@ document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click",
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 // Pages that use the full width, without the drink list, filters and tools beside them.
 // Recipe pages and Ask the bartender use the full width. Home shows the welcome with the drink list under it.
-const FULL_WIDTH_VIEWS = ["ask", "detail", "stats", "shop"];
+const FULL_WIDTH_VIEWS = ["ask", "detail", "stats", "shop", "menu"];
 function syncChrome() {
   const home = S.view === "home", searching = home && !!(S.query || "").trim();
   document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));
@@ -107,7 +107,7 @@ function syncChrome() {
 }
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
-const NAV_OF_VIEW = { ask: "ask", make: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", shop: "cart", photoreview: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
+const NAV_OF_VIEW = { ask: "ask", make: "ask", menu: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", shop: "cart", photoreview: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
 function markNav() {
   const here = NAV_OF_VIEW[S.view] || "";
   document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
@@ -138,6 +138,7 @@ function openAccountMenu() {
   if (signedIn) items.push(["acct-shop", "Shopping list" + (typeof shopOpen === "function" && shopOpen().length ? ` (${shopOpen().length})` : ""), "What to pick up next time you're at the store"]);
   if (accounts && !signedIn) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
   if (signedIn) items.push(["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"]);
+  items.push(["acct-menu", "Menu decoder", "Photograph a bar's menu and make the drinks at home"]);
   items.push(["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"]);
   items.push(["acct-party", "Plan a party", "Batches, a shopping list and a menu"]);
   if (!$("install-btn").hidden) items.push(["acct-install", "Install the app", "Add My Cocktail Cart to your home screen"]);
@@ -145,7 +146,7 @@ function openAccountMenu() {
   sheet("Menu", `<div class="add-menu acct-menu">${items.map(([id, t, h]) => `<button type="button" id="${id}"><b>${esc(t)}</b>${h ? `<span>${esc(h)}</span>` : ""}</button>`).join("")}</div>
     <p class="hint" style="margin:0"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="mailto:support@mycocktailcart.com">support@mycocktailcart.com</a></p>`);
   const go = { "acct-cart": () => $("locker-btn").click(), "acct-signin": () => { $("auth-btn").click(); window.scrollTo({ top: 0 }); },
-    "acct-canmake": () => navGo("canmake"), "acct-shop": () => openShop(), "acct-guide": () => openGuide(), "acct-party": () => openParty(),
+    "acct-canmake": () => navGo("canmake"), "acct-menu": () => openMenuDecoder(), "acct-shop": () => openShop(), "acct-guide": () => openGuide(), "acct-party": () => openParty(),
     "acct-install": () => $("install-btn").click(), "acct-signout": () => $("auth-btn").click() };
   items.forEach(([id]) => { $(id).onclick = () => { closeSheet(); go[id](); }; });
 }

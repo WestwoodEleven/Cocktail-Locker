@@ -146,6 +146,25 @@ scansToday = 25;
 check("ask counts toward the daily allowance", (await call({ mode: "ask", messages: [{ role: "user", text: "hi" }] }))[0] === 429);
 scansToday = 0;
 
+// menu decoder
+claudeReply = ok({ found: true, bar: "Bar Agricole", drinks: [
+  { name: "Smoke & Honey", menu_text: "mezcal, cinnamon-honey, lime", price: "$16", classic: "Gold Rush", riff: "Mezcal and cinnamon-honey", type: "Sour", base: "Mezcal", method: "Shaken", glass: "Rocks", garnish: "Lime wheel",
+    ingredients: [{ amount: 2, unit: "oz", name: "Mezcal" }, { amount: 0.75, unit: "oz", name: "Lime juice" }, { amount: 0.75, unit: "oz", name: "Cinnamon-honey syrup", house: true }],
+    steps: ["Shake with ice.", "Strain over a big cube."], house_made: [{ name: "Cinnamon-honey syrup", ingredients: ["½ cup honey", "½ cup water", "2 cinnamon sticks"], steps: ["Simmer 5 minutes.", "Cool and strain."], keeps: "2 weeks", shortcut: "" }],
+    confidence: "high", note: "" },
+  { name: "Beer and a shot", ingredients: [], steps: [] }] });
+const scansBefore = rows.recipe_scans.length;
+[st, body] = await call({ mode: "menu", image: "data:image/jpeg;base64,AAAA", mediaType: "image/jpeg" });
+check("menu: drinks come back with spec, steps and house-made recipes", st === 200 && body.bar === "Bar Agricole" && body.drinks.length === 1 && body.drinks[0].ingredients[2].house === true && body.drinks[0].house_made[0].steps.length === 2 && sent.tools[0].name === "decode_menu", JSON.stringify(body).slice(0, 300));
+check("menu counts as one AI request", rows.recipe_scans.length === scansBefore + 1 && rows.recipe_scans.at(-1).kind === "menu");
+check("menu asks for a big enough answer", sent.max_tokens >= 8000);
+claudeReply = ok({ found: false, drinks: [] });
+check("not a menu", (await call({ mode: "menu", image: "AAAA" }))[0] === 422);
+check("menu needs an image", (await call({ mode: "menu" }))[0] === 400);
+scansToday = 25;
+check("menu uses the daily allowance", (await call({ mode: "menu", image: "AAAA" }))[0] === 429);
+scansToday = 0;
+
 // photo check
 claudeReply = ok({ verdict: "ok", reason: "" });
 const scanRowsBefore = rows.recipe_scans.length;
