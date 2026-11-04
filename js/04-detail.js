@@ -94,7 +94,6 @@ function renderMain() {
               ? `<button type="button" class="linkish water-link" id="prebatch-off">Remove the water</button>`
               : `<button type="button" class="linkish water-link" id="prebatch-on">Add water so the batch pours ready to serve</button>`) : ""}
           </div>
-          ${typeof howtoHtml === "function" ? howtoHtml(d) : ""}
         </div>
         ${ratingSummary(d)}</div>
     </div>
@@ -110,8 +109,13 @@ function renderMain() {
     ${S.confirmDelete ? `<div class="confirm" role="alert"><span>Delete <b>${esc(d.name)}</b> from your cart?</span><button class="btn small danger" type="button" id="del-yes">Delete</button><button class="btn small" type="button" id="del-no">Keep it</button></div>` : ""}
 
 
-    ${d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p></div>` : ""}
-    ${d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p></div>` : ""}
+    ${(() => {
+      // Technique guides (shake, dry shake, rinse…) sit with the drink's instructions: under About, else under Notes.
+      const how = typeof howtoHtml === "function" ? howtoHtml(d) : "";
+      return (d.notes ? `<div><div class="label notes-label">Notes</div><p class="notes">${esc(d.notes)}</p>${d.about ? "" : how}</div>` : "")
+        + (d.about ? `<div><div class="label notes-label">About</div><p class="about">${esc(d.about)}</p>${how}</div>` : "")
+        + (!d.notes && !d.about && how ? `<div>${how}</div>` : "");
+    })()}
     ${rateBlock(d)}
     ${notesBlock(d)}
     ${d.standard ? riffsHtml(d) : ""}

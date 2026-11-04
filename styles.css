@@ -1023,7 +1023,7 @@ body.on-merged .grid > main { order: -1; }
 .held-note { margin: 0; }
 
 /* ---------- how-to chips and sheet ---------- */
-.howto-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--rule); }
+.howto-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .howto-row .label { margin-right: 4px; }
 .howto-chip { border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .howto-chip:hover { border-color: var(--ink); }
