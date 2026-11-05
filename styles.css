@@ -1206,3 +1206,7 @@ li.has-shop > .prow { flex: 1; min-width: 0; }
 .md-bar h3 { font-size: 22px; }
 .md-del { color: var(--accent); }
 .md-initial { width: 40px; height: 40px; flex: none; border-radius: 8px; background: var(--rule); display: grid; place-items: center; font-weight: 800; color: var(--ink); }
+.md-menu-li { display: flex; flex-direction: column; }
+.md-name-it { align-self: flex-start; margin: -2px 0 6px 52px; font-size: 14px; color: var(--accent); }
+.md-ask-name { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--raised); }
+.md-ask-name label { font-size: 15px; }

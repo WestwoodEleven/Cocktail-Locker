@@ -74,6 +74,8 @@ function renderProfile() {
 
       ${typeof logSectionHtml === "function" ? logSectionHtml() : ""}
 
+      ${typeof menusSectionHtml === "function" ? menusSectionHtml() : ""}
+
       ${profileSocialHtml()}
 
       <section class="make-sec" id="prof-bar">
@@ -103,6 +105,7 @@ function renderProfile() {
   $("prof-rename").onclick = () => openNameForm(false);
   $("prof-drink-add").onclick = openDrinkAdd;
   if (typeof wireLogSection === "function") wireLogSection();
+  if (typeof wireMenusSection === "function") wireMenusSection();
   wireAdmin();
   wireAccount();
 }

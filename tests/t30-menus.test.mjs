@@ -43,6 +43,20 @@ export default async function () {
   // loading from the account on another device
   await p.evaluate("localStorage.removeItem('mc-menu'); S.menuRes = null; S.menus = []; loadMenus().then(() => openMenuDecoder())"); await p.waitForTimeout(200);
   check("with nothing open, My menus lists your saved menus", /Second Bar/.test(await p.text(".md-menus")) && /photograph a menu/i.test(await p.text("#md-pick")));
+  // My Cocktail Cart: My decoded menus, sorted by name, unnamed last with a way to name them
+  await p.evaluate(`__MOCK.tables.menus.push({ id: 901, user_id: "u1", bar: "The Varnish", drinks: [{ name: "A", ingredients: [] }], created_at: "2026-10-01T00:00:00Z" }, { id: 902, user_id: "u1", bar: null, drinks: [{ name: "B", ingredients: [] }], created_at: "2026-10-02T00:00:00Z" }, { id: 903, user_id: "u1", bar: "Anvil", drinks: [{ name: "C", ingredients: [] }], created_at: "2026-10-03T00:00:00Z" }); loadMenus().then(() => navGo('cart'))`);
+  await p.waitForTimeout(250);
+  const names = await p.evaluate("[...document.querySelectorAll('#prof-menus .md-row b')].map(b => b.textContent)");
+  check("the cart page lists decoded menus by restaurant name", JSON.stringify(names) === JSON.stringify(["Anvil", "Second Bar", "The Varnish", "Unnamed menu"]), JSON.stringify(names));
+  await p.click('#prof-menus [data-md-name="902"]'); await p.waitForTimeout(100);
+  await p.fill("#mn-name", "Bar Lucia"); await p.press("#mn-name", "Enter"); await p.waitForTimeout(150);
+  check("you can name a menu the photo didn't name", (await p.evaluate("[...document.querySelectorAll('#prof-menus .md-row b')].map(b => b.textContent).join()")) === "Anvil,Bar Lucia,Second Bar,The Varnish");
+  await p.click('#prof-menus [data-md-menu="901"]'); await p.waitForTimeout(200);
+  check("tapping one opens the full menu", (await p.evaluate("S.view")) === "menu" && /The Varnish/.test(await p.text(".md-bar")) && (await p.evaluate("document.querySelectorAll('[data-md-open]').length")) === 1);
+  // a fresh decode without a bar name asks for it
+  await p.evaluate("setMenuRes(Object.assign({}, S.menus.find(x => x.id === 903), { bar: '' })); S.menus.find(x => x.id === 903).bar = ''; renderMain()"); await p.waitForTimeout(100);
+  await p.fill("#md-name-in", "Anvil Bar & Refuge"); await p.press("#md-name-in", "Enter"); await p.waitForTimeout(150);
+  check("an unnamed menu asks which bar it is, and saves the answer", /Anvil Bar & Refuge/.test(await p.text(".md-bar")) && (await p.evaluate("__MOCK.tables.menus.find(x => x.id === 903).bar")) === "Anvil Bar & Refuge");
   check("no errors", p.errors.length === 0, p.errors.join("; "));
   await p.close();
 }

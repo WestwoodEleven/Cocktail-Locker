@@ -18,7 +18,39 @@ async function loadMenus() {
   const r = S.menuRes;
   if (r && r.id && !S.menus.some(m => m.id === r.id)) setMenuRes(S.menus[0] || null); // deleted on another device
   else if (r && !r.id && Array.isArray(r.drinks) && r.drinks.length) { const saved = await saveMenu(r); if (saved) setMenuRes(saved); } // a menu from before My menus
+  if (S.view === "profile" || S.view === "menu") renderMain();
 }
+// Sorted by restaurant name ("The Varnish" files under V); menus without a name go last.
+const menuSortKey = x => String(x.bar || "").trim().toLowerCase().replace(/^the\s+/, "");
+function menusSorted(list = S.menus) {
+  return list.slice().sort((a, b) => !a.bar - !b.bar || menuSortKey(a).localeCompare(menuSortKey(b)) || String(b.at).localeCompare(String(a.at)));
+}
+function menuListHtml(list) {
+  const day = at => esc(new Date(at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: new Date(at).getFullYear() === new Date().getFullYear() ? undefined : "numeric" }));
+  return `<ul class="md-list md-menus">${menusSorted(list).map(x => `<li class="md-menu-li"><button type="button" class="md-row" data-md-menu="${x.id}">
+      <span class="md-initial" aria-hidden="true">${esc((x.bar || "?").trim().replace(/^the\s+/i, "").charAt(0).toUpperCase())}</span>
+      <span class="txt"><b>${esc(x.bar || "Unnamed menu")}</b><span class="hint">${x.drinks.length} drink${x.drinks.length === 1 ? "" : "s"} · ${day(x.at)}</span></span>
+      <span class="chev" aria-hidden="true">›</span></button>${x.bar ? "" : `<button type="button" class="linkish md-name-it" data-md-name="${x.id}">Add the name</button>`}</li>`).join("")}</ul>`;
+}
+// Open, or name, a saved menu from any list of them.
+document.addEventListener("click", e => {
+  const o = e.target.closest("[data-md-menu]"), n = e.target.closest("[data-md-name]");
+  if (n) { e.preventDefault(); const x = S.menus.find(m => String(m.id) === n.dataset.mdName); if (x) renameMenu(x); return; }
+  if (!o) return;
+  e.preventDefault();
+  setMenuRes(S.menus.find(x => String(x.id) === o.dataset.mdMenu) || null);
+  if (S.view === "menu") { renderMain(); window.scrollTo({ top: 0 }); } else openMenuDecoder();
+});
+// The cart page's section.
+function menusSectionHtml() {
+  if (!uid() || (S.menusOff && !S.menus.length)) return "";
+  return `<section class="make-sec" id="prof-menus">
+    <div class="sec-head"><h3>My decoded menus${S.menus.length ? ` <span class="count">${S.menus.length}</span>` : ""}</h3>
+      <div class="panel-actions"><button class="btn primary small" type="button" id="prof-menu-new" aria-label="Decode a new menu">+ Add</button></div></div>
+    ${S.menus.length ? menuListHtml(S.menus) : `<p class="hint" style="margin:0">Photograph a bar's cocktail menu and every drink comes back with a spec to make at home. Menus you decode are kept here.</p>`}
+  </section>`;
+}
+function wireMenusSection() { if ($("prof-menu-new")) $("prof-menu-new").onclick = () => { setMenuRes(null); openMenuDecoder(); }; }
 async function saveMenu(r) {
   if (!sb || !uid() || S.menusOff) return null;
   const { data, error } = await sb.from("menus").insert({ user_id: uid(), bar: (r.bar || "").slice(0, 80) || null, drinks: r.drinks }).select().single();
@@ -155,14 +187,13 @@ VIEWS.menu = function renderMenu() {
   }
   const day = at => esc(new Date(at).toLocaleDateString(undefined, { month: "short", day: "numeric" }));
   const others = S.menus.filter(x => !r || x.id !== r.id);
-  const mine = others.length ? `<ul class="md-list md-menus">${others.map(x => `<li><button type="button" class="md-row" data-md-menu="${x.id}">
-      <span class="md-initial" aria-hidden="true">${esc((x.bar || "M").trim().charAt(0).toUpperCase())}</span>
-      <span class="txt"><b>${esc(x.bar || "Unnamed menu")}</b><span class="hint">${x.drinks.length} drink${x.drinks.length === 1 ? "" : "s"} · ${day(x.at)}</span></span>
-      <span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ul>` : "";
+  const mine = others.length ? menuListHtml(others) : "";
   m.innerHTML = `<div class="make menu-page">${head}
-    ${r ? `<div class="sec-head md-bar"><h3>${esc(r.bar || "Unnamed menu")}</h3>${r.id ? `<button type="button" class="linkish" id="md-rename">Rename</button>` : ""}</div>
+    ${r ? (r.id && !r.bar ? `<form class="md-ask-name" id="md-name-form"><label for="md-name-in"><b>Which bar or restaurant is this?</b> We couldn't tell from the photo.</label>
+        <div class="chip-add"><input id="md-name-in" type="text" maxlength="80" placeholder="Bar or restaurant name" autocomplete="off"><button class="btn small primary" type="submit">Save</button></div></form>`
+      : `<div class="sec-head md-bar"><h3>${esc(r.bar || "Unnamed menu")}</h3>${r.id ? `<button type="button" class="linkish" id="md-rename">Rename</button>` : ""}</div>`) + `
       <div class="md-meta-line"><span>${r.drinks.length} drink${r.drinks.length === 1 ? "" : "s"} · ${day(r.at)}</span>${r.id ? `<button type="button" class="linkish md-del" id="md-delete">Delete</button>` : ""}</div>
-      <ul class="md-list">${r.drinks.map(menuRowHtml).join("")}</ul>
+      <ul class="md-list">${r.drinks.map(menuRowHtml).join("")}</ul>` + `
       <section class="make-sec"><div class="sec-head"><h3>${others.length ? `My menus <span class="count">${S.menus.length}</span>` : "My menus"}</h3><button class="btn small primary" type="button" id="md-pick">Photograph a menu</button></div>
         ${mine || `<p class="hint" style="margin:0">${S.menusOff ? "Only your latest menu is kept, on this device. Run menus-setup.sql in Supabase to save them all to your account." : "Every menu you decode is saved here."}</p>`}</section>`
     : `<div class="md-intro">
@@ -174,22 +205,27 @@ VIEWS.menu = function renderMenu() {
   $("md-pick").onclick = pickMenuPhoto;
   $("md-close").onclick = () => goBack(openAsk);
   m.querySelectorAll("[data-md-open]").forEach(b => b.onclick = () => openMenuDrink(Number(b.dataset.mdOpen)));
-  m.querySelectorAll("[data-md-menu]").forEach(b => b.onclick = () => { setMenuRes(S.menus.find(x => String(x.id) === b.dataset.mdMenu) || null); renderMain(); window.scrollTo({ top: 0 }); });
-  if ($("md-rename")) $("md-rename").onclick = renameMenu;
+  if ($("md-rename")) $("md-rename").onclick = () => renameMenu(S.menuRes);
+  if ($("md-name-form")) $("md-name-form").onsubmit = e => { e.preventDefault(); nameMenu(S.menuRes, $("md-name-in").value); };
   if ($("md-delete")) $("md-delete").onclick = deleteMenu;
 };
-function renameMenu() {
-  const r = S.menuRes; if (!r || !r.id) return;
-  sheet("Rename menu", `<form id="mn-form"><div class="field"><label for="mn-name">Bar or menu name</label>
+async function nameMenu(r, bar) {
+  bar = String(bar || "").trim().slice(0, 80); if (!r || !r.id) return false;
+  const { error } = await sb.from("menus").update({ bar: bar || null }).eq("id", r.id);
+  if (error) { toast("Couldn't save the name. Try again."); return false; }
+  r.bar = bar; const x = S.menus.find(m => m.id === r.id); if (x && x !== r) x.bar = bar;
+  if (S.menuRes && S.menuRes.id === r.id) { S.menuRes.bar = bar; setMenuRes(S.menuRes); }
+  renderMain();
+  return true;
+}
+function renameMenu(r) {
+  if (!r || !r.id) return;
+  sheet(r.bar ? "Rename menu" : "Name this menu", `<form id="mn-form"><div class="field"><label for="mn-name">Bar or restaurant name</label>
     <input id="mn-name" type="text" maxlength="80" value="${esc(r.bar || "")}" autocomplete="off"></div>
     <div class="panel-actions"><button class="btn primary" type="submit">Save</button></div></form>`);
   const inp = $("mn-name"); inp.focus(); inp.select();
   $("mn-form").onsubmit = async e => {
-    e.preventDefault(); const bar = inp.value.trim().slice(0, 80);
-    const { error } = await sb.from("menus").update({ bar: bar || null }).eq("id", r.id);
-    if (error) { toast("Couldn't rename it. Try again."); return; }
-    r.bar = bar; const x = S.menus.find(m => m.id === r.id); if (x) x.bar = bar;
-    setMenuRes(r); closeSheet(); renderMain();
+    e.preventDefault(); if (await nameMenu(r, inp.value)) closeSheet();
   };
 }
 function deleteMenu() {
