@@ -6,7 +6,7 @@ S.menuRes = (() => { try { return JSON.parse(localStorage.getItem("mc-menu") || 
 S.menuBusy = null;
 const MENU_CONF = { high: "Likely close", medium: "Educated guess", low: "Rough guess" };
 function openMenuDecoder() {
-  S.view = "menu"; S.confirmDelete = false; setHash("menu");
+  S.view = "menu"; S.confirmDelete = false; S.menuSel = null; setHash("menu");
   renderList(); renderMain(); window.scrollTo({ top: 0 });
 }
 HASH_VIEWS.menu = openMenuDecoder;
@@ -55,68 +55,83 @@ function menuAmount(i) {
   if (i.unit === "each") return qHtml(fmtOz(a));
   return `${qHtml(fmtOz(a))} ${esc(i.unit)}`;
 }
-function menuCardHtml(m, k) {
+// What you're missing for a decoded drink (house-made parts are things to make, not to buy).
+function menuNeeds(m) {
   const keys = barKeys();
-  const bottles = (m.ingredients || []).filter(i => !i.house);
-  const missing = bottles.filter(i => !haveIngredient(i, keys));
-  const houseN = (m.ingredients || []).filter(i => i.house).length;
-  const std = m.classic ? stdFor(m.classic) : null;
-  const ingRow = i => {
-    const h = !i.house && typeof ingHowto === "function" ? ingHowto(i.name) : null;
-    const name = i.house ? `<a class="ing-link" href="#md-h-${k}-${slugify(i.name)}">${esc(i.name)}</a> <span class="chip amber">House-made</span>`
-      : h && HOWTO.some(x => x.key === h.key) ? `<button type="button" class="ing-link" data-md-howto="${h.key}" data-md-k="${k}" data-md-i="${(m.ingredients || []).indexOf(i)}">${esc(i.name)}</button>` : esc(i.name);
-    return `<tr><td class="q">${menuAmount(i)}</td><td class="n">${name}${i.brand ? ` <span class="hint">(${esc(i.brand)})</span>` : ""}${!i.house && missing.includes(i) ? ` <span class="md-miss">You don't have it</span>` : ""}</td></tr>`;
-  };
-  return `<article class="md-card" id="md-${k}">
-    <div class="md-head"><h3>${esc(m.name)}</h3>${m.price ? `<span class="md-price">${esc(m.price)}</span>` : ""}</div>
-    ${m.menu_text ? `<p class="md-menu">“${esc(m.menu_text)}”</p>` : ""}
-    ${m.classic ? `<p class="md-riff">A riff on the ${std ? `<button type="button" class="linkish" data-open-std="${esc(std.id)}">${esc(m.classic)}</button>` : `<b>${esc(m.classic)}</b>`}${m.riff ? `: ${esc(m.riff)}` : ""}</p>` : ""}
-    <div class="md-meta"><span class="md-conf ${esc(m.confidence || "medium")}">${esc(MENU_CONF[m.confidence] || "Educated guess")}</span>${[m.method, m.glass, m.garnish && "Garnish: " + m.garnish].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>
-    <div class="md-have ${missing.length ? "" : "ok"}">${uid() && savedItems().length ? (missing.length
-      ? `You have ${bottles.length - missing.length} of ${bottles.length}${houseN ? `, plus ${houseN} to make` : ""}. ${missing.map(i => `${esc(i.name)} ${shopBtn(i.name, `For the ${m.name}`)}`).join(" ")}`
-      : `You have everything${houseN ? `; just make the ${houseN === 1 ? "house-made part" : "house-made parts"}` : ""}.`) : ""}</div>
-    <table class="spec-table md-spec"><tbody>${(m.ingredients || []).map(ingRow).join("")}</tbody></table>
-    ${(m.steps || []).length ? `<div><div class="label notes-label">How to make it</div><ol class="md-steps">${m.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>` : ""}
-    ${(m.house_made || []).map(h => `<details class="md-house" id="md-h-${k}-${slugify(h.name)}" open>
-      <summary>How to make the ${esc(h.name.toLowerCase())}</summary>
-      <ul>${(h.ingredients || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
-      <ol>${(h.steps || []).map(x => `<li>${esc(x)}</li>`).join("")}</ol>
-      ${h.keeps ? `<p class="hint"><b>Keeps:</b> ${esc(h.keeps)}</p>` : ""}
-      ${h.shortcut ? `<p class="hint"><b>Shortcut:</b> ${esc(h.shortcut)}</p>` : ""}
-    </details>`).join("")}
-    ${m.note ? `<p class="hint md-note">${esc(m.note)}</p>` : ""}
-    <div class="panel-actions md-actions">${S.canWrite ? `<button type="button" class="btn small primary" data-md-save="${k}">Save to My Cocktail Cart</button>` : ""}${uid() && missing.length && !S.shopOff ? `<button type="button" class="btn small" data-md-shop="${k}">+ Add what I don't have</button>` : ""}</div>
-  </article>`;
+  return (m.ingredients || []).filter(i => !i.house && !haveIngredient(i, keys));
 }
+// A1: one short row per drink.
+function menuRowHtml(m, k) {
+  const d = menuToDrink(m), need = uid() && savedItems().length ? menuNeeds(m).length : -1;
+  const status = need < 0 ? "" : need ? `<span class="md-need">Need ${need}</span>` : `<span class="md-can">✓ You can make it</span>`;
+  return `<li><button type="button" class="md-row" data-md-open="${k}">
+    ${drinkThumb(d)}
+    <span class="txt"><b>${esc(m.name)}</b><span class="hint">${m.classic ? `Riff on ${/^[aeiou]/i.test(m.classic) ? "an" : "a"} ${esc(m.classic)}` : esc(m.type || "Original")}</span></span>
+    ${status}<span class="chev" aria-hidden="true">›</span></button></li>`;
+}
+// A2: one drink, laid out like a recipe.
+function menuDetailHtml(m, k) {
+  const r = S.menuRes || {}, std = m.classic ? stdFor(m.classic) : null, need = menuNeeds(m);
+  const ing = i => {
+    const h = !i.house && typeof ingHowto === "function" ? ingHowto(i.name) : null;
+    const name = h && HOWTO.some(x => x.key === h.key) ? `<button type="button" class="ing-link" data-md-howto="${h.key}" data-md-i="${(m.ingredients || []).indexOf(i)}">${esc(i.name)}</button>` : esc(i.name);
+    return `<tr><td class="q">${menuAmount(i)}</td><td class="n">${name}${i.house ? ` <span class="md-make">make it</span>` : ""}</td></tr>`;
+  };
+  const steps = (m.steps || []).join(" ") + (m.garnish && !(m.steps || []).join(" ").toLowerCase().includes(String(m.garnish).toLowerCase().split(/[ ,]/)[0]) ? ` Garnish: ${m.garnish}.` : "");
+  return `<div class="make menu-page md-detail">
+    <button type="button" class="linkish md-back" id="md-back">‹ ${r.bar ? esc(r.bar) + "'s menu" : "Back to the menu"}</button>
+    <div><h2 class="make-title">${esc(m.name)}</h2>
+      <p class="md-sub">${m.classic ? `Riff on ${/^[aeiou]/i.test(m.classic) ? "an" : "a"} ${std ? `<button type="button" class="linkish" data-open-std="${esc(std.id)}">${esc(m.classic)}</button>` : esc(m.classic)}` : esc(m.type || "Original")}${m.riff ? ` · ${esc(m.riff.charAt(0).toLowerCase() + m.riff.slice(1))}` : ""}</p></div>
+    <table class="spec-table md-spec"><tbody>${(m.ingredients || []).map(ing).join("")}</tbody></table>
+    ${steps ? `<p class="md-steps">${esc(steps)}</p>` : ""}
+    <div class="md-folds">
+      ${(m.house_made || []).map(h => `<details class="md-fold"><summary>How to make the ${esc(h.name.toLowerCase())}</summary>
+        <ul>${(h.ingredients || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+        <ol>${(h.steps || []).map(x => `<li>${esc(x)}</li>`).join("")}</ol>
+        ${h.keeps ? `<p class="hint"><b>Keeps:</b> ${esc(h.keeps)}</p>` : ""}${h.shortcut ? `<p class="hint"><b>Shortcut:</b> ${esc(h.shortcut)}</p>` : ""}</details>`).join("")}
+      ${m.menu_text || m.note ? `<details class="md-fold"><summary>What the menu said</summary>
+        ${m.menu_text ? `<p>“${esc(m.menu_text)}”${m.price ? ` · ${esc(m.price)}` : ""}</p>` : ""}${m.note ? `<p class="hint">${esc(m.note)}</p>` : ""}</details>` : ""}
+    </div>
+    <div class="panel-actions md-actions">${S.canWrite ? `<button type="button" class="btn primary" id="md-save">Save to My Cocktail Cart</button>` : ""}${uid() && need.length && !S.shopOff ? `<button type="button" class="btn" id="md-shop">+ List</button>` : ""}</div>
+    <p class="hint md-fine">Our best guess from the menu, not the bar's own recipe.</p>
+  </div>`;
+}
+function openMenuDrink(k) {
+  S.menuSel = k; setHash("menu-drink"); renderMain(); window.scrollTo({ top: 0 });
+}
+HASH_VIEWS["menu-drink"] = () => { if (S.menuSel == null || !S.menuRes || !S.menuRes.drinks[S.menuSel]) openMenuDecoder(); else { S.view = "menu"; renderList(); renderMain(); } };
 VIEWS.menu = function renderMenu() {
   const m = $("main");
+  const r = S.menuRes;
+  if (!S.menuBusy && r && S.menuSel != null && r.drinks[S.menuSel] && location.hash === "#menu-drink") {
+    const k = S.menuSel, dm = r.drinks[k];
+    m.innerHTML = menuDetailHtml(dm, k);
+    $("md-back").onclick = () => history.state && history.state.inSite ? history.back() : openMenuDecoder();
+    m.querySelectorAll("[data-open-std]").forEach(b => b.onclick = () => selectDrink(b.dataset.openStd));
+    if ($("md-save")) $("md-save").onclick = () => openEditor(menuToDrink(dm), true);
+    if ($("md-shop")) $("md-shop").onclick = () => addRecipeToShop(menuToDrink(dm));
+    m.querySelectorAll("[data-md-howto]").forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const sv = S.servings; S.servings = 1; openHowto(b.dataset.mdHowto, menuToDrink(dm), Number(b.dataset.mdI)); S.servings = sv;
+    });
+    return;
+  }
   const head = `<div class="editor-top"><div><span class="label">Out at a bar?</span><h2 class="make-title">Decode a cocktail menu</h2></div>
-    <div class="panel-actions"><button class="btn small primary" type="button" id="md-pick">${S.menuRes ? "Decode another menu" : "Photograph a menu"}</button></div></div>`;
+    ${r ? "" : `<div class="panel-actions"><button class="btn small primary" type="button" id="md-pick">Photograph a menu</button></div>`}</div>`;
   if (S.menuBusy) {
     m.innerHTML = `<div class="make">${head.replace('id="md-pick"', 'id="md-pick" disabled')}
       <div class="scanning"><img class="md-preview" src="${S.menuBusy.preview}" alt="Your menu photo">
         <div class="glass dots">Reading the menu</div><div class="hint">Working out each drink's spec and any house-made syrups. This can take up to a minute.</div></div></div>`;
     return;
   }
-  const r = S.menuRes;
   m.innerHTML = `<div class="make menu-page">${head}
-    ${r ? `<p class="hint" style="margin:0">${r.bar ? `From <b>${esc(r.bar)}</b>'s menu` : "From your menu photo"} · ${r.drinks.length} drink${r.drinks.length === 1 ? "" : "s"} · ${esc(new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric" }))}. Specs are educated guesses from the menu, not the bar's own recipes.</p>
-      <nav class="md-jump" aria-label="Drinks on this menu">${r.drinks.map((d, k) => `<a href="#md-${k}" data-md-jump="${k}">${esc(d.name)}</a>`).join("")}</nav>
-      ${r.drinks.map(menuCardHtml).join("")}`
+    ${r ? `<div class="md-meta-line"><span>${r.bar ? esc(r.bar) + " · " : ""}${r.drinks.length} drink${r.drinks.length === 1 ? "" : "s"} · ${esc(new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric" }))}</span><button type="button" class="linkish" id="md-pick">New menu</button></div>
+      <ul class="md-list">${r.drinks.map(menuRowHtml).join("")}</ul>`
     : `<div class="md-intro">
         <p>Take a photo of a bar's cocktail menu. For each drink you'll get:</p>
         <ul><li>the classic it's built on,</li><li>a best-guess spec to make it at home,</li><li>step-by-step instructions,</li><li>recipes for house-made syrups, cordials and infusions,</li><li>and what you're missing from your bottles.</li></ul>
         <p class="hint">${uid() ? "Uses one AI request from your daily allowance. The photo isn't saved." : "Sign in to decode menus."}</p></div>`}
   </div>`;
   $("md-pick").onclick = pickMenuPhoto;
-  m.querySelectorAll("[data-md-jump]").forEach(a => a.onclick = e => { e.preventDefault(); const t = $("md-" + a.dataset.mdJump); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
-  m.querySelectorAll('a.ing-link[href^="#md-h-"]').forEach(a => a.onclick = e => { e.preventDefault(); const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) { t.open = true; t.scrollIntoView({ behavior: "smooth", block: "center" }); } });
-  m.querySelectorAll("[data-open-std]").forEach(b => b.onclick = () => selectDrink(b.dataset.openStd));
-  m.querySelectorAll("[data-md-save]").forEach(b => b.onclick = () => openEditor(menuToDrink(r.drinks[Number(b.dataset.mdSave)]), true));
-  m.querySelectorAll("[data-md-shop]").forEach(b => b.onclick = () => addRecipeToShop(menuToDrink(r.drinks[Number(b.dataset.mdShop)])));
-  m.querySelectorAll("[data-md-howto]").forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    const d = menuToDrink(r.drinks[Number(b.dataset.mdK)]);
-    const sv = S.servings; S.servings = 1; openHowto(b.dataset.mdHowto, d, Number(b.dataset.mdI)); S.servings = sv;
-  });
+  m.querySelectorAll("[data-md-open]").forEach(b => b.onclick = () => openMenuDrink(Number(b.dataset.mdOpen)));
 };

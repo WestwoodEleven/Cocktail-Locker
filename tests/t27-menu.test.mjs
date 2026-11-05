@@ -23,18 +23,28 @@ export default async function () {
   check("shows that it's reading", /reading the menu/i.test(await p.text("#main")));
   await p.waitForTimeout(700);
   const t = await p.text("#main");
-  check("lists each drink with the bar, price and menu text", /from bar agricole's menu/i.test(t) && t.includes("Cane & Cinnamon") && t.includes("$16") && t.includes("aged rum, cinnamon-honey, lime"), t.slice(0, 500));
-  check("names the classic, linking to the library", await p.isVisible("#md-0 [data-open-std='std:daiquiri']") && /aged rum with a cinnamon-honey syrup/i.test(t));
-  check("estimated spec, steps and confidence", t.includes("Likely close") && /double strain/i.test(t) && (await p.evaluate("document.querySelectorAll('#md-0 .md-spec tr').length")) === 3);
-  check("house-made syrup has its own recipe", /how to make the cinnamon-honey syrup/i.test(t) && t.includes("2 cinnamon sticks") && /keeps:/i.test(t) && /shortcut:/i.test(t));
-  check("compares with your bottles", /you have 1 of 2, plus 1 to make/i.test(await p.text("#md-0 .md-have")) && /you have everything/i.test(await p.text("#md-1 .md-have")), await p.text("#md-0 .md-have"));
-  check("lime juice links to the citrus guide", await p.isVisible("#md-0 [data-md-howto='citrus']"));
+  check("a short list: bar, count, and one row per drink", /bar agricole · 2 drinks/i.test(t) && (await p.evaluate("document.querySelectorAll('.md-row').length")) === 2 && !t.includes("$16"), t.slice(0, 300));
+  check("each row: name, its classic, and whether you can make it", /cane & cinnamon.*riff on a daiquiri/i.test(await p.text("[data-md-open='0']")) && /need 1/i.test(await p.text("[data-md-open='0']")) && /you can make it/i.test(await p.text("[data-md-open='1']")), await p.text("[data-md-open='0']"));
+  await p.click("[data-md-open='0']"); await p.waitForTimeout(150);
+  const d = await p.text("#main");
+  check("tapping opens just that recipe", (await p.evaluate("location.hash")) === "#menu-drink" && /cane & cinnamon/i.test(d) && !d.includes("Bitter Garden") && (await p.evaluate("document.querySelectorAll('.md-spec tr').length")) === 3);
+  check("riff line links to the classic", await p.isVisible("[data-open-std='std:daiquiri']") && /aged rum with a cinnamon-honey syrup/i.test(d));
+  check("house-made parts are tagged; steps in one short paragraph", /make it/i.test(await p.text(".md-spec")) && /shake hard with ice\. double strain/i.test(d));
+  check("syrup recipe and menu text are folded away", (await p.evaluate("[...document.querySelectorAll('.md-fold')].map(x => x.open).join()")) === "false,false" && /how to make the cinnamon-honey syrup/i.test(d) && /what the menu said/i.test(d));
+  await p.click(".md-fold summary"); await p.waitForTimeout(50);
+  check("…and open with a tap", /2 cinnamon sticks/.test(await p.text(".md-fold")));
+  check("lime juice links to the citrus guide", await p.isVisible("[data-md-howto='citrus']"));
+  check("a quiet best-guess note instead of a label", /best guess from the menu/i.test(d) && !/likely close/i.test(d));
   // save as your own
-  await p.click("#md-0 [data-md-save]"); await p.waitForTimeout(200);
+  await p.click("#md-save"); await p.waitForTimeout(200);
   const notes = await p.inputValue("#f-notes");
   check("save opens the editor with the spec, steps and syrup recipe", (await p.inputValue("#f-name")) === "Cane & Cinnamon" && notes.includes("Cinnamon-honey syrup:") && notes.includes("1. Shake hard") && (await p.inputValue("#ing-name-2")) === "Cinnamon-honey syrup", notes);
   check("…as a riff on its classic", (await p.inputValue("#f-classic")) === "Daiquiri");
-  await p.click("#cancel-btn"); await p.waitForTimeout(100);
+  await p.click("#cancel-btn"); await p.waitForTimeout(150);
+  await p.evaluate("openMenuDecoder()"); await p.waitForTimeout(100);
+  await p.click("[data-md-open='1']"); await p.waitForTimeout(100);
+  await p.click("#md-back"); await p.waitForTimeout(200);
+  check("Back returns to the list", (await p.evaluate("document.querySelectorAll('.md-row').length")) === 2);
   // kept on the device
   check("the last menu is saved on this device", (await p.evaluate("JSON.parse(localStorage.getItem('mc-menu') || 'null')?.drinks?.length")) === 2);
   await p.reload(); await p.waitForTimeout(600);
