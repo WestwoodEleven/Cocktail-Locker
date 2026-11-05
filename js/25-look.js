@@ -138,7 +138,7 @@ function openAccountMenu() {
   if (signedIn) items.push(["acct-shop", "Shopping list" + (typeof shopOpen === "function" && shopOpen().length ? ` (${shopOpen().length})` : ""), "What to pick up next time you're at the store"]);
   if (accounts && !signedIn) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
   if (signedIn) items.push(["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"]);
-  items.push(["acct-menu", "Menu decoder", "Photograph a bar's menu and make the drinks at home"]);
+  items.push(["acct-menu", "Decode a cocktail menu", "Photograph a bar's menu and make the drinks at home"]);
   items.push(["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"]);
   items.push(["acct-party", "Plan a party", "Batches, a shopping list and a menu"]);
   if (!$("install-btn").hidden) items.push(["acct-install", "Install the app", "Add My Cocktail Cart to your home screen"]);

@@ -54,7 +54,7 @@ VIEWS.ask = function renderAsk() {
     <div class="make ask">
       <div class="editor-top">
         <div><span class="label">AI bartender</span><h2 class="make-title">Ask the bartender</h2></div>
-        <div class="panel-actions">${A.msgs.length ? `<button class="btn small" type="button" id="ask-reset">Start over</button>` : ""}<button class="btn small" type="button" id="ask-menu">📷 Decode a bar menu</button></div>
+        <div class="panel-actions">${A.msgs.length ? `<button class="btn small" type="button" id="ask-reset">Start over</button>` : ""}<button class="btn small" type="button" id="ask-menu">📷 Decode a cocktail menu</button></div>
       </div>
       ${!signedIn ? `<div class="scan-banner"><span><b>Sign in to ask the bartender.</b> Ideas from your bottles, substitutes, mocktails and classic recipes, all in one place.</span>
         <div><button class="btn small primary" type="button" id="ask-signin">Sign in or join free</button></div></div>` : ""}

@@ -1,4 +1,4 @@
-// ---------- Menu decoder ----------
+// ---------- Decode a cocktail menu (the menu decoder) ----------
 // Photograph a bar's cocktail menu: each drink comes back with the classic it's built on, an estimated home spec,
 // steps, and recipes for house-made syrups and infusions (AI mode "menu", one request per menu).
 // The last menu you decoded is kept on this device so you can come back to it.
@@ -90,7 +90,7 @@ function menuCardHtml(m, k) {
 }
 VIEWS.menu = function renderMenu() {
   const m = $("main");
-  const head = `<div class="editor-top"><div><span class="label">Out at a bar?</span><h2 class="make-title">Menu decoder</h2></div>
+  const head = `<div class="editor-top"><div><span class="label">Out at a bar?</span><h2 class="make-title">Decode a cocktail menu</h2></div>
     <div class="panel-actions"><button class="btn small primary" type="button" id="md-pick">${S.menuRes ? "Decode another menu" : "Photograph a menu"}</button></div></div>`;
   if (S.menuBusy) {
     m.innerHTML = `<div class="make">${head.replace('id="md-pick"', 'id="md-pick" disabled')}
