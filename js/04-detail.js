@@ -83,7 +83,7 @@ function renderMain() {
             <div class="tot"><b>${fmtLiters(totalMl)}</b><span>${floats.length ? "Batch liquid, before floats" : "Total liquid"}</span></div>
             <div class="tot"><b>${qHtml(fmtOz(totalMl / ML.oz))} oz</b><span>Same, in ounces</span></div>
             ${totalMl >= 750 ? `<div class="tot"><b>${Math.round(totalMl / 750 * 10) / 10}</b><span>750 ml bottles to hold it</span></div>` : ""}
-          </div>` : ""}
+          </div>${typeof factsHtml === "function" ? factsHtml(d) : ""}` : ""}
           <div class="spec-foot">
             <div class="unit-toggle" id="mode" role="group" aria-label="Show amounts in"><span>Show in:</span>
               <button type="button" data-m="spec" aria-pressed="${S.mode === "spec"}">As written</button>
@@ -182,6 +182,7 @@ function renderMain() {
   if ($("missing-btn")) $("missing-btn").onclick = () => openMissing(d);
   if ($("shop-recipe")) $("shop-recipe").onclick = () => addRecipeToShop(d);
   if (typeof wireMade === "function") wireMade(d);
+  if (typeof wireFacts === "function") wireFacts(d);
   $("party-add").onclick = () => { if (S.party.items.some(x => x.id === d.id)) { openParty(); return; } addToParty(d.id); toast(d.name + " added to your party plan"); renderMain(); };
   if ($("fav-btn")) $("fav-btn").onclick = () => toggleFav(d);
   m.querySelectorAll("[data-star]").forEach(b => b.onclick = () => { const n = Number(b.dataset.star); rateDrink(d, n === ratingOf(d).mine ? 0 : n); });

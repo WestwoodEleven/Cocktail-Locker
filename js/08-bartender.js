@@ -15,7 +15,13 @@ S.fresh = (() => { try { return JSON.parse(localStorage.getItem("mc-fresh") || "
 S.prefs = { style: "", strength: "", taste: "", method: "", notes: "" };
 const groupList = k => k === "fresh" ? S.fresh : S.bar[k];
 // Saved bar items are { name, brand, out }; older bars saved plain names, which still work.
-const barItem = x => typeof x === "string" ? { name: x, brand: "", out: false } : { name: String((x && x.name) || ""), brand: String((x && x.brand) || ""), out: !!(x && x.out) };
+const barItem = x => {
+  if (typeof x === "string") return { name: x, brand: "", out: false };
+  const v = { name: String((x && x.name) || ""), brand: String((x && x.brand) || ""), out: !!(x && x.out) };
+  // What you paid, for cost per drink (optional).
+  if (x && Number(x.price) > 0) { v.price = Math.round(Number(x.price) * 100) / 100; v.size = Number(x.size) > 0 ? Number(x.size) : 750; }
+  return v;
+};
 const itemName = x => typeof x === "string" ? x : x.name;
 const itemLabel = x => typeof x === "string" ? x : (x.brand ? `${x.name} (${x.brand})` : x.name);
 const savedItems = () => [...S.bar.liquors, ...S.bar.syrups, ...S.bar.bitters];
@@ -65,12 +71,18 @@ function editItem(key, idx) {
     <div class="field"><label for="bi-name">Name</label><input id="bi-name" type="text" maxlength="60" value="${esc(it.name)}"></div>
     <div class="field"><label for="bi-brand">Brand</label><input id="bi-brand" type="text" maxlength="60" value="${esc(it.brand)}" placeholder="Brand (optional)"></div>
     ${it.brand && S.backend === "supabase" && !S.bottlesOff ? `<button type="button" class="linkish" data-bottle="${esc(it.brand)}">Open the ${esc(it.brand)} bottle page</button>` : ""}
+    ${key !== "fresh" ? `<div class="field-row bi-price"><div class="field"><label for="bi-price">Price paid <span class="hint">(optional)</span></label><input id="bi-price" type="text" inputmode="decimal" maxlength="8" value="${it.price ? esc(String(it.price)) : ""}" placeholder="For cost per drink"></div>
+      <div class="field"><label for="bi-size">Bottle size</label><select id="bi-size">${[200, 375, 500, 700, 750, 1000, 1750].map(z => `<option value="${z}" ${(it.size || 750) === z ? "selected" : ""}>${z >= 1000 ? z / 1000 + " L" : z + " ml"}</option>`).join("")}</select></div></div>` : ""}
     <label class="check" for="bi-out"><input type="checkbox" id="bi-out" ${it.out ? "checked" : ""}><span>Out of stock<br><span class="hint">Kept on your list, but left out of What can I make? and the AI tools until you restock.</span></span></label>
     ${typeof shopBtn === "function" && shopBtn(it.name) ? `<div class="bi-shop"><span>Running low?</span>${shopBtn(it.brand ? `${it.name} (${it.brand})` : it.name, "Running low", "+ Shopping list")}</div>` : ""}
     <div class="panel-actions" style="justify-content:flex-start"><button class="btn primary small" type="button" id="bi-save">Save</button><button class="btn small danger ghost" type="button" id="bi-rm">Remove from bar</button></div>`);
   $("bi-save").onclick = () => {
     const n = $("bi-name").value.trim().slice(0, 60); if (!n) { $("bi-name").focus(); return; }
     it.name = n; it.brand = $("bi-brand").value.trim().slice(0, 60); it.out = $("bi-out").checked;
+    if ($("bi-price")) {
+      const pr = parseFloat(String($("bi-price").value).replace(/[^0-9.]/g, ""));
+      if (pr > 0) { it.price = Math.round(pr * 100) / 100; it.size = Number($("bi-size").value) || 750; } else { delete it.price; delete it.size; }
+    }
     closeSheet(); afterItems(key);
   };
   $("bi-rm").onclick = () => { closeSheet(); removeItem(key, idx); };

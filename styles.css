@@ -1165,3 +1165,24 @@ li.has-shop > .prow { flex: 1; min-width: 0; }
 .md-fold p { margin: 8px 0 0; }
 .md-actions { justify-content: flex-start; }
 .md-fine { margin: 0; font-size: 12px; }
+
+/* ---------- ABV and cost per drink ---------- */
+.facts-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; margin-top: 2px; }
+.facts-line .dot { color: var(--muted); }
+.facts-sheet { display: flex; flex-direction: column; gap: 10px; }
+.fs-big { font-family: var(--f-display); font-size: 34px; font-weight: 900; line-height: 1; }
+.fs-big span { font-family: var(--f-body); font-size: 14px; font-weight: 600; color: var(--muted); }
+.fs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fs-table th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 4px; border-bottom: 1px solid var(--rule); }
+.fs-table td { padding: 7px 4px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.fs-table td:last-child, .fs-table th:last-child { text-align: right; white-space: nowrap; }
+.fs-table tr.sum td { border-top: 1px solid var(--ink); }
+.fs-tag { font-size: 10px; border: 1px solid var(--rule); border-radius: 999px; padding: 0 5px; color: var(--muted); white-space: nowrap; }
+.fs-tag.yours { border-color: #2E7D4F; color: #2E7D4F; font-weight: 700; }
+.fs-std { margin: 0; }
+.fs-edit { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.fs-edit .linkish { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.fs-fine { margin: 0; font-size: 12px; color: var(--muted); }
+.bi-price { display: flex; gap: 10px; }
+.bi-price .field { flex: 1; min-width: 0; }
+.bi-price select { width: 100%; }

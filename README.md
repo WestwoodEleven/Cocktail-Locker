@@ -81,6 +81,7 @@ The classics themselves live in the shared standard library: run `supabase/class
 ### Tools, lists and sharing
 
 - **What can I make?** matches your saved bar (plus fresh items) against every recipe and shows what's ready, and what's one or two ingredients away. No AI, so it's free.
+- **Strength and cost**: under each recipe's totals, an estimated ABV (after ice melt) and cost per drink, both as links. The ABV pop-up shows each ingredient's proof, before/after ice and standard drinks; the cost pop-up shows each ingredient's share using typical US bottle prices, replaced by what you paid when you add a price in My Bottles (js/34-facts.js).
 - **Plan a party**: pick drinks and a guest count for batches, one combined shopping list (bottles, citrus, cans, ice) and a printable menu. Saved on the device.
 - **Stock my bottles**: photograph your shelves (several photos, several bottles each); Claude lists every bottle with its brand, you review and edit the list, and it's added to your bottles. Already-owned bottles are skipped, brands are filled in on existing ones, and mixers go to Fresh today. Each photo is one AI request.
 - **Missing something?**: one link under the spec opens a list of the ingredients; pick the one you don't have and Claude suggests substitutes (from your bottles first) and can start your own version with the swap.
