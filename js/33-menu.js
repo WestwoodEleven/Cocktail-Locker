@@ -116,12 +116,13 @@ VIEWS.menu = function renderMenu() {
     });
     return;
   }
-  const head = `<div class="editor-top"><div><span class="label">Out at a bar?</span><h2 class="make-title">Decode a cocktail menu</h2></div>
+  const head = `${backLink("md-close")}<div class="editor-top"><h2 class="make-title">Decode a cocktail menu</h2>
     ${r ? "" : `<div class="panel-actions"><button class="btn small primary" type="button" id="md-pick">Photograph a menu</button></div>`}</div>`;
   if (S.menuBusy) {
     m.innerHTML = `<div class="make">${head.replace('id="md-pick"', 'id="md-pick" disabled')}
       <div class="scanning"><img class="md-preview" src="${S.menuBusy.preview}" alt="Your menu photo">
         <div class="glass dots">Reading the menu</div><div class="hint">Working out each drink's spec and any house-made syrups. This can take up to a minute.</div></div></div>`;
+    $("md-close").onclick = () => goBack(openAsk);
     return;
   }
   m.innerHTML = `<div class="make menu-page">${head}
@@ -133,5 +134,6 @@ VIEWS.menu = function renderMenu() {
         <p class="hint">${uid() ? "Uses one AI request from your daily allowance. The photo isn't saved." : "Sign in to decode menus."}</p></div>`}
   </div>`;
   $("md-pick").onclick = pickMenuPhoto;
+  $("md-close").onclick = () => goBack(openAsk);
   m.querySelectorAll("[data-md-open]").forEach(b => b.onclick = () => openMenuDrink(Number(b.dataset.mdOpen)));
 };

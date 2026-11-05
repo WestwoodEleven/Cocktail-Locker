@@ -124,9 +124,9 @@ VIEWS.reports = function renderReports() {
   const reasonText = v => (REPORT_REASONS.find(r => r[0] === v) || [, v])[1];
   m.innerHTML = `
     <div class="make">
+      ${backLink("rp-back")}
       <div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Reports</h2>
-        <div class="hint">${S.reportsOff ? "Reports aren't switched on yet. Run reports-setup.sql in Supabase." : groups.length ? `${groups.length} to review` : "Nothing to review."}</div></div>
-        <button class="btn small" type="button" id="rp-back">Back to My Cocktail Cart</button></div>
+        <div class="hint">${S.reportsOff ? "Reports aren't switched on yet. Run reports-setup.sql in Supabase." : groups.length ? `${groups.length} to review` : "Nothing to review."}</div></div></div>
       ${groups.map((g, i) => {
         const s = reportSubject(g);
         const acts = [];
@@ -144,7 +144,7 @@ VIEWS.reports = function renderReports() {
         </section>`;
       }).join("")}
     </div>`;
-  $("rp-back").onclick = () => openProfile();
+  $("rp-back").onclick = () => goBack(openProfile);
   m.querySelectorAll("[data-rpview]").forEach(b => b.onclick = () => {
     const g = groups[+b.dataset.rpview], s = reportSubject(g);
     if (g.kind === "cart") openLocker(g.target);

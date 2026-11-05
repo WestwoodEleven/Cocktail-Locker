@@ -82,8 +82,9 @@ VIEWS.shop = function renderShop() {
       ${S.shopPrompt === x.id ? promptHtml(x) : ""}`;
   const group = (title, list) => list.length ? `<li class="shop-grp">${title}</li>${list.map(item).join("")}` : "";
   m.innerHTML = `<div class="make shop-page">
-    <div class="editor-top"><div><span class="label">Yours only</span><h2 class="make-title">Shopping list</h2></div>
-      <div class="panel-actions">${open.length ? `<button class="btn small" type="button" id="shop-share">Share</button>` : ""}<button class="btn small" type="button" id="shop-back">Back</button></div></div>
+    ${backLink("shop-back")}
+    <div class="editor-top"><h2 class="make-title">Shopping list</h2>
+      ${open.length ? `<div class="panel-actions"><button class="btn small" type="button" id="shop-share">Share</button></div>` : ""}</div>
     ${S.shopOff ? `<div class="scan-banner"><span><b>The shopping list isn't set up yet.</b> Run shopping-setup.sql in Supabase.</span></div>` : ""}
     <form class="chip-add shop-form" id="shop-form"><input id="shop-in" type="text" maxlength="80" placeholder="Something to buy" autocomplete="off" aria-label="Something to buy"><button class="btn small primary" type="submit">Add</button></form>
     <ul class="shop-list">
@@ -104,7 +105,7 @@ function promptHtml(x) {
 }
 function wireShop() {
   const m = $("main");
-  $("shop-back").onclick = () => history.state && history.state.inSite ? history.back() : openHome();
+  $("shop-back").onclick = () => goBack();
   $("shop-form").onsubmit = async e => { e.preventDefault(); const v = $("shop-in").value.trim(); if (!v) return; if (await addToShop(v, "", { quiet: true })) { renderMain(); $("shop-in").focus(); } else toast(`${v} is already on your list`); };
   if ($("shop-share")) $("shop-share").onclick = async () => {
     const text = "My Cocktail Cart shopping list:\n" + shopOpen().map(x => "☐ " + x.name).join("\n");

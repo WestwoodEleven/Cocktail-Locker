@@ -1187,3 +1187,17 @@ li.has-shop > .prow { flex: 1; min-width: 0; }
 .bi-price { display: flex; gap: 10px; }
 .bi-price .field { flex: 1; min-width: 0; }
 .bi-price select { width: 100%; }
+
+/* Consistency pass: one back link, simpler headers, grouped menu */
+.make > .md-back { align-self: flex-start; padding: 0; margin-bottom: -10px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--muted); min-height: 44px; display: inline-flex; align-items: center; }
+.cart-name { margin-top: 4px; font-size: 15px; }
+.cart-name .linkish { font-size: 15px; }
+.acct-menu .acct-grp { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 10px 2px 0; }
+.acct-menu .acct-grp:first-child { margin-top: 0; }
+.acct-menu .acct-grp:empty { border-top: 1px solid var(--rule); margin: 8px 0 0; }
+.acct-foot { margin: 0; line-height: 1.7; }
+.basics-line { display: flex; align-items: center; gap: 6px; }
+.basics-line .check { margin: 0; }
+.info-btn { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 6px; cursor: pointer; border-radius: 50%; }
+.info-btn:hover { color: var(--accent); }
+@media (max-width: 780px) { .site-foot { display: none; } }

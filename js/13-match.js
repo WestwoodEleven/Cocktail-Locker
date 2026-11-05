@@ -158,11 +158,11 @@ VIEWS.canmake = function renderCanMake() {
   })();
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">From your bottles</span><h2 class="make-title">What can I make?</h2></div>
-        <button class="btn small" type="button" id="cm-close">Back to drinks</button></div>
+      ${backLink("cm-close")}
+      <div class="editor-top"><h2 class="make-title">What can I make?</h2></div>
       <p class="hint" style="margin:0">Matches your bottles against every recipe on the site.</p>
-      <label class="check basics-toggle"><input type="checkbox" id="cm-basics" ${S.assumeBasics ? "checked" : ""}>
-        <span><b>Assume I have the basics</b><br><span class="hint">Lemons, limes and oranges, sugar and simple syrups, soda water, eggs, cream and mint. Juices and mixers like tonic or ginger beer count too, marked "Pick up".</span></span></label>
+      <div class="basics-line"><label class="check"><input type="checkbox" id="cm-basics" ${S.assumeBasics ? "checked" : ""}> <span>Assume I have the basics</span></label>
+        <button type="button" class="info-btn" id="cm-basics-info" aria-label="What counts as the basics">ⓘ</button></div>
       ${!r.keys.length ? `<div class="scan-banner"><span><b>No bottles yet.</b> Add your bottles below to see what you can make.</span></div>` : ""}
       <section class="make-sec">
         <div class="sec-head"><h3>Ready to make <span class="count">${r.ready.length}</span></h3></div>
@@ -187,5 +187,6 @@ VIEWS.canmake = function renderCanMake() {
   wireGroups(GROUPS);
   $("cm-basics").onchange = e => { S.assumeBasics = e.target.checked; try { localStorage.setItem("mc-basics", S.assumeBasics ? "on" : "off"); } catch (er) {} renderMain(); };
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => selectDrink(b.dataset.open));
-  $("cm-close").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
+  $("cm-close").onclick = () => goBack();
+  $("cm-basics-info").onclick = () => sheet("The basics", `<p style="margin-top:0">Lemons, limes and oranges, sugar and simple syrups, soda water, eggs, cream and mint.</p><p class="hint">Juices and mixers like tonic or ginger beer count too, marked "Pick up" so you know to grab them.</p>`);
 };

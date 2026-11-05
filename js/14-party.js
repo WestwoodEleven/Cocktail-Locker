@@ -99,8 +99,8 @@ VIEWS.party = function renderParty() {
   const shop = n ? shoppingList() : null;
   m.innerHTML = `
     <div class="make party">
-      <div class="editor-top"><div><span class="label">Party planner</span><h2 class="make-title">Plan a party</h2></div>
-        <button class="btn small" type="button" id="party-close">Back to drinks</button></div>
+      ${backLink("party-close")}
+      <div class="editor-top"><h2 class="make-title">Plan a party</h2></div>
       <p class="hint" style="margin:0">Pick the drinks, set the guest count, and get batches, one shopping list and a menu. Your plan is saved on this device.</p>
       <section class="make-sec">
         <div class="row2">
@@ -135,7 +135,7 @@ VIEWS.party = function renderParty() {
       </section>` : ""}
     </div>`;
   const rerender = focusId => { renderMain(); if (focusId && $(focusId)) { const el = $(focusId); el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } };
-  $("party-close").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
+  $("party-close").onclick = () => goBack();
   $("pp-name").onchange = e => { P.name = e.target.value.trim() || "Tonight's menu"; saveParty(); rerender(); };
   $("pp-guests").onchange = e => { P.guests = Math.max(1, Math.min(500, Math.round(Number(e.target.value) || 1))); saveParty(); rerender(); };
   $("pp-per").onchange = e => { P.perGuest = Math.max(0.5, Math.min(10, Math.round((Number(e.target.value) || 1) * 2) / 2)); saveParty(); rerender(); };

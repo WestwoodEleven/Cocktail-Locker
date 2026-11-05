@@ -54,14 +54,14 @@ function sectionsHtml() {
   return secs.map(s => {
     const n = S.secShow[s.key] || SEC_STEP, rows = s.items.slice(0, n);
     const more = s.items.length > n ? (n >= SEC_MAX_INLINE
-      ? `<li class="sec-more"><button type="button" class="linkish" data-sec-all="${s.key}">See all ${s.items.length} →</button></li>`
+      ? `<li class="sec-more"><button type="button" class="linkish" data-sec-all="${s.key}">See all ${s.items.length} ›</button></li>`
       : `<li class="sec-more"><button type="button" class="linkish" data-sec-more="${s.key}">Show more</button></li>`) : "";
     return `<li class="sec-head-row" id="sec-${s.key}"><h3>${esc(s.title)}</h3>${s.note ? `<span>${esc(s.note)}</span>` : ""}</li>`
       + (rows.length ? rows.map(d => rowHtml(d, false)).join("") : (s.empty || "")) + more;
   }).join("") + `<li class="sec-more sec-all"><button type="button" class="btn small" data-sec-browse>Browse all drinks (${total})</button></li>`;
 }
 function backToSectionsRow() {
-  return S.view === "home" && S.browseAll ? `<li class="sec-more sec-back"><button type="button" class="linkish" data-sec-back>← Back to sections</button></li>` : "";
+  return S.view === "home" && S.browseAll ? `<li class="sec-more sec-back"><button type="button" class="linkish" data-sec-back>‹ Back to sections</button></li>` : "";
 }
 $("list").addEventListener("click", e => {
   const t = e.target.closest("[data-sec-more],[data-sec-all],[data-sec-browse],[data-sec-back],[data-sec-new]"); if (!t) return;

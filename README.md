@@ -58,7 +58,7 @@ The "Back bar" design: condensed all-caps display type (Big Shoulders Display), 
 ### Phone navigation
 
 - **Back button**: every page change is a browser history step (`setHash` pushes, `routeHash` handles Back/forward), and Back from a recipe returns to the same spot on Home with search and filters kept (the recipe's ← Back does the same).
-- **Header**: one slim row on phones (logo, search button, account button). The account button opens a menu with My Cocktail Cart, What can I make?, Bottle guide, Plan a party, Install, Sign in/out. The header tucks away while scrolling down and returns on scroll up.
+- **Header**: one slim row on phones (logo, search button, account button). The ☰ menu lists every page grouped under the three phone tabs (Home: Bottle guide, Plan a party; Bartender: Ask, Decode a cocktail menu; My Cocktail Cart: your cart, What can I make?, Shopping list), then Install, Sign out, 21+ and the legal links. Every page that isn't a tab has one "‹ Back" link at the top left, and the tab it belongs to stays marked. The header tucks away while scrolling down and returns on scroll up.
 - **Tabs**: Home (the drink list), Bartender, My Cocktail Cart. Tapping the open tab scrolls to the top.
 - **Recipe actions**: Ask, Mocktail, Share, ♥ and ⋯ More (Add to list, party plan, copy, Edit, Add photo, Delete), pinned above the tabs on phones.
 - **Drink list**: quick filter chips above the drinks on Home; the full filters open from the Filters button on phones.

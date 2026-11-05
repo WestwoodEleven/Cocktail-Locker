@@ -128,5 +128,8 @@ try { const m = localStorage.getItem("mc-mode"); if (m) S.mode = m; } catch (e) 
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+// One back link for every page that isn't a tab: "‹ Back", top left. Goes back in the site's history when it can.
+function backLink(id) { return `<button type="button" class="linkish back-link" id="${id}">‹ Back</button>`; }
+function goBack(fallback) { if (history.state && history.state.inSite) history.back(); else (fallback || openHome)(); }
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, Math.max(2200, String(msg).length * 55)); }
 function setStatus(kind, text) { $("status").className = "status " + kind; $("status-text").textContent = text; }

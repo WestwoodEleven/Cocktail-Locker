@@ -31,7 +31,7 @@ VIEWS.home = function renderHome() {
       <div class="home-top${signedIn ? " signed" : ""}">
         <section class="home-hero">
           ${signedIn ? `
-            <p class="home-hello">Welcome back, <b>${esc(me && me.display_name ? me.display_name : "your cart")}</b></p>` : `
+            <p class="home-hello">Welcome back to <b>${esc(me && me.display_name ? me.display_name : "your cart")}</b></p>` : `
             <h2 class="home-title">House specs,<br>scaled to<br><em>the crowd.</em></h2>
             <div style="display:flex;flex-direction:column;gap:18px">
               <p class="home-lede">Real recipes from people who make drinks at home. Batch any of them from one glass to a punch bowl${accounts ? ", and keep your own in a free cart" : ""}.</p>
@@ -48,7 +48,7 @@ VIEWS.home = function renderHome() {
           <span class="home-day-body">
             <span><span class="home-feat-name">${esc(feat.name)}</span><br><span class="hint">${esc(sub(feat))}${ratingOf(feat).count ? ` · ★ ${avgOf(feat).toFixed(1)}` : ""}</span></span>
             <span class="home-day-ings">${(feat.ingredients || []).filter(i => !i.float && i.name).slice(0, 5).map(i => `<span><b>${qHtml(amt(i))}</b> ${esc(i.name)}</span>`).join("")}</span>
-            <span class="home-feat-go">See the spec →</span>
+            <span class="home-feat-go">See the spec ›</span>
           </span>
         </button>` : ""}
       </div>

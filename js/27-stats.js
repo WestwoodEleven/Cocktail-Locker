@@ -21,8 +21,7 @@ async function loadStats() {
 }
 VIEWS.stats = function renderStats() {
   const m = $("main");
-  const head = `<div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Site stats</h2></div>
-    <button class="btn small" type="button" id="st-back">Back to My Cocktail Cart</button></div>`;
+  const head = `${backLink("st-back")}<div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Site stats</h2></div></div>`;
   if (!S.isAdmin) { m.innerHTML = `<div class="make">${head}<p class="hint">Only site admins can see stats.</p></div>`; wireStats(); return; }
   const st = S.stats;
   if (!st) { m.innerHTML = `<div class="make">${head}<p class="hint">${esc(S.statsErr || "Counting…")}</p></div>`; wireStats(); return; }
@@ -59,7 +58,7 @@ VIEWS.stats = function renderStats() {
 };
 function wireStats() {
   const m = $("main");
-  if ($("st-back")) $("st-back").onclick = () => { openProfile(); window.scrollTo({ top: 0 }); };
+  if ($("st-back")) $("st-back").onclick = () => goBack(() => { openProfile(); window.scrollTo({ top: 0 }); });
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { if (allDrinks().some(d => d.id === b.dataset.open)) selectDrink(b.dataset.open); else toast("That drink is gone."); });
 }
 

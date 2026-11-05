@@ -68,7 +68,7 @@ async function lookupBottle(q) {
 VIEWS.bottle = function renderBottle() {
   const m = $("main");
   const b = S.bottles.find(x => x.slug === S.bottleSlug);
-  const back = `<button class="btn small" type="button" id="bt-back">Back</button>`;
+  const back = backLink("bt-back");
   if (!b) {
     const err = S.bottleError; S.bottleError = null;
     m.innerHTML = S.bottleLookup ? `<div class="scanning"><div class="glass dots">Looking up ${esc(S.bottleLookup.q)}</div><div class="hint">The first look-up takes a few seconds. After that it's instant for everyone.</div>${back}</div>`
@@ -91,10 +91,10 @@ VIEWS.bottle = function renderBottle() {
   const mine = r.mine.stars || 0;
   m.innerHTML = `
     <div class="make bottle-page">
+      ${back}
       <div class="editor-top"><div><span class="label">Bottle guide${b.category ? " · " + esc(CATEGORY_LABEL[b.category] || b.category) : ""}</span><h2 class="make-title">${esc(b.name)}</h2>
         ${b.product && b.product !== b.name ? `<div class="hint">${esc(b.product)}</div>` : ""}
-        ${r.count ? `<span class="avg"><span class="stars">${starText(r.avg)}</span> ${r.avg.toFixed(1)} · ${r.count} rating${r.count === 1 ? "" : "s"}</span>` : ""}</div>
-        ${back}</div>
+        ${r.count ? `<span class="avg"><span class="stars">${starText(r.avg)}</span> ${r.avg.toFixed(1)} · ${r.count} rating${r.count === 1 ? "" : "s"}</span>` : ""}</div></div>
       <div class="bottle-top">
         <figure class="bottle-photo">${photo ? `<img src="${esc(photoUrl(photo.path))}" alt="${esc(b.name)} bottle">` : `<div class="bottle-ph" aria-hidden="true">${esc(b.name.charAt(0))}</div>`}
           ${uid() && !S.bottlesOff ? `<button class="btn small" type="button" id="bt-photo">${photo ? "Add another photo" : "Add a photo of your bottle"}</button>` : ""}
@@ -241,14 +241,15 @@ VIEWS.guide = function renderGuide() {
       <span class="txt"><span class="nm">${esc(b.name)}</span><span class="sub">${esc([b.ingredient, abvText(b), r.count ? `★ ${r.avg.toFixed(1)}` : ""].filter(Boolean).join(" · "))}</span></span></button></li>`; };
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">Bottle guide</span><h2 class="make-title">Bottles</h2></div><button class="btn small" type="button" id="gd-back">Back to drinks</button></div>
+      ${backLink("gd-back")}
+      <div class="editor-top"><h2 class="make-title">Bottle guide</h2></div>
       <p class="hint" style="margin:0">Every bottle people have looked up, best rated first. Tap a brand on any recipe or in your bottles to open its page.</p>
       <div class="chip-add"><input id="gd-search" type="search" placeholder="Search bottles, or type one to look it up" value="${esc(S.guideQuery)}" autocomplete="off"><button class="btn small primary" type="button" id="gd-go">Look up</button></div>
       ${S.bottlesOff ? `<p class="hint">The bottle guide isn't switched on yet. The site owner needs to run bottles-setup.sql.</p>`
         : list.length ? Object.keys(groups).sort().map(g => `<section class="make-sec"><div class="sec-head"><h3>${esc(g)} <span class="count">${groups[g].length}</span></h3></div><ul class="plist">${groups[g].map(row).join("")}</ul></section>`).join("")
         : `<p class="hint">${q ? `No bottles match. Tap Look up to find “${esc(S.guideQuery.trim())}”.` : "No bottles yet. Look one up above, or tap a recommended brand on any recipe."}</p>`}
     </div>`;
-  $("gd-back").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
+  $("gd-back").onclick = () => goBack();
   const inp = $("gd-search");
   inp.oninput = () => { S.guideQuery = inp.value; clearTimeout(VIEWS.guide.t); VIEWS.guide.t = setTimeout(() => { if (S.view !== "guide") return; renderMain(); const el = $("gd-search"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }, 200); };
   const go = () => { clearTimeout(VIEWS.guide.t); const v = inp.value.trim(); if (v.length < 2) { inp.focus(); return; } S.cameFrom = "guide"; openBottle(v); };

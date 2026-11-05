@@ -43,9 +43,8 @@ function openPhotoReview() { S.view = "photoreview"; setHash("photo-review"); re
 HASH_VIEWS["photo-review"] = openPhotoReview;
 VIEWS.photoreview = function renderPhotoReview() {
   const m = $("main");
-  const head = `<div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Photos to review</h2>
-    <div class="hint">${S.heldOff ? "Photo review isn't set up yet. Run photo-review-setup.sql in Supabase." : S.held.length ? `${S.held.length} waiting` : "Nothing waiting."}</div></div>
-    <button class="btn small" type="button" id="pr-back">Back to My Cocktail Cart</button></div>`;
+  const head = `${backLink("pr-back")}<div class="editor-top"><div><span class="label">Admin</span><h2 class="make-title">Photos to review</h2>
+    <div class="hint">${S.heldOff ? "Photo review isn't set up yet. Run photo-review-setup.sql in Supabase." : S.held.length ? `${S.held.length} waiting` : "Nothing waiting."}</div></div></div>`;
   if (!S.isAdmin) { m.innerHTML = `<div class="make"><h2 class="make-title">Photos to review</h2><p class="hint">Only site admins can review photos.</p></div>`; return; }
   m.innerHTML = `<div class="make">${head}
     ${S.held.map(h => `<article class="pr-item">
@@ -60,7 +59,7 @@ VIEWS.photoreview = function renderPhotoReview() {
         </div>
       </div></article>`).join("")}
   </div>`;
-  $("pr-back").onclick = () => { openProfile(); window.scrollTo({ top: 0 }); };
+  $("pr-back").onclick = () => goBack(() => { openProfile(); window.scrollTo({ top: 0 }); });
   m.querySelectorAll("[data-pr-ok]").forEach(b => b.onclick = () => decideHeld(Number(b.dataset.prOk), true));
   m.querySelectorAll("[data-pr-no]").forEach(b => b.onclick = () => decideHeld(Number(b.dataset.prNo), false));
 };

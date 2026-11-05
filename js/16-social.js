@@ -170,6 +170,7 @@ VIEWS.locker = function renderLocker() {
   const known = !!S.profiles[id] || ds.length;
   m.innerHTML = `
     <div class="make">
+      ${backLink("lk-back")}
       <div class="editor-top"><div><span class="label">Cart</span><h2 class="make-title">${esc(lockerName(id))}</h2>
         <div class="hint">${ds.length} drink${ds.length === 1 ? "" : "s"}${S.followsOff ? "" : ` · ${followersOf(id)} follower${followersOf(id) === 1 ? "" : "s"}`}</div></div>
         <div class="panel-actions">${uid() && !S.followsOff ? `<button class="btn small${iFollow(id) ? "" : " primary"}" type="button" id="lk-follow">${iFollow(id) ? "Following ✓" : "Follow"}</button>` : ""}<button class="btn small" type="button" id="lk-link">Copy link</button></div></div>
@@ -180,6 +181,7 @@ VIEWS.locker = function renderLocker() {
       ${known && id !== uid() ? `<p class="report-line">${reportBtn("cart", id, id, lockerName(id), "Report this cart")}</p>` : ""}
     </div>`;
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => selectDrink(b.dataset.open));
+  $("lk-back").onclick = () => goBack();
   if ($("lk-follow")) $("lk-follow").onclick = () => toggleFollow(id);
   $("lk-link").onclick = () => copyText(lockerLink(id), "Cart link copied");
 };

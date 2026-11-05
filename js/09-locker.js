@@ -48,9 +48,9 @@ function renderProfile() {
   m.innerHTML = `
     <div class="make">
       <div class="editor-top">
-        <div><span class="label">My Cocktail Cart</span><h2 class="make-title">${esc(me && me.display_name ? me.display_name : "Unnamed cart")}</h2>
+        <div><h2 class="make-title">My Cocktail Cart</h2>
+          <div class="cart-name"><b>${esc(me && me.display_name ? me.display_name : "Unnamed cart")}</b> · <button class="linkish" type="button" id="prof-rename">Rename</button></div>
           ${email ? `<div class="hint">Signed in as ${esc(email)}</div>` : ""}</div>
-        <button class="btn small" type="button" id="prof-rename">Rename</button>
       </div>
       <div class="stats">
         <a href="#prof-drinks" class="stat"><b>${mine.length}</b><span>My drinks</span></a>
@@ -79,8 +79,8 @@ function renderProfile() {
       <section class="make-sec" id="prof-bar">
         <div class="sec-head"><h3>My bottles</h3>
           <div class="panel-actions"><button class="btn primary small" type="button" id="prof-bottle-add" aria-haspopup="dialog">+ Add</button></div></div>
-        <button type="button" class="linkish canmake-link" id="prof-canmake">What can I make with these? →</button>
-        <button type="button" class="linkish canmake-link" id="prof-shop">Shopping list <span class="count-pill" data-shop-count ${typeof shopOpen === "function" && shopOpen().length ? "" : "hidden"}>${typeof shopOpen === "function" ? shopOpen().length : ""}</span> →</button>
+        <button type="button" class="linkish canmake-link" id="prof-canmake">What can I make with these? ›</button>
+        <button type="button" class="linkish canmake-link" id="prof-shop">Shopping list <span class="count-pill" data-shop-count ${typeof shopOpen === "function" && shopOpen().length ? "" : "hidden"}>${typeof shopOpen === "function" ? shopOpen().length : ""}</span> ›</button>
         <p class="hint" style="margin:0">Tap a bottle to add its brand. Tap ○ to mark it out of stock, and ↺ when you restock. <span id="bar-saved">${S.barOff ? "Your bottles can't be saved yet. Ask the site owner to run bartender-setup.sql." : "Changes save automatically."}</span></p>
         ${outSummary()}
         ${GROUPS.filter(g => g.saved).map(barGroupHtml).join("")}

@@ -61,7 +61,7 @@ function renderMain() {
   const busy = S.uploading === d.id;
 
   m.innerHTML = `
-    <button type="button" class="linkish back-link" id="to-list">← Back</button>
+    <button type="button" class="linkish back-link" id="to-list">‹ Back</button>
     <div class="hero">
     <div class="spec-top">
       <div><h2 class="drink-name">${esc(d.name)}</h2>${riffLabel(d) ? `<div class="riff">A riff on the <button type="button" class="linkish riff-link" data-riff="${esc(riffLabel(d))}">${esc(riffLabel(d))}</button></div>` : ""}${fromLine}<div class="meta">${meta}</div>

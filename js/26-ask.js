@@ -53,12 +53,13 @@ VIEWS.ask = function renderAsk() {
   m.innerHTML = `
     <div class="make ask">
       <div class="editor-top">
-        <div><span class="label">AI bartender</span><h2 class="make-title">Ask the bartender</h2></div>
-        <div class="panel-actions">${A.msgs.length ? `<button class="btn small" type="button" id="ask-reset">Start over</button>` : ""}<button class="btn small" type="button" id="ask-menu">📷 Decode a cocktail menu</button></div>
+        <h2 class="make-title">Ask the bartender</h2>
+        ${A.msgs.length ? `<div class="panel-actions"><button class="btn small" type="button" id="ask-reset">Start over</button></div>` : ""}
       </div>
       ${!signedIn ? `<div class="scan-banner"><span><b>Sign in to ask the bartender.</b> Ideas from your bottles, substitutes, mocktails and classic recipes, all in one place.</span>
         <div><button class="btn small primary" type="button" id="ask-signin">Sign in or join free</button></div></div>` : ""}
-      ${!A.msgs.length ? `<p class="ask-intro">Ask for ideas from your bottles, a substitute for something you're out of, a mocktail, a classic spec, or help planning drinks for a crowd.</p>` : ""}
+      ${!A.msgs.length ? `<p class="ask-intro">Ask for ideas from your bottles, a substitute for something you're out of, a mocktail, a classic spec, or help planning drinks for a crowd.</p>
+      <button type="button" class="linkish canmake-link" id="ask-menu">Out at a bar? Decode a cocktail menu ›</button>` : ""}
       <div class="ask-thread" id="ask-thread">
         ${A.msgs.map((msg, mi) => msg.role === "user"
           ? `<div class="ask-q"><span class="label">You</span><p>${esc(msg.text)}</p></div>`

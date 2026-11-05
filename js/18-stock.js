@@ -121,8 +121,8 @@ VIEWS.stock = function renderStock() {
   };
   m.innerHTML = `
     <div class="make">
-      <div class="editor-top"><div><span class="label">My bottles</span><h2 class="make-title">Stock my bottles from photos</h2></div>
-        <button class="btn small" type="button" id="stock-close">Back to drinks</button></div>
+      ${backLink("stock-close")}
+      <div class="editor-top"><h2 class="make-title">Stock my bottles from photos</h2></div>
       <p class="hint" style="margin:0">Photograph your shelves, a few bottles at a time with labels facing the camera. We list every bottle we can read, and you check the list before anything is added. Each photo uses one of your daily AI requests.</p>
       <div class="panel-actions" style="justify-content:flex-start">
         <button class="btn primary" type="button" id="stock-pick">${st.photos.length ? "Add more photos" : "Choose or take photos"}</button>
@@ -136,7 +136,7 @@ VIEWS.stock = function renderStock() {
         <div class="form-actions"><button class="btn primary" type="button" id="stock-add" ${chosen ? "" : "disabled"}>${busy ? "Still reading… " : ""}Add ${chosen} to my bottles</button></div>
       </section>` : st.photos.length && !busy ? `<p class="hint">No bottles found yet. Try a closer photo with the labels facing the camera.</p>` : ""}
     </div>`;
-  $("stock-close").onclick = () => { S.view = "detail"; setHash(null); renderList(); renderMain(); };
+  $("stock-close").onclick = () => goBack(() => { S.profTab = null; openProfile(); });
   $("stock-pick").onclick = () => $("stock-file").click();
   if ($("stock-reset")) $("stock-reset").onclick = () => { S.stock = { photos: [], items: [] }; stockQueue.length = 0; renderMain(); };
   m.querySelectorAll("[data-retry]").forEach(b => b.onclick = () => { const p = st.photos.find(x => x.id === b.dataset.retry); if (p) { p.status = "preparing"; stockQueue.push(p); pumpStock(); refreshStock(); } });

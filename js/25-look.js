@@ -108,9 +108,16 @@ function syncChrome() {
 HASH_VIEWS.drinks = () => showList(null);
 // Mark where you are.
 const NAV_OF_VIEW = { ask: "ask", make: "ask", menu: "ask", home: "home", detail: "home", profile: "cart", stats: "cart", reports: "cart", shop: "cart", photoreview: "cart", canmake: "canmake", guide: "guide", bottle: "guide", party: "party" };
+// The phone tabs group every page under one of three: Home, Bartender, My Cocktail Cart.
+const TAB_OF_VIEW = { home: "home", detail: "home", guide: "home", bottle: "home", party: "home", locker: "home", lookup: "home",
+  ask: "ask", make: "ask", menu: "ask",
+  profile: "cart", canmake: "cart", shop: "cart", stock: "cart", edit: "cart", scan: "cart", stats: "cart", reports: "cart", photoreview: "cart" };
 function markNav() {
-  const here = NAV_OF_VIEW[S.view] || "";
-  document.querySelectorAll("[data-nav]").forEach(b => { if (b.dataset.nav === here) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  const here = NAV_OF_VIEW[S.view] || "", tab = TAB_OF_VIEW[S.view] || "";
+  document.querySelectorAll("[data-nav]").forEach(b => {
+    const on = b.closest(".tabbar") ? b.dataset.nav === tab : b.dataset.nav === here;
+    if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
 }
 
 // Typing in the top search from the home page opens the drink list.
@@ -133,22 +140,26 @@ $("search-toggle").onclick = () => {
 };
 function openAccountMenu() {
   const signedIn = !!uid(), accounts = S.backend === "supabase";
-  const items = [];
-  if (signedIn) items.push(["acct-cart", "My Cocktail Cart", "Your drinks, bottles, lists and favorites"]);
-  if (signedIn) items.push(["acct-shop", "Shopping list" + (typeof shopOpen === "function" && shopOpen().length ? ` (${shopOpen().length})` : ""), "What to pick up next time you're at the store"]);
-  if (accounts && !signedIn) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
-  if (signedIn) items.push(["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"]);
-  items.push(["acct-menu", "Decode a cocktail menu", "Photograph a bar's menu and make the drinks at home"]);
-  items.push(["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"]);
-  items.push(["acct-party", "Plan a party", "Batches, a shopping list and a menu"]);
-  if (!$("install-btn").hidden) items.push(["acct-install", "Install the app", "Add My Cocktail Cart to your home screen"]);
-  if (signedIn) items.push(["acct-signout", "Sign out", ""]);
-  sheet("Menu", `<div class="add-menu acct-menu">${items.map(([id, t, h]) => `<button type="button" id="${id}"><b>${esc(t)}</b>${h ? `<span>${esc(h)}</span>` : ""}</button>`).join("")}</div>
-    <p class="hint" style="margin:0"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="mailto:support@mycocktailcart.com">support@mycocktailcart.com</a></p>`);
+  // Grouped like the tabs at the bottom, in the same order.
+  const items = [["Home"], ["acct-guide", "Bottle guide", "Ratings, photos and notes on every bottle"], ["acct-party", "Plan a party", "Batches, a shopping list and a menu"],
+    ["Bartender"], ["acct-ask", "Ask the bartender", "Ideas, substitutes, mocktails and classic specs"], ["acct-menu", "Decode a cocktail menu", "Photograph a bar's menu and make the drinks at home"],
+    ["My Cocktail Cart"]];
+  if (signedIn) items.push(["acct-cart", "My Cocktail Cart", "Your drinks, bottles, lists and favorites"],
+    ["acct-canmake", "What can I make?", "Drinks you can pour with your bottles"],
+    ["acct-shop", "Shopping list" + (typeof shopOpen === "function" && shopOpen().length ? ` (${shopOpen().length})` : ""), "What to pick up next time you're at the store"]);
+  else if (accounts) items.push(["acct-signin", "Sign in or join", "Free: keep your own drinks and bottles"]);
+  else items.pop();
+  const extra = [];
+  if (!$("install-btn").hidden) extra.push(["acct-install", "Install the app", "Add My Cocktail Cart to your home screen"]);
+  if (signedIn) extra.push(["acct-signout", "Sign out", ""]);
+  if (extra.length) items.push([""], ...extra);
+  sheet("Menu", `<div class="add-menu acct-menu">${items.map(([id, t, h]) => t === undefined ? (id ? `<div class="acct-grp">${esc(id)}</div>` : `<div class="acct-grp"></div>`)
+      : `<button type="button" id="${id}"><b>${esc(t)}</b>${h ? `<span>${esc(h)}</span>` : ""}</button>`).join("")}</div>
+    <p class="hint acct-foot"><b>21+</b> · Please drink responsibly.<br><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="mailto:support@mycocktailcart.com">support@mycocktailcart.com</a></p>`);
   const go = { "acct-cart": () => $("locker-btn").click(), "acct-signin": () => { $("auth-btn").click(); window.scrollTo({ top: 0 }); },
     "acct-canmake": () => navGo("canmake"), "acct-menu": () => openMenuDecoder(), "acct-shop": () => openShop(), "acct-guide": () => openGuide(), "acct-party": () => openParty(),
-    "acct-install": () => $("install-btn").click(), "acct-signout": () => $("auth-btn").click() };
-  items.forEach(([id]) => { $(id).onclick = () => { closeSheet(); go[id](); }; });
+    "acct-install": () => $("install-btn").click(), "acct-signout": () => $("auth-btn").click(), "acct-ask": () => navGo("ask") };
+  items.forEach(([id, t]) => { if (t !== undefined) $(id).onclick = () => { closeSheet(); go[id](); }; });
 }
 $("acct-btn").onclick = openAccountMenu;
 // On phones the header tucks away while you scroll down and comes back when you scroll up.

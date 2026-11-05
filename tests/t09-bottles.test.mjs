@@ -45,7 +45,7 @@ export default async function () {
   t = await p.text("#main");
   check("new bottle page created", t.includes("Buffalo Trace Kentucky Straight Bourbon") && (await p.evaluate("location.hash")) === "#bottle-buffalo-trace");
   await p.click("#bt-back"); await p.waitForTimeout(100);
-  check("Back returns to the guide", (await p.text("#main")).includes("Bottles") && (await p.text("#main")).includes("Buffalo Trace"));
+  check("Back returns to the guide", (await p.text("#main")).includes("Bottle guide") && (await p.text("#main")).includes("Buffalo Trace"));
   // not a bottle
   await p.fill("#gd-search", "gin"); await p.click("#gd-go"); await p.waitForTimeout(350);
   t = await p.text("#main");
