@@ -23,7 +23,7 @@ export default async function () {
   check("shows that it's reading", /reading the menu/i.test(await p.text("#main")));
   await p.waitForTimeout(700);
   const t = await p.text("#main");
-  check("a short list: bar, count, and one row per drink", /bar agricole · 2 drinks/i.test(t) && (await p.evaluate("document.querySelectorAll('.md-row').length")) === 2 && !t.includes("$16"), t.slice(0, 300));
+  check("a short list: bar, count, and one row per drink", /bar agricole/i.test(t) && /2 drinks/.test(t) && (await p.evaluate("document.querySelectorAll('.md-row').length")) === 2 && !t.includes("$16"), t.slice(0, 300));
   check("each row: name, its classic, and whether you can make it", /cane & cinnamon.*riff on a daiquiri/i.test(await p.text("[data-md-open='0']")) && /need 1/i.test(await p.text("[data-md-open='0']")) && /you can make it/i.test(await p.text("[data-md-open='1']")), await p.text("[data-md-open='0']"));
   await p.click("[data-md-open='0']"); await p.waitForTimeout(150);
   const d = await p.text("#main");

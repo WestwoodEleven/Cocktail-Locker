@@ -53,7 +53,7 @@ async function buildCard(d, withPhoto) {
   if (dil > 0) rows.push({ water: true, s: show({ amount: per * dil, unit: "ml" }, S.servings, S.mode === "spec" ? "oz" : S.mode) });
   (d.ingredients || []).filter(i => i.float).forEach(i => rows.push({ i, s: show(i, S.servings, S.mode), float: true, g: show(i, 1, S.mode) }));
   const meta = [typeOf(d), baseOf(d), d.method, d.glass].filter(Boolean).join("  ·  ");
-  const from = d.standard ? "A classic" : S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
+  const from = d.standard ? "A classic" : d.fromMenu ? d.fromMenu : S.backend === "supabase" && d.owner ? "From " + lockerName(d.owner) : "";
 
   const layout = (ctx, draw) => {
     let y = 0;
@@ -94,7 +94,9 @@ async function buildCard(d, withPhoto) {
       const top = y;
       if (draw) ctx.fillStyle = row.water ? CARD.green : CARD.ink;
       drawQty(ctx, row.s.q, P + qW - 14, top + 42, 46, body, draw);
-      ctx.font = `400 28px ${mono}`;
+      // Long units ("dashes", "barspoons") shrink to fit their column instead of running into the name.
+      let uSize = 28; ctx.font = `400 ${uSize}px ${mono}`;
+      while (uSize > 18 && ctx.measureText(row.s.u || "").width > uW - 12) { uSize -= 2; ctx.font = `400 ${uSize}px ${mono}`; }
       if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText(row.s.u, P + qW + 4, top + 40); }
       ctx.font = `600 38px ${body}`;
       const name = row.water ? "Cold water" : row.i.name;
@@ -120,18 +122,22 @@ async function buildCard(d, withPhoto) {
     if (draw) { ctx.fillStyle = CARD.ink; ctx.fillRect(P, y + 8, inner, 4); }
     y += 12;
     if (d.garnish) { ctx.font = `600 30px ${body}`; y += 56; if (draw) { ctx.fillStyle = CARD.ink; ctx.fillText("Garnish: " + d.garnish, P, y); } }
-    if (d.notes) {
+    const cardNotes = d.cardNotes || d.notes;
+    if (cardNotes) {
       ctx.font = `400 30px ${body}`;
-      let lines = d.notes.split(/\n+/).flatMap(par => wrap(ctx, par, inner - 24));
-      if (lines.length > 8) { lines = lines.slice(0, 8); lines[7] += " …"; }
+      let lines = cardNotes.split(/\n+/).flatMap(par => wrap(ctx, par, inner - 24));
+      const most = d.cardNotes ? 16 : 8;
+      if (lines.length > most) { lines = lines.slice(0, most); lines[most - 1] += " …"; }
       y += 30;
       const top = y;
-      lines.forEach(ln => { y += 44; if (draw) { ctx.fillStyle = CARD.ink; ctx.fillText(ln, P + 24, y); } });
+      lines.forEach(ln => { y += 44; if (draw) { const head = /^[^:]{2,40}:/.exec(ln); ctx.fillStyle = CARD.ink;
+        if (d.cardNotes && head) { ctx.font = `700 30px ${body}`; ctx.fillText(head[0], P + 24, y); const w = ctx.measureText(head[0] + " ").width; ctx.font = `400 30px ${body}`; ctx.fillText(ln.slice(head[0].length).trimStart(), P + 24 + w, y); }
+        else ctx.fillText(ln, P + 24, y); } });
       if (draw) { ctx.fillStyle = CARD.accent; ctx.fillRect(P, top + 10, 5, y - top + 4); }
     }
     y += 70;
     ctx.font = `500 24px ${body}`;
-    if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText((location.host + location.pathname).replace(/\/$/, ""), P, y); }
+    if (draw) { ctx.fillStyle = CARD.muted; ctx.fillText(d.fromMenu ? "Decoded from the menu with mycocktailcart.com" : (location.host + location.pathname).replace(/\/$/, ""), P, y); }
     return y + 52;
   };
   const c = document.createElement("canvas"); c.width = W; c.height = 10;
@@ -162,6 +168,7 @@ async function openShare(d) {
   shareState = { d, blob, file, url };
   $("share-preview").innerHTML = `<img src="${url}" alt="Recipe card for ${esc(d.name)}">`;
   const canShareFile = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+  $("share-link").hidden = !!d.fromMenu; // a decoded drink isn't saved anywhere, so there's no link to it
   $("share-native").hidden = !canShareFile;
   $("share-copy").hidden = !(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write);
   ["share-native", "share-copy", "share-save"].forEach(id => $(id).disabled = false);
@@ -172,7 +179,8 @@ $("share-modal").addEventListener("click", e => { if (e.target === $("share-moda
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("share-modal").hidden) closeShare(); });
 $("share-native").onclick = async () => {
   const { d, file } = shareState;
-  try { await navigator.share({ files: [file], title: d.name, text: `${d.name} from My Cocktail Cart\n${drinkLink(d.id)}` }); }
+  const text = d.fromMenu ? `${d.name}, ${d.fromMenu.charAt(0).toLowerCase() + d.fromMenu.slice(1)}, decoded with My Cocktail Cart\n${location.origin}` : `${d.name} from My Cocktail Cart\n${drinkLink(d.id)}`;
+  try { await navigator.share({ files: [file], title: d.name, text }); }
   catch (e) { if (e && e.name !== "AbortError") toast("Couldn't open sharing. Try Save image instead."); }
 };
 $("share-copy").onclick = async () => {

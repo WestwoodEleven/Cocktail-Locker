@@ -75,11 +75,11 @@ async function startStorage() {
       S.bar = { liquors: [], syrups: [], bitters: [] }; loadBar();
       loadRatings().then(() => { renderFilters(); renderList(); renderMain(); });
       if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine" || S.f.owner === "fav") S.f.owner = ""; }
-      Promise.all([loadFavorites(), loadCollections(), loadFollows(), loadBottles(), loadMyHeld(), loadLog(), loadShop()]).then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
+      Promise.all([loadFavorites(), loadCollections(), loadFollows(), loadBottles(), loadMyHeld(), loadLog(), loadShop(), loadMenus()]).then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
       loadProfiles(); renderFilters(); renderList(); renderMain();
     }
   });
-  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles(), loadViews(), loadMyHeld(), loadLog(), loadShop()]);
+  await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles(), loadViews(), loadMyHeld(), loadLog(), loadShop(), loadMenus()]);
   loadBar();
   renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain();
   if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);

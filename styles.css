@@ -1201,3 +1201,8 @@ li.has-shop > .prow { flex: 1; min-width: 0; }
 .info-btn { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 6px; cursor: pointer; border-radius: 50%; }
 .info-btn:hover { color: var(--accent); }
 @media (max-width: 780px) { .site-foot { display: none; } }
+
+/* My menus */
+.md-bar h3 { font-size: 22px; }
+.md-del { color: var(--accent); }
+.md-initial { width: 40px; height: 40px; flex: none; border-radius: 8px; background: var(--rule); display: grid; place-items: center; font-weight: 800; color: var(--ink); }

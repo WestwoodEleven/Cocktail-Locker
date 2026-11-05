@@ -1,9 +1,32 @@
 // ---------- Decode a cocktail menu (the menu decoder) ----------
 // Photograph a bar's cocktail menu: each drink comes back with the classic it's built on, an estimated home spec,
 // steps, and recipes for house-made syrups and infusions (AI mode "menu", one request per menu).
-// The last menu you decoded is kept on this device so you can come back to it.
+// Every menu you decode is saved to your account (supabase/menus-setup.sql) under My menus.
+// The one you last opened is also kept on this device.
 S.menuRes = (() => { try { return JSON.parse(localStorage.getItem("mc-menu") || "null"); } catch (e) { return null; } })();
-S.menuBusy = null;
+S.menuBusy = null; S.menus = []; S.menusOff = false;
+const menuOfRow = x => ({ id: x.id, bar: x.bar || "", drinks: x.drinks || [], at: x.created_at });
+function setMenuRes(r) {
+  S.menuRes = r; S.menuSel = null;
+  try { if (r) localStorage.setItem("mc-menu", JSON.stringify(r)); else localStorage.removeItem("mc-menu"); } catch (e) {}
+}
+async function loadMenus() {
+  if (!sb || !uid()) { S.menus = []; return; }
+  const { data, error } = await sb.from("menus").select("id, bar, drinks, created_at").eq("user_id", uid());
+  S.menusOff = !!error; if (error) { S.menus = []; return; }
+  S.menus = (data || []).map(menuOfRow).sort((a, b) => String(b.at).localeCompare(String(a.at)) || b.id - a.id);
+  const r = S.menuRes;
+  if (r && r.id && !S.menus.some(m => m.id === r.id)) setMenuRes(S.menus[0] || null); // deleted on another device
+  else if (r && !r.id && Array.isArray(r.drinks) && r.drinks.length) { const saved = await saveMenu(r); if (saved) setMenuRes(saved); } // a menu from before My menus
+}
+async function saveMenu(r) {
+  if (!sb || !uid() || S.menusOff) return null;
+  const { data, error } = await sb.from("menus").insert({ user_id: uid(), bar: (r.bar || "").slice(0, 80) || null, drinks: r.drinks }).select().single();
+  if (error || !data) { if (error && /relation|does not exist|schema cache/i.test(error.message || "")) S.menusOff = true; return null; }
+  const m = menuOfRow(Object.assign({ created_at: r.at || new Date().toISOString() }, data));
+  S.menus = [m, ...S.menus.filter(x => x.id !== m.id)];
+  return m;
+}
 const MENU_CONF = { high: "Likely close", medium: "Educated guess", low: "Rough guess" };
 function openMenuDecoder() {
   S.view = "menu"; S.confirmDelete = false; S.menuSel = null; setHash("menu");
@@ -26,8 +49,8 @@ async function decodeMenu(file) {
   if (!S.menuBusy || S.menuBusy.token !== token) return;
   S.menuBusy = null;
   if (data && Array.isArray(data.drinks) && data.drinks.length) {
-    S.menuRes = { bar: data.bar || "", drinks: data.drinks, at: new Date().toISOString() };
-    try { localStorage.setItem("mc-menu", JSON.stringify(S.menuRes)); } catch (e) {}
+    const r = { bar: data.bar || "", drinks: data.drinks, at: new Date().toISOString() };
+    setMenuRes((await saveMenu(r)) || r);
     if (S.view === "menu") renderMain();
     return;
   }
@@ -45,6 +68,10 @@ function menuToDrink(m) {
   const cl = CLASSIC_NAMES.find(c => c.toLowerCase() === String(m.classic || "").toLowerCase());
   if (cl) d.classic = cl;
   d.origin = r.bar ? `Inspired by ${r.bar}` : "Inspired by a bar menu";
+  // A shorter version for the share card: the steps as one line, then each house-made recipe as one paragraph.
+  const lc = x => String(x).replace(/\.$/, "").replace(/^./, c => c.toLowerCase());
+  d.cardNotes = [(m.steps || []).join(" "), ...(m.house_made || []).map(h => `${h.name}: ${(h.ingredients || []).join(", ")}. ${(h.steps || []).join(" ")}${h.keeps ? ` Keeps ${lc(h.keeps)}.` : ""}`)].filter(Boolean).join("\n");
+  d.fromMenu = r.bar ? `From ${r.bar}'s menu` : "From a bar menu";
   return d;
 }
 function menuAmount(i) {
@@ -92,7 +119,7 @@ function menuDetailHtml(m, k) {
       ${m.menu_text || m.note ? `<details class="md-fold"><summary>What the menu said</summary>
         ${m.menu_text ? `<p>“${esc(m.menu_text)}”${m.price ? ` · ${esc(m.price)}` : ""}</p>` : ""}${m.note ? `<p class="hint">${esc(m.note)}</p>` : ""}</details>` : ""}
     </div>
-    <div class="panel-actions md-actions">${S.canWrite ? `<button type="button" class="btn primary" id="md-save">Save to My Cocktail Cart</button>` : ""}${uid() && need.length && !S.shopOff ? `<button type="button" class="btn" id="md-shop">+ List</button>` : ""}</div>
+    <div class="panel-actions md-actions">${S.canWrite ? `<button type="button" class="btn primary" id="md-save" aria-label="Save to My Cocktail Cart">Save</button>` : ""}<button type="button" class="btn" id="md-share">Share</button>${uid() && need.length && !S.shopOff ? `<button type="button" class="btn" id="md-shop">+ List</button>` : ""}</div>
     <p class="hint md-fine">Our best guess from the menu, not the bar's own recipe.</p>
   </div>`;
 }
@@ -110,6 +137,7 @@ VIEWS.menu = function renderMenu() {
     m.querySelectorAll("[data-open-std]").forEach(b => b.onclick = () => selectDrink(b.dataset.openStd));
     if ($("md-save")) $("md-save").onclick = () => openEditor(menuToDrink(dm), true);
     if ($("md-shop")) $("md-shop").onclick = () => addRecipeToShop(menuToDrink(dm));
+    $("md-share").onclick = () => openShare(menuToDrink(dm));
     m.querySelectorAll("[data-md-howto]").forEach(b => b.onclick = e => {
       e.stopPropagation();
       const sv = S.servings; S.servings = 1; openHowto(b.dataset.mdHowto, menuToDrink(dm), Number(b.dataset.mdI)); S.servings = sv;
@@ -125,15 +153,54 @@ VIEWS.menu = function renderMenu() {
     $("md-close").onclick = () => goBack(openAsk);
     return;
   }
+  const day = at => esc(new Date(at).toLocaleDateString(undefined, { month: "short", day: "numeric" }));
+  const others = S.menus.filter(x => !r || x.id !== r.id);
+  const mine = others.length ? `<ul class="md-list md-menus">${others.map(x => `<li><button type="button" class="md-row" data-md-menu="${x.id}">
+      <span class="md-initial" aria-hidden="true">${esc((x.bar || "M").trim().charAt(0).toUpperCase())}</span>
+      <span class="txt"><b>${esc(x.bar || "Unnamed menu")}</b><span class="hint">${x.drinks.length} drink${x.drinks.length === 1 ? "" : "s"} · ${day(x.at)}</span></span>
+      <span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ul>` : "";
   m.innerHTML = `<div class="make menu-page">${head}
-    ${r ? `<div class="md-meta-line"><span>${r.bar ? esc(r.bar) + " · " : ""}${r.drinks.length} drink${r.drinks.length === 1 ? "" : "s"} · ${esc(new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric" }))}</span><button type="button" class="linkish" id="md-pick">New menu</button></div>
-      <ul class="md-list">${r.drinks.map(menuRowHtml).join("")}</ul>`
+    ${r ? `<div class="sec-head md-bar"><h3>${esc(r.bar || "Unnamed menu")}</h3>${r.id ? `<button type="button" class="linkish" id="md-rename">Rename</button>` : ""}</div>
+      <div class="md-meta-line"><span>${r.drinks.length} drink${r.drinks.length === 1 ? "" : "s"} · ${day(r.at)}</span>${r.id ? `<button type="button" class="linkish md-del" id="md-delete">Delete</button>` : ""}</div>
+      <ul class="md-list">${r.drinks.map(menuRowHtml).join("")}</ul>
+      <section class="make-sec"><div class="sec-head"><h3>${others.length ? `My menus <span class="count">${S.menus.length}</span>` : "My menus"}</h3><button class="btn small primary" type="button" id="md-pick">Photograph a menu</button></div>
+        ${mine || `<p class="hint" style="margin:0">${S.menusOff ? "Only your latest menu is kept, on this device. Run menus-setup.sql in Supabase to save them all to your account." : "Every menu you decode is saved here."}</p>`}</section>`
     : `<div class="md-intro">
         <p>Take a photo of a bar's cocktail menu. For each drink you'll get:</p>
         <ul><li>the classic it's built on,</li><li>a best-guess spec to make it at home,</li><li>step-by-step instructions,</li><li>recipes for house-made syrups, cordials and infusions,</li><li>and what you're missing from your bottles.</li></ul>
-        <p class="hint">${uid() ? "Uses one AI request from your daily allowance. The photo isn't saved." : "Sign in to decode menus."}</p></div>`}
+        <p class="hint">${uid() ? "Uses one AI request from your daily allowance. The photo isn't saved; the drinks are, under My menus." : "Sign in to decode menus."}</p></div>
+      ${mine ? `<section class="make-sec"><div class="sec-head"><h3>My menus <span class="count">${S.menus.length}</span></h3></div>${mine}</section>` : ""}`}
   </div>`;
   $("md-pick").onclick = pickMenuPhoto;
   $("md-close").onclick = () => goBack(openAsk);
   m.querySelectorAll("[data-md-open]").forEach(b => b.onclick = () => openMenuDrink(Number(b.dataset.mdOpen)));
+  m.querySelectorAll("[data-md-menu]").forEach(b => b.onclick = () => { setMenuRes(S.menus.find(x => String(x.id) === b.dataset.mdMenu) || null); renderMain(); window.scrollTo({ top: 0 }); });
+  if ($("md-rename")) $("md-rename").onclick = renameMenu;
+  if ($("md-delete")) $("md-delete").onclick = deleteMenu;
 };
+function renameMenu() {
+  const r = S.menuRes; if (!r || !r.id) return;
+  sheet("Rename menu", `<form id="mn-form"><div class="field"><label for="mn-name">Bar or menu name</label>
+    <input id="mn-name" type="text" maxlength="80" value="${esc(r.bar || "")}" autocomplete="off"></div>
+    <div class="panel-actions"><button class="btn primary" type="submit">Save</button></div></form>`);
+  const inp = $("mn-name"); inp.focus(); inp.select();
+  $("mn-form").onsubmit = async e => {
+    e.preventDefault(); const bar = inp.value.trim().slice(0, 80);
+    const { error } = await sb.from("menus").update({ bar: bar || null }).eq("id", r.id);
+    if (error) { toast("Couldn't rename it. Try again."); return; }
+    r.bar = bar; const x = S.menus.find(m => m.id === r.id); if (x) x.bar = bar;
+    setMenuRes(r); closeSheet(); renderMain();
+  };
+}
+function deleteMenu() {
+  const r = S.menuRes; if (!r || !r.id) return;
+  sheet("Delete this menu?", `<p style="margin-top:0">${esc(r.bar || "This menu")} and its ${r.drinks.length} decoded drink${r.drinks.length === 1 ? "" : "s"} will be removed from My menus. Drinks you saved to your cart stay.</p>
+    <div class="panel-actions"><button class="btn danger-solid" type="button" id="mn-del">Delete</button><button class="btn" type="button" id="mn-keep">Keep it</button></div>`);
+  $("mn-keep").onclick = closeSheet;
+  $("mn-del").onclick = async () => {
+    const { error } = await sb.from("menus").delete().eq("id", r.id);
+    if (error) { toast("Couldn't delete it. Try again."); return; }
+    S.menus = S.menus.filter(m => m.id !== r.id); setMenuRes(S.menus[0] || null);
+    closeSheet(); renderMain(); toast("Menu deleted");
+  };
+}
