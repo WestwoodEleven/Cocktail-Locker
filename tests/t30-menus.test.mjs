@@ -44,7 +44,7 @@ export default async function () {
   await p.evaluate("localStorage.removeItem('mc-menu'); S.menuRes = null; S.menus = []; loadMenus().then(() => openMenuDecoder())"); await p.waitForTimeout(200);
   check("with nothing open, My menus lists your saved menus", /Second Bar/.test(await p.text(".md-menus")) && /photograph a menu/i.test(await p.text("#md-pick")));
   // My Cocktail Cart: My decoded menus, sorted by name, unnamed last with a way to name them
-  await p.evaluate(`__MOCK.tables.menus.push({ id: 901, user_id: "u1", bar: "The Varnish", drinks: [{ name: "A", ingredients: [] }], created_at: "2026-10-01T00:00:00Z" }, { id: 902, user_id: "u1", bar: null, drinks: [{ name: "B", ingredients: [] }], created_at: "2026-10-02T00:00:00Z" }, { id: 903, user_id: "u1", bar: "Anvil", drinks: [{ name: "C", ingredients: [] }], created_at: "2026-10-03T00:00:00Z" }); loadMenus().then(() => navGo('cart'))`);
+  await p.evaluate(`__MOCK.tables.menus.push({ id: 901, user_id: "u1", bar: "The Varnish", drinks: [{ name: "A", ingredients: [] }], created_at: "2026-10-01T00:00:00Z" }, { id: 902, user_id: "u1", bar: null, drinks: [{ name: "B", ingredients: [] }], created_at: "2026-10-02T00:00:00Z" }, { id: 903, user_id: "u1", bar: "Anvil", drinks: [{ name: "C", ingredients: [] }], created_at: "2026-10-03T00:00:00Z" }); loadMenus().then(() => openCartSec('menus'))`);
   await p.waitForTimeout(250);
   const names = await p.evaluate("[...document.querySelectorAll('#prof-menus .md-row b')].map(b => b.textContent)");
   check("the cart page lists decoded menus by restaurant name", JSON.stringify(names) === JSON.stringify(["Anvil", "Second Bar", "The Varnish", "Unnamed menu"]), JSON.stringify(names));

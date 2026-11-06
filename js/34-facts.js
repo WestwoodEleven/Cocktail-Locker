@@ -167,5 +167,5 @@ function openCost(d) {
     ${uid() && anyTypical ? `<div class="fs-edit"><span>Set what you paid for a bottle in My Bottles.</span><button type="button" class="linkish" id="fs-prices">Edit prices ›</button></div>` : ""}
     <p class="fs-fine">Typical prices are rough US averages for a 750 ml bottle; your own prices replace them.${c.missing.length ? ` No price for ${esc(c.missing.join(", "))}.` : ""}</p>
   </div>`);
-  if ($("fs-prices")) $("fs-prices").onclick = () => { closeSheet(); S.profTab = "bar"; openProfile(); setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50); };
+  if ($("fs-prices")) $("fs-prices").onclick = () => { closeSheet(); openCartSec("bottles"); };
 }

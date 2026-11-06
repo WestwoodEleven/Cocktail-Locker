@@ -46,6 +46,8 @@ export default async function () {
   check("already rated: no prompt next time", !(await p.evaluate("!!document.querySelector('[data-lg-star]')")) && /made 2 times/i.test(await p.text("#made-sec")));
   // My Log
   await p.evaluate("navGo('cart')"); await p.waitForTimeout(200);
+  check("My log icon counts what you've made", /My log \| Made 4 times/.test(await p.text(".cart-grid")), await p.text(".cart-grid"));
+  await p.click("[data-cart=log]"); await p.waitForTimeout(200);
   const log = await p.text("#prof-log");
   check("My Log: counts, most made and a month timeline", /all time/i.test(log) && /negroni/i.test(log) && /most made \(2×\)/i.test(log) && /4 \| all time/i.test(log) && /october/i.test(log), log);
   await p.click("#prof-log [data-open='mule']"); await p.waitForTimeout(150);

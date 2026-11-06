@@ -33,7 +33,7 @@ export default async function () {
   await h.click(".plan-row [data-home=guide]"); await h.waitForTimeout(100);
   check("Plan & explore opens the bottle guide", (await h.evaluate("S.view")) === "guide");
   await h.click(".tabbar [data-nav=cart]"); await h.waitForTimeout(150);
-  check("My bottles links to What can I make?", await h.isVisible("#prof-canmake"));
+  check("My cart links to What can I make?", await h.isVisible("[data-cart=canmake]"));
   await h.click("#acct-btn"); await h.waitForTimeout(400);
   const box = await h.locator("#gen-modal .sheet").boundingBox();
   const vh = await h.evaluate("innerHeight");

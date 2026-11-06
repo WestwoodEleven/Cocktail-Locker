@@ -2,13 +2,17 @@ import { open, check } from "./harness.mjs";
 export default async function () {
   const p = await open();
   await p.click("#locker-btn"); await p.waitForTimeout(150);
+  await p.click("[data-cart=bottles]"); await p.waitForTimeout(150);
   check("old plain-name bar still loads", (await p.text("#chips-liquors")).includes("Campari"));
+  await p.evaluate("openProfile()"); await p.waitForTimeout(100);
+  await p.click("[data-cart=drinks]"); await p.waitForTimeout(150);
   check("My drinks has one Add button", await p.isVisible("#prof-drink-add") && !(await p.evaluate("!!document.getElementById('prof-scan') || !!document.getElementById('prof-new')")));
   await p.click("#prof-drink-add"); await p.waitForTimeout(50);
   check("Add a drink offers a photo or typing", /from a photo/i.test(await p.text("#gen-body")) && /type it in/i.test(await p.text("#gen-body")));
   await p.click("#da-type"); await p.waitForTimeout(100);
   check("Type it in opens a new drink", await p.isVisible("#f-name") && !(await p.isVisible("#gen-modal")));
   await p.click("#locker-btn"); await p.waitForTimeout(150);
+  await p.click("[data-cart=bottles]"); await p.waitForTimeout(150);
   check("no typing boxes in My bottles", !(await p.evaluate("!!document.querySelector('#prof-bar input[type=text]')")));
   // add a bottle with a brand through + Add, Type it in
   await p.click("#prof-bottle-add"); await p.waitForTimeout(50);
@@ -33,7 +37,8 @@ export default async function () {
   await p.click("#chips-liquors [data-out='1']"); await p.waitForTimeout(900);
   check("out of stock shown on the chip", (await p.evaluate("document.querySelectorAll('#chips-liquors .bar-chip.out').length")) === 1);
   check("out of stock summary", (await p.text("#bar-out")).includes("Out of stock: Campari (Campari Milano)"));
-  check("out-of-stock item not counted as a bottle", (await p.text(".stats")).includes("9 | Bottles"), await p.text(".stats"));
+  await p.evaluate("openProfile()"); await p.waitForTimeout(100);
+  check("out-of-stock item not counted as a bottle", /My bottles \| 9 · 1 out/.test(await p.text(".cart-grid")), await p.text(".cart-grid"));
   const saved2 = await p.evaluate("window.__MOCK.tables.bars[0].items.liquors.find(x => x.name === 'Campari')");
   check("out of stock saved", saved2.out === true);
   // effect on What can I make?

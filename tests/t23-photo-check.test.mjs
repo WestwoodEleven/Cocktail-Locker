@@ -34,7 +34,7 @@ export default async function () {
   tables.drinks = tables.drinks.map(d => ({ id: d.id, owner: d.owner, name: d.data.name, data: d.data }));
   const a = await open({ user: "u2", tables });
   await a.evaluate("navGo('cart')"); await a.waitForTimeout(300);
-  check("admins see Review photos with a count", /review photos \(2\)/i.test(await a.text("#prof-photos")));
+  check("admins see Review photos with a count", /review photos 2/i.test(await a.text("#prof-photos")), await a.text("#prof-photos"));
   await a.click("#prof-photos"); await a.waitForTimeout(300);
   check("the review page shows each photo and the reason", (await a.evaluate("document.querySelectorAll('.pr-item').length")) === 2 && /a selfie, not a drink/i.test(await a.text("#main")));
   const ids = await a.evaluate("S.held.map(h => h.kind + ':' + h.id)");

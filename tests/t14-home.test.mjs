@@ -57,7 +57,7 @@ export default async function () {
   const m = await open({ width: 390, home: true });
   check("phone tabs are Home, Bartender, My Cocktail Cart", JSON.stringify(await m.evaluate("[...document.querySelectorAll('.tabbar button')].map(b => b.textContent.trim())")) === JSON.stringify(["Home", "Bartender", "My Cocktail Cart"]));
   await m.click(".tabbar [data-nav=cart]"); await m.waitForTimeout(200);
-  check("My cart tab opens My cart with drinks and bottles", /my drinks/i.test(await m.text("#prof-drinks")) && await m.isVisible("#prof-bar") && (await m.getAttribute(".tabbar [data-nav=cart]", "aria-current")) === "page");
+  check("My cart tab opens My cart's icons", /my drinks/i.test(await m.text(".cart-grid")) && /my bottles/i.test(await m.text(".cart-grid")) && (await m.getAttribute(".tabbar [data-nav=cart]", "aria-current")) === "page");
   await m.evaluate("window.scrollTo(0, 600)"); await m.waitForTimeout(100);
   await m.click(".tabbar [data-nav=cart]"); await m.waitForTimeout(600);
   check("tapping the open tab scrolls to the top", (await m.evaluate("window.scrollY")) < 20 && (await m.evaluate("S.view")) === "profile");

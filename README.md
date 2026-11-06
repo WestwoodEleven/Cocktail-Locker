@@ -45,7 +45,7 @@ Optional secrets: `RECIPE_DAILY_LIMIT` (default 25), `RECIPE_MODEL` (default `cl
 
 ### My Cocktail Cart and favorites
 
-Signed-in people get a **My Cocktail Cart** page (called a locker in the code and database) (the button at the top) showing their drinks, their favorites and their bar, which they can edit there. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
+Signed-in people get a **My Cocktail Cart** page (called a locker in the code and database; the button at the top and the third phone tab). It's a grid of icons, three across, each with a count: My drinks, Favorites, My log, My bottles, What can I make?, Shopping list, Decoded menus, My lists and Following. Each opens its own page with a "‹ Back" link (`#cart-drinks`, `#cart-favorites`, `#cart-log`, `#cart-bottles`, `#cart-menus`, `#cart-lists`, `#cart-following`; What can I make? and the Shopping list are their own pages). Under the icons: **Account** (`#cart-account`: who's signed in, Delete my account) and, for admins, Site stats, Review reports and Review photos. Anyone signed in can tap **♡ Favorite** on any drink; favorites are private to each person. If you ran `setup.sql` before favorites existed, run [`supabase/favorites-setup.sql`](supabase/favorites-setup.sql).
 
 ### Search and standard recipes
 
@@ -149,7 +149,7 @@ Next to other people's drinks, rating notes, bottle comments, bottle photos and 
 
 ### Deleting an account
 
-People can delete their own account from the bottom of **My Cocktail Cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
+People can delete their own account from **Account** on **My Cocktail Cart** (they type DELETE to confirm). The `read-recipe` function removes their photos and their sign-in account, and the database removes everything else that belongs to them: drinks, ratings, notes, comments, bottle photos, lists, favorites, bar and follows. Standard recipes and bottle guide entries they started stay, without their name. This needs the latest `read-recipe` deployed; no SQL changes.
 
 ### Claiming the first recipes
 

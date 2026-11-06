@@ -10,7 +10,8 @@ const invoke = `async (name, body) => {
 export default async function () {
   const p = await open({ invoke });
   await p.click("#locker-btn"); await p.waitForTimeout(150);
-  check("My cart has a delete account button", await p.isVisible("#prof-delete"));
+  await p.click("#prof-account-open"); await p.waitForTimeout(150);
+  check("Account (from My cart) has a delete account button", await p.isVisible("#prof-delete") && /signed in as/i.test(await p.text("#main")));
   await p.click("#prof-delete");
   const t = await p.text("#gen-body");
   check("confirmation explains what goes", t.includes("permanently deletes") && t.includes("can't be undone") && /your \d+ drinks?/.test(t), t);

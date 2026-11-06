@@ -192,14 +192,19 @@ async function moderate(act, g, btn) {
   toast(done); renderList(); renderMain();
 }
 
-// Admin section for My Cocktail Cart
+// Admin rows on My Cocktail Cart, under the icons (only for site admins).
 function adminHtml() {
   if (!S.isAdmin) return "";
-  const n = reportGroups().length;
-  return `<section class="make-sec" id="prof-admin">
-    <div class="sec-head"><h3>Admin</h3></div>
-    <div class="panel-actions" style="justify-content:flex-start"><button class="btn small${n ? " primary" : ""}" type="button" id="prof-reports">Review reports${n ? ` (${n})` : ""}</button><button class="btn small" type="button" id="prof-photos">Review photos${S.held && S.held.length ? ` (${S.held.length})` : ""}</button><button class="btn small" type="button" id="prof-stats">Site stats</button></div>
-  </section>`;
+  const n = reportGroups().length, h = S.held && S.held.length ? S.held.length : 0;
+  const row = (id, label, count, countId) => `<li><button type="button" id="${id}"><span>${label}${countId || count ? ` <span class="count-pill"${countId ? ` id="${countId}"` : ""}${count ? "" : " hidden"}>${count || ""}</span>` : ""}</span><span class="chev" aria-hidden="true">›</span></button></li>`;
+  return `<li class="cart-rows-head" id="prof-admin">Admin</li>
+    ${row("prof-stats", "Site stats")}
+    ${row("prof-reports", "Review reports", n)}
+    ${row("prof-photos", "Review photos", h, "prof-photos-n")}`;
 }
-function wireAdmin() { const b = $("prof-reports"); if (b) b.onclick = openReports; const st = $("prof-stats"); if (st) st.onclick = openStats;
-  const ph = $("prof-photos"); if (ph) { ph.onclick = openPhotoReview; loadHeld().then(() => { const n = S.held.length; ph.textContent = "Review photos" + (n ? ` (${n})` : ""); ph.classList.toggle("primary", n > 0); }); } }
+function wireAdmin() {
+  const b = $("prof-reports"); if (b) b.onclick = openReports;
+  const st = $("prof-stats"); if (st) st.onclick = openStats;
+  const ph = $("prof-photos");
+  if (ph) { ph.onclick = openPhotoReview; loadHeld().then(() => { const c = $("prof-photos-n"); if (c) { const n = S.held.length; c.textContent = n ? String(n) : ""; c.hidden = !n; } }); }
+}

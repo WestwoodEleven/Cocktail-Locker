@@ -282,7 +282,7 @@ function routeHash() {
   S._routing = true;
   try { routeTo(id); } finally { S._routing = false; }
 }
-function routeTo(id) { if (id === "") { if (S.view !== "home") openHome(); return; } if (id === "my-locker") { if (S.view !== "profile") openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } }
+function routeTo(id) { if (id === "") { if (S.view !== "home") openHome(); return; } if (id === "my-locker") { if (S.view !== "profile" || S.cartSec) openProfile(); return; } if (HASH_VIEWS[id]) { HASH_VIEWS[id](); return; } if (/^bottle-/.test(id)) { if (!(S.view === "bottle" && S.bottleSlug === id.slice(7))) { const b = S.bottles.find(x => x.slug === id.slice(7)); openBottle(b ? b.name : id.slice(7).replace(/-/g, " ")); } return; } if (/^locker-/.test(id)) { if (!(S.view === "locker" && S.lockerId === id.slice(7))) openLocker(id.slice(7)); return; } if (id && allDrinks().some(d => d.id === id)) { S.selected = id; S.view = "detail"; renderList(); renderMain(); } }
 window.addEventListener("popstate", routeHash);
 window.addEventListener("hashchange", routeHash);
 try { history.scrollRestoration = "manual"; } catch (e) {}

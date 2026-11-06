@@ -16,7 +16,7 @@ const invoke = `async (name, body) => {
 }`;
 export default async function () {
   const p = await open({ invoke });
-  await p.evaluate("$('locker-btn').click()"); await p.waitForTimeout(100);
+  await p.evaluate("$('locker-btn').click(); openCartSec('bottles')"); await p.waitForTimeout(100);
   await p.click("#prof-bottle-add"); await p.waitForTimeout(50);
   check("Stock from photos in My Cocktail Cart's Add", await p.isVisible("#ba-photo"));
   await p.click("#ba-photo"); await p.waitForTimeout(100);
@@ -42,7 +42,7 @@ export default async function () {
   check("brand filled on existing Gin", bar.liquors.some(x => x.name === "Gin" && x.brand === "Tanqueray") && bar.liquors.filter(x => (x.name || x) === "Gin").length === 1);
   check("bitters brand filled", bar.bitters.some(x => x.name === "Angostura bitters" && x.brand === "Angostura"));
   check("mixer went to fresh today", await p.evaluate("JSON.parse(localStorage.getItem('mc-fresh')).includes('Tonic water')"));
-  check("lands on My cart after adding", (await p.evaluate("location.hash")) === "#my-locker");
+  check("lands on My bottles after adding", (await p.evaluate("location.hash")) === "#cart-bottles");
   await p.setViewportSize({ width: 390, height: 844 });
   await p.evaluate("openStock()"); await p.setInputFiles("#stock-file", [fx("shelf1.jpg")]); await p.waitForTimeout(700);
   check("no sideways scroll on phone", (await p.evaluate("document.documentElement.scrollWidth")) <= 390);

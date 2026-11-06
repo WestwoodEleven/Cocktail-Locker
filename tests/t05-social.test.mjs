@@ -36,8 +36,14 @@ export default async function () {
   check("follow works", (await p.text("#lk-follow")).includes("Following") && (await p.text("#main")).includes("1 follower"));
   check("People I follow filter offered", (await p.text("#flt-owner")).includes("People I follow (1)"));
   await p.click("#locker-btn"); await p.waitForTimeout(100);
+  const hub = await p.text("#main");
+  check("My cart has My lists and Following icons with counts", /My lists \| 1 list/.test(hub) && /Following \| 1 cart/.test(hub), hub.slice(0, 600));
+  await p.click("[data-cart=following]"); await p.waitForTimeout(100);
+  check("Following opens the carts you follow", (await p.text("#main")).includes("Jo's Cart") && /copy my public page link/i.test(await p.text("#main")));
+  await p.evaluate("openProfile()"); await p.waitForTimeout(100);
+  await p.click("[data-cart=lists]"); await p.waitForTimeout(100);
   const prof = await p.text("#main");
-  check("My cart shows lists and following", prof.includes("My lists") && prof.includes("Thanksgiving") && prof.includes("Jo's Cart"), prof.slice(0, 900));
+  check("My lists opens your lists", prof.includes("My lists") && prof.includes("Thanksgiving"), prof.slice(0, 900));
   await p.click("#prof-lists summary"); await p.click("[data-colpub]"); await p.waitForTimeout(100);
   check("list can be made private", (await p.evaluate("window.__MOCK.tables.collections[0].is_public")) === false);
   await p.click("#prof-lists summary").catch(() => {});

@@ -68,7 +68,7 @@ function drinkPicture(d) {
 // Which tab is "open right now" (tapping it again scrolls to the top instead).
 const VIEW_OF_NAV = { home: "home", ask: "ask", cart: "profile" };
 function navGo(where) {
-  if (VIEW_OF_NAV[where] && S.view === VIEW_OF_NAV[where] && window.scrollY > 0) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+  if (VIEW_OF_NAV[where] && S.view === VIEW_OF_NAV[where] && window.scrollY > 0 && !(where === "cart" && S.cartSec)) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
   const needSignIn = msg => { toast(msg); const a = $("auth-btn"); if (a && !a.hidden) a.click(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   if (where === "home") return openHome();
   if (where === "browse") return showList(null);
@@ -79,21 +79,18 @@ function navGo(where) {
   if (where === "canmake") { if (!uid()) return needSignIn("Sign in to save your bottles and see what you can make."); return openCanMake(); }
   if (where === "mine") {
     if (!uid()) return needSignIn("Sign in to keep your own drinks.");
-    S.profTab = "mine"; openProfile();
-    setTimeout(() => { const d = $("prof-drinks"); if (d) d.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
-    return;
+    return openCartSec("drinks");
   }
   if (where === "bar") {
     if (!uid()) return needSignIn("Sign in to keep your bottles.");
-    S.profTab = "bar"; openProfile();
-    setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
+    return openCartSec("bottles");
   }
 }
 document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => navGo(b.dataset.nav)));
 // Page-wide state that follows the current view: full-width home, and which nav item is marked.
 // Pages that use the full width, without the drink list, filters and tools beside them.
 // Recipe pages and Ask the bartender use the full width. Home shows the welcome with the drink list under it.
-const FULL_WIDTH_VIEWS = ["ask", "detail", "stats", "shop", "menu"];
+const FULL_WIDTH_VIEWS = ["ask", "detail", "stats", "shop", "menu", "profile"];
 function syncChrome() {
   const home = S.view === "home", searching = home && !!(S.query || "").trim();
   document.body.classList.toggle("on-home", FULL_WIDTH_VIEWS.includes(S.view));

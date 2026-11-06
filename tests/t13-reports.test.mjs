@@ -50,7 +50,7 @@ export default async function () {
     { id: 5, kind: "cart", target: "u2", target_owner: "u2", reason: "offensive", details: "Rude cart name", snapshot: "x", reporter: "u3", created_at: "2026-11-01" }];
   const a = await open({ tables: t2 });
   await a.click("#locker-btn"); await a.waitForTimeout(150);
-  check("admin sees Review reports with count", (await a.text("#prof-reports")).includes("(4)"));
+  check("admin sees Review reports with count", /Review reports 4/.test(await a.text("#prof-reports")), await a.text("#prof-reports"));
   await a.click("#prof-reports"); await a.waitForTimeout(150);
   const page = await a.text("#main");
   check("reports grouped by thing reported", page.includes("4 to review") && page.includes("2 reports") && page.includes("Bad photo") && page.includes("Uses someone else's photo"), page);

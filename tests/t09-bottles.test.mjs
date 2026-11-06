@@ -55,6 +55,7 @@ export default async function () {
   check("main search lists matching bottles", /bottles/i.test(await p.text("#list")) && (await p.evaluate("!!document.querySelector('#list [data-bottle=Cointreau]')")));
   // bar chip edit sheet links to bottle page
   await p.click("#locker-btn"); await p.waitForTimeout(100);
+  await p.click("[data-cart=bottles]"); await p.waitForTimeout(100);
   await p.click("#chips-liquors [data-edit]:has-text('Cointreau')"); await p.waitForTimeout(50);
   check("bar bottle links to its page", await p.isVisible("#gen-body [data-bottle='Cointreau']"));
   await p.click("#gen-body [data-bottle='Cointreau']"); await p.waitForTimeout(100);

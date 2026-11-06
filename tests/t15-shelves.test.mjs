@@ -5,7 +5,7 @@ export default async function () {
     "Gin", "Campari", "Sweet vermouth", { name: "Bourbon", brand: "Buffalo Trace", out: false }, "Rye whiskey", { name: "Blanco tequila", out: true },
     "Mezcal", { name: "Triple sec", brand: "Cointreau" }, "Dark rum", { name: "Mystery bottle", brand: "Grandpa's" }], syrups: ["Simple syrup", "Honey syrup"], bitters: [] } }];
   const p = await open({ tables: t, width: 390 });
-  await p.evaluate("$('locker-btn').click()"); await p.waitForTimeout(200);
+  await p.evaluate("$('locker-btn').click(); openCartSec('bottles')"); await p.waitForTimeout(200);
   const shelves = await p.evaluate("[...document.querySelectorAll('#chips-liquors .shelf')].map(s => s.querySelector('.shelf-name').firstChild.textContent.trim() + ': ' + [...s.querySelectorAll('.chip-main')].map(c => c.firstChild.textContent.trim()).join(', '))");
   const want = ["Whiskey: Bourbon, Rye whiskey", "Gin: Gin", "Rum: Dark rum", "Tequila & mezcal: Mezcal, Blanco tequila", "Liqueurs: Campari, Triple sec", "Vermouth & wine: Sweet vermouth", "Other: Mystery bottle"];
   check("liquors grouped into shelves in a set order", JSON.stringify(shelves) === JSON.stringify(want), JSON.stringify(shelves));

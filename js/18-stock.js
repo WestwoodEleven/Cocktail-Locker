@@ -136,7 +136,7 @@ VIEWS.stock = function renderStock() {
         <div class="form-actions"><button class="btn primary" type="button" id="stock-add" ${chosen ? "" : "disabled"}>${busy ? "Still reading… " : ""}Add ${chosen} to my bottles</button></div>
       </section>` : st.photos.length && !busy ? `<p class="hint">No bottles found yet. Try a closer photo with the labels facing the camera.</p>` : ""}
     </div>`;
-  $("stock-close").onclick = () => goBack(() => { S.profTab = null; openProfile(); });
+  $("stock-close").onclick = () => goBack(() => openCartSec("bottles"));
   $("stock-pick").onclick = () => $("stock-file").click();
   if ($("stock-reset")) $("stock-reset").onclick = () => { S.stock = { photos: [], items: [] }; stockQueue.length = 0; renderMain(); };
   m.querySelectorAll("[data-retry]").forEach(b => b.onclick = () => { const p = st.photos.find(x => x.id === b.dataset.retry); if (p) { p.status = "preparing"; stockQueue.push(p); pumpStock(); refreshStock(); } });
@@ -169,8 +169,7 @@ function applyStock() {
   const parts = [added && `${added} added`, branded && `${branded} brand${branded === 1 ? "" : "s"} filled in`, restocked && `${restocked} back in stock`].filter(Boolean);
   toast(parts.length ? "Your bottles: " + parts.join(", ") : "Everything was already in your bottles");
   S.stock = { photos: [], items: [] };
-  openProfile();
-  setTimeout(() => { const b = $("prof-bar"); if (b) b.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
+  openCartSec("bottles");
 }
 
 $("stock-btn").onclick = openStock;
