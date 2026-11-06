@@ -134,6 +134,8 @@ function canMakeResults() {
 $("canmake-btn").onclick = () => openCanMake();
 function openCanMake() {
   if (!uid()) { toast("Sign in to save your bottles and see what you can make."); return; }
+  try { localStorage.setItem("mc-did-canmake", "1"); } catch (e) {} // a setup step on Home
+  S.didCanMake = true;
   S.view = "canmake"; S.confirmDelete = false; setHash("can-make");
   renderList(); renderMain();
   $("main").scrollIntoView({ behavior: "smooth", block: "start" });

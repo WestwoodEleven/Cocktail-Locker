@@ -1,6 +1,21 @@
 // ---------- site stats (admins only) ----------
 // One database call (admin_stats, from supabase/stats-setup.sql) returns totals, the last 8 weeks,
 // AI use and the most loved drinks. Visitor traffic lives in Cloudflare Web Analytics instead.
+// Note that a signed-in member opened the site today (one tiny call a day; supabase/stats-setup.sql).
+// Only the date is kept, for "Active this week" and "Came back after week 1" on Site stats.
+function touchSeen() {
+  if (!sb || !uid()) return;
+  const key = "mc-seen-" + uid(), day = new Date().toISOString().slice(0, 10); // the database's day is UTC too
+  try { if (localStorage.getItem(key) === day) return; } catch (e) {}
+  if (S._seenDay === key + day) return;
+  S._seenDay = key + day;
+  sb.rpc("touch_seen").then(({ error }) => {
+    if (error) { S._seenDay = null; return; }
+    try { localStorage.setItem(key, day); } catch (e) {}
+  }, () => { S._seenDay = null; });
+}
+// The app can sit open for days on a phone; count the day it comes back to the front too.
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") touchSeen(); });
 const AI_LABELS = { ask: "Ask the bartender", scan: "Scan a recipe", standard: "Classic lookups", mocktail: "Mocktails",
   bottles: "Stock my bottles", bottle: "Bottle guide", swap: "Ingredient swaps", idea: "Drink ideas" };
 function openStats() {
@@ -26,9 +41,15 @@ VIEWS.stats = function renderStats() {
   const st = S.stats;
   if (!st) { m.innerHTML = `<div class="make">${head}<p class="hint">${esc(S.statsErr || "Counting…")}</p></div>`; wireStats(); return; }
   const t = st.totals || {}, num = v => Number(v || 0).toLocaleString();
-  const tiles = [["Members", t.members], ["Signed in this week", t.active_7d], ["Drink views this week", st.views_7d], ["Drinks", t.drinks], ["Drink photos", t.drink_photos],
-    ["Classics", t.classics], ["Ratings", t.ratings], ["Favorites", t.favorites], ["Bottle photos", t.bottle_photos],
-    ["Bottle comments", t.bottle_reviews], ["Lists", t.lists], ["Follows", t.follows]];
+  // Older stats-setup.sql versions counted sign-ins, which miss members who stay signed in.
+  const counted = t.returned_of !== undefined;
+  const back = !counted ? null : Number(t.returned_of) ? `${Math.round(Number(t.returned) / Number(t.returned_of) * 100)}%` : "–";
+  const tiles = [["Members", num(t.members)], [counted ? "Active this week" : "Signed in this week", num(t.active_7d)],
+    ...(counted ? [[`Came back after week 1 · ${num(t.returned)} of ${num(t.returned_of)}`, back]] : []),
+    ["Drink views this week", num(st.views_7d)], ["Drinks", num(t.drinks)], ["Drink photos", num(t.drink_photos)],
+    ["Classics", num(t.classics)], ["Ratings", num(t.ratings)], ["Favorites", num(t.favorites)], ["Bottle photos", num(t.bottle_photos)],
+    ["Bottle comments", num(t.bottle_reviews)], ["Lists", num(t.lists)], ["Follows", num(t.follows)]];
+  const since = t.seen_since ? new Date(t.seen_since + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
   const weeks = st.weeks || [];
   const bars = (key, label) => {
     const max = Math.max(1, ...weeks.map(w => Number(w[key] || 0)));
@@ -41,9 +62,11 @@ VIEWS.stats = function renderStats() {
   const ai = Object.entries(st.ai_30d || {}).sort((a, b) => b[1] - a[1]);
   const list = (rows, fmt) => rows.length ? `<ol class="st-list">${rows.map(r => `<li><button type="button" class="linkish" data-open="${esc(r.id)}">${esc(r.name)}</button> <span class="hint">${fmt(r)}</span></li>`).join("")}</ol>` : `<p class="hint">Not enough yet.</p>`;
   m.innerHTML = `<div class="make stats">${head}
-    <section class="make-sec"><div class="st-tiles">${tiles.map(([l, v]) => `<div class="st-tile"><b>${num(v)}</b><span>${l}</span></div>`).join("")}</div></section>
+    <section class="make-sec"><div class="st-tiles">${tiles.map(([l, v]) => `<div class="st-tile"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+      <p class="hint" style="margin:0">${counted ? `Active means a signed-in member opened the site${since ? `; counted since ${esc(since)}` : ""}. Came back: members who joined at least a week ago and opened the site a week or more after joining.`
+        : "To count active members, run supabase/stats-setup.sql again in the Supabase SQL Editor."}</p></section>
     <section class="make-sec"><div class="sec-head"><h3>Last 8 weeks</h3></div>
-      <div class="st-charts">${bars("signups", "New members")}${bars("drinks", "Drinks added")}${bars("ai", "AI requests")}</div></section>
+      <div class="st-charts">${weeks.some(w => w.active !== undefined) ? bars("active", "Active members") : ""}${bars("signups", "New members")}${bars("drinks", "Drinks added")}${bars("ai", "AI requests")}</div></section>
     <section class="make-sec"><div class="sec-head"><h3>AI use</h3></div>
       <p class="hint" style="margin:0">${num(st.ai_today)} requests in the last 24 hours${Number(st.at_limit_today) ? ` · ${num(st.at_limit_today)} ${Number(st.at_limit_today) === 1 ? "person" : "people"} hit the daily limit` : ""}.</p>
       ${ai.length ? `<table class="st-table"><thead><tr><th>Last 30 days</th><th>Requests</th></tr></thead><tbody>${ai.map(([k, n]) => `<tr><td>${esc(AI_LABELS[k] || k)}</td><td>${num(n)}</td></tr>`).join("")}</tbody></table>` : `<p class="hint">No AI requests in the last 30 days.</p>`}</section>

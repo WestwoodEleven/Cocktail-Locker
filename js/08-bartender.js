@@ -30,8 +30,11 @@ const inStock = list => list.filter(x => typeof x === "string" || !x.out);
 const barForAI = () => ({ liquors: inStock(S.bar.liquors).map(itemLabel), syrups: inStock(S.bar.syrups).map(itemLabel), bitters: inStock(S.bar.bitters).map(itemLabel) });
 async function loadBar() {
   if (!sb || !uid()) return;
-  const { data, error } = await sb.from("bars").select("items").eq("user_id", uid()).maybeSingle();
-  if (error) { S.barOff = true; return; }
+  const who = uid();
+  const { data, error } = await sb.from("bars").select("items").eq("user_id", who).maybeSingle();
+  if (who !== uid()) return; // signed out or switched while loading
+  S.barLoaded = true;
+  if (error) { S.barOff = true; if (VIEWS[S.view]) renderMain(); return; }
   const it = (data && data.items) || {};
   S.bar = { liquors: [].concat(it.liquors || []).map(barItem), syrups: [].concat(it.syrups || []).map(barItem), bitters: [].concat(it.bitters || []).map(barItem) };
   if (S.view === "make") renderMake();

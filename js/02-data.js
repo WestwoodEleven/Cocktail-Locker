@@ -72,15 +72,18 @@ async function startStorage() {
     S.session = session; refreshAuthUI();
     if (changed) {
       if (S.view !== "detail") { S.view = "detail"; S.editing = null; S.ideasState = null; }
-      S.bar = { liquors: [], syrups: [], bitters: [] }; loadBar();
+      S.bar = { liquors: [], syrups: [], bitters: [] }; S.barLoaded = false; S.userLoaded = false; loadBar();
+      if (session && typeof touchSeen === "function") touchSeen();
       loadRatings().then(() => { renderFilters(); renderList(); renderMain(); });
       if (!session) { $("name-form").hidden = true; if (S.f.owner === "mine" || S.f.owner === "fav") S.f.owner = ""; }
-      Promise.all([loadFavorites(), loadCollections(), loadFollows(), loadBottles(), loadMyHeld(), loadLog(), loadShop(), loadMenus()]).then(() => { renderFilters(); renderList(); if (S.view === "detail") renderMain(); });
+      Promise.all([loadFavorites(), loadCollections(), loadFollows(), loadBottles(), loadMyHeld(), loadLog(), loadShop(), loadMenus()]).then(() => { S.userLoaded = true; renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain(); });
       loadProfiles(); renderFilters(); renderList(); renderMain();
     }
   });
   await Promise.all([loadProfiles(), loadDrinks(), loadRatings(), loadFavorites(), loadStd(), loadCollections(), loadFollows(), loadBottles(), loadViews(), loadMyHeld(), loadLog(), loadShop(), loadMenus()]);
+  S.userLoaded = true;
   loadBar();
+  if (S.session && typeof touchSeen === "function") touchSeen();
   renderFilters(); renderList(); if (S.view === "detail" || S.view === "home") renderMain();
   if (S.session && !(myProfile() && myProfile().display_name)) openNameForm(true);
   try {
@@ -159,12 +162,14 @@ $("name-cancel").onclick = () => { $("name-form").hidden = true; };
 $("name-form").onsubmit = async ev => {
   ev.preventDefault();
   const name = $("locker-name").value.trim().slice(0, 40);
+  const isNew = !(myProfile() && myProfile().display_name); // a new member lands on Home, where the setup steps are
   if (!name) { $("name-msg").textContent = "Enter a name, like Mitch's Bar."; return; }
   $("name-msg").textContent = "Saving…";
   const { error } = await sb.from("profiles").upsert({ id: uid(), display_name: name });
   if (error) { $("name-msg").textContent = "Couldn't save the name. Try again."; return; }
   S.profiles[uid()] = { id: uid(), display_name: name };
-  $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList(); if (S.view === "profile") renderProfile(); else renderMain();
+  $("name-form").hidden = true; refreshAuthUI(); renderFilters(); renderList();
+  if (isNew) openHome(); else if (S.view === "profile") renderProfile(); else renderMain();
   toast("Cart named " + name);
 };
 

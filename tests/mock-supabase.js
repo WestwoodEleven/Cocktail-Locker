@@ -61,6 +61,7 @@
     channel: () => { const c = { on: () => c, subscribe: () => c }; return c; },
     storage: { from: () => ({ getPublicUrl: p => ({ data: { publicUrl: "photo/" + p } }), upload: async () => ({ error: null }), remove: async () => ({}) }) },
     rpc: async (name, args) => { M.lastRpc = name;
+      if (name === "touch_seen") { M.seenCalls = (M.seenCalls || 0) + 1; return { data: null, error: null }; }
       if (name === "record_view") { M.viewCalls = (M.viewCalls || []).concat(args.p_drink); return { data: null, error: null }; } return M.rpc && M.rpc[name] !== undefined ? { data: M.rpc[name], error: null } : { data: null, error: { message: "function not found", code: "PGRST202" } }; },
     functions: { invoke: async (name, opts) => { M.lastInvoke = opts.body; return M.invoke ? M.invoke(name, opts.body) : { data: null, error: { name: "FunctionsFetchError" } }; } }
   }) };

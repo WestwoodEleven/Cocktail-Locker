@@ -15,6 +15,16 @@ export default async function () {
   check("8 weekly bars per chart", (await p.evaluate("document.querySelectorAll('.st-bar').length")) === 24);
   await p.click(".st-list [data-open='neg-1']"); await p.waitForTimeout(150);
   check("a top drink opens its recipe", (await p.evaluate("S.view + ':' + S.selected")) === "detail:neg-1");
+  check("older stats setup: asks to re-run it for active members", /Signed in this week/.test(txt) && /run supabase\/stats-setup\.sql again/i.test(txt));
+  // after re-running stats-setup.sql: active members and who came back
+  const NEW = JSON.parse(JSON.stringify(STATS));
+  Object.assign(NEW.totals, { active_7d: 6, returned: 3, returned_of: 10, seen_since: "2026-11-06" });
+  NEW.weeks.forEach((w, i) => { w.active = i + 1; });
+  await p.evaluate(s => { window.__MOCK.rpc = { admin_stats: s }; }, NEW);
+  await p.evaluate("openStats()"); await p.waitForTimeout(200);
+  const t2 = await p.text("#main");
+  check("Active this week and Came back after week 1", /6 \| Active this week/.test(t2) && /30% \| Came back after week 1 · 3 of 10/.test(t2) && /counted since Nov 6, 2026/.test(t2), t2.slice(0, 500));
+  check("an Active members chart joins the weekly charts", (await p.evaluate("document.querySelectorAll('.st-bar').length")) === 32 && /Active members/.test(t2));
   // not set up yet
   await p.evaluate("window.__MOCK.rpc = {}"); await p.evaluate("openStats()"); await p.waitForTimeout(200);
   check("explains how to set it up", /stats-setup\.sql/.test(await p.text("#main")));

@@ -1,11 +1,32 @@
 -- My Cocktail Cart: site stats for admins (the Stats box on My Cocktail Cart).
--- Paste into the Supabase SQL Editor and run once. Safe to run again.
+-- Paste into the Supabase SQL Editor and run once. Safe to run again (run it again after updates).
 -- Needs the bottle guide (is_site_admin) and drink views (views-setup.sql) set up first.
 
 -- When each drink was first added (older drinks use their last edit time).
 alter table public.drinks add column if not exists created_at timestamptz;
 update public.drinks set created_at = updated_at where created_at is null;
 alter table public.drinks alter column created_at set default now();
+
+-- Which days each signed-in member opened the site: one row per member per day, nothing about what they looked at.
+-- Counts "Active this week" and "Came back after week 1". Rows go when the account is deleted.
+create table if not exists public.member_days (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day date not null default current_date,
+  primary key (user_id, day)
+);
+create index if not exists member_days_day_idx on public.member_days (day);
+alter table public.member_days enable row level security;
+-- No policies on purpose: nobody reads or writes the table directly. touch_seen() adds today's row; admin_stats() counts.
+
+-- The site calls this once a day for a signed-in member.
+create or replace function public.touch_seen() returns void
+language sql security definer set search_path = public as $$
+  insert into member_days (user_id, day)
+  select auth.uid(), current_date where auth.uid() is not null
+  on conflict do nothing;
+$$;
+revoke all on function public.touch_seen() from public, anon;
+grant execute on function public.touch_seen() to authenticated;
 
 -- One call returns everything the Stats box shows. Only site admins get anything back.
 create or replace function public.admin_stats() returns jsonb
@@ -20,7 +41,12 @@ begin
   select jsonb_build_object(
     'totals', jsonb_build_object(
       'members', (select count(*) from auth.users),
-      'active_7d', (select count(*) from auth.users where last_sign_in_at > now() - interval '7 days'),
+      'active_7d', (select count(distinct user_id) from member_days where day > current_date - 7),
+      -- Of members who joined at least a week ago, how many opened the site a week or more after joining.
+      'returned', (select count(distinct m.user_id) from member_days m join auth.users u on u.id = m.user_id
+                   where u.created_at <= now() - interval '7 days' and m.day >= (u.created_at + interval '7 days')::date),
+      'returned_of', (select count(*) from auth.users where created_at <= now() - interval '7 days'),
+      'seen_since', (select min(day) from member_days),
       'drinks', (select count(*) from drinks),
       'drink_photos', (select count(*) from drinks where coalesce(data->>'photo', '') <> ''),
       'classics', (select count(*) from standard_recipes),
@@ -34,6 +60,7 @@ begin
     'weeks', (
       select jsonb_agg(jsonb_build_object(
         'week', to_char(w, 'YYYY-MM-DD'),
+        'active', (select count(distinct m.user_id) from member_days m where m.day >= w::date and m.day < (w + interval '7 days')::date),
         'signups', (select count(*) from auth.users u where u.created_at >= w and u.created_at < w + interval '7 days'),
         'drinks', (select count(*) from drinks d where d.created_at >= w and d.created_at < w + interval '7 days'),
         'ai', (select count(*) from recipe_scans s where s.created_at >= w and s.created_at < w + interval '7 days')

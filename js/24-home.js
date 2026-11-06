@@ -1,5 +1,6 @@
 // ---------- home page ----------
-// Home is also the drink list: a welcome (big for new visitors, one line when signed in) and the drink of the day,
+// Home is also the drink list: a welcome (big for new visitors, one line when signed in) and the drink of the day
+// (for members with bottles: Tonight, from your bottles, and for new members the setup steps; js/35-tonight.js),
 // then every drink with quick filter chips (the index under the main column), then Plan & explore.
 // Searching filters the list in place and hides the welcome so results come first.
 function openHome() {
@@ -21,7 +22,8 @@ VIEWS.home = function renderHome() {
   if (!S.loaded) { m.innerHTML = `<div class="blank"><div class="glass">Opening the bar…</div></div>`; return; }
   const signedIn = !!uid(), accounts = S.backend === "supabase";
   const me = signedIn ? myProfile() : null;
-  const feat = drinkOfTheDay();
+  const tonight = signedIn && typeof tonightPick === "function" ? tonightPick() : null;
+  const feat = tonight ? null : drinkOfTheDay();
   const today = new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" });
   const sub = d => [typeOf(d), accounts ? (isMine(d) && signedIn ? "Your cart" : lockerName(d.owner)) : baseOf(d)].filter(Boolean).join(" · ");
   const amt = i => { const s = show(i, 1, "spec"); return (s.q + (s.u ? " " + s.u : "")).trim(); };
@@ -31,7 +33,8 @@ VIEWS.home = function renderHome() {
       <div class="home-top${signedIn ? " signed" : ""}">
         <section class="home-hero">
           ${signedIn ? `
-            <p class="home-hello">Welcome back to <b>${esc(me && me.display_name ? me.display_name : "your cart")}</b></p>` : `
+            <p class="home-hello">Welcome back to <b>${esc(me && me.display_name ? me.display_name : "your cart")}</b></p>
+            ${typeof setupHtml === "function" ? setupHtml() : ""}` : `
             <h2 class="home-title">House specs,<br>scaled to<br><em>the crowd.</em></h2>
             <div style="display:flex;flex-direction:column;gap:18px">
               <p class="home-lede">Real recipes from people who make drinks at home. Batch any of them from one glass to a punch bowl${accounts ? ", and keep your own in a free cart" : ""}.</p>
@@ -51,6 +54,7 @@ VIEWS.home = function renderHome() {
             <span class="home-feat-go">See the spec ›</span>
           </span>
         </button>` : ""}
+        ${tonight ? tonightHtml(tonight, { today, sub, amt }) : ""}
       </div>
 
       ${signedIn || !accounts ? "" : `<aside class="home-promo" aria-label="What you can do with a free cart">
@@ -78,6 +82,8 @@ VIEWS.home = function renderHome() {
       </div>
     </section>`;
   m.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { selectDrink(b.dataset.open); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  if (tonight) wireTonight(tonight);
+  if (typeof wireSetup === "function") wireSetup();
   const go = {
     cart: () => openProfile(),
     canmake: () => openCanMake(),
